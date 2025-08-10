@@ -1,49 +1,62 @@
 /* src/App.css */
 
-/* Seção de download */
-.download-section {
-  text-align: center;
-  margin-top: 30px;
-  padding: 20px;
-  background: #f8f9fa;
-  border-radius: 8px;
-}
-
-.download-buttons {
+/* Container principal */
+.container {
   display: flex;
-  flex-wrap: wrap; /* Permite que os botões se movam para a próxima linha */
-  gap: 15px; /* Espaçamento entre os botões */
-  justify-content: center; /* Centraliza os botões */
-  margin-bottom: 20px;
+  flex-direction: column; /* Alinha os itens em coluna */
+  align-items: center; /* Centraliza os itens horizontalmente */
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-.btn {
-  flex: 1 1 150px; /* Permite que os botões cresçam e encolham, com largura mínima de 150px */
-  max-width: 200px; /* Largura máxima para os botões */
-  background: #3498db;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  margin: 5px;
-  font-size: 14px;
-  transition: background 0.3s;
+/* Seções */
+.section {
+  width: 100%; /* Garante que as seções ocupem toda a largura */
+  margin-bottom: 30px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-.btn:hover {
-  background: #2980b9;
-}
-
-/* Responsividade */
+/* Responsividade para telas menores */
 @media (max-width: 768px) {
+  .container {
+    padding: 10px; /* Reduz o padding em telas menores */
+  }
+
+  .section {
+    margin-bottom: 20px; /* Reduz a margem entre seções */
+  }
+
+  .tabs {
+    flex-direction: column; /* Muda a direção das tabs para coluna */
+  }
+
+  .tab {
+    width: 100%; /* Faz as tabs ocuparem toda a largura */
+    margin-bottom: 5px; /* Espaçamento entre as tabs */
+  }
+
   .download-buttons {
-    flex-direction: column; /* Muda a direção para coluna em telas menores */
+    flex-direction: column; /* Muda a direção dos botões para coluna */
     align-items: center; /* Centraliza os botões */
   }
 
   .btn {
     width: 100%; /* Botões ocupam toda a largura disponível */
-    max-width: none; /* Remove a largura máxima */
+    max-width: 300px; /* Largura máxima para os botões */
+    margin-bottom: 10px; /* Espaçamento entre os botões */
+  }
+}
+
+/* Para telas muito pequenas */
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.5rem; /* Reduz o tamanho do título */
+  }
+
+  .btn {
+    font-size: 14px; /* Reduz o tamanho da fonte dos botões */
   }
 }
