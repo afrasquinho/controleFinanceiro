@@ -4,23 +4,28 @@ import { mesesInfo, gastosFixosDefault, valoresDefault } from '../data/monthsDat
 export const calculateRendimentos = (mesId) => {
   const mes = mesesInfo.find(m => m.id === mesId);
   
-  const rendimentoEu = valoresDefault.valorEu * mes.dias;
-  const ivaEu = rendimentoEu * valoresDefault.iva;
-  const totalEu = rendimentoEu + ivaEu;
+  const rendimentoAndre = valoresDefault.valorAndre * mes.dias;
+  const ivaAndre = rendimentoAndre * valoresDefault.iva;
+  const totalAndre = rendimentoAndre + ivaAndre;
   
-  const rendimentoEsposa = valoresDefault.valorEsposa * mes.dias;
-  const ivaEsposa = rendimentoEsposa * valoresDefault.iva;
-  const totalEsposa = rendimentoEsposa + ivaEsposa;
+  const rendimentoAline = valoresDefault.valorAline * mes.dias;
+  const ivaAline = rendimentoAline * valoresDefault.iva;
+  const totalAline = rendimentoAline + ivaAline;
+  
+  // Calcular rendimentos extras
+  const rendimentosExtrasSalvos = localStorage.getItem(`rendimentosExtras_${mesId}`);
+  const rendimentosExtras = rendimentosExtrasSalvos ? JSON.parse(rendimentosExtrasSalvos) : [];
+  const totalExtras = rendimentosExtras.reduce((total, r) => total + r.valor, 0);
   
   return {
-    eu: { base: rendimentoEu, iva: ivaEu, total: totalEu },
-    esposa: { base: rendimentoEsposa, iva: ivaEsposa, total: totalEsposa },
-    total: totalEu + totalEsposa
+    andre: { base: rendimentoAndre, iva: ivaAndre, total: totalAndre },
+    aline: { base: rendimentoAline, iva: ivaAline, total: totalAline },
+    extras: totalExtras,
+    total: totalAndre + totalAline + totalExtras
   };
 };
 
 export const calculateGastosFixos = () => {
-  // Tentar carregar gastos salvos, senão usar padrão
   const gastosSalvos = localStorage.getItem('gastosFixos');
   const gastosFixos = gastosSalvos ? JSON.parse(gastosSalvos) : gastosFixosDefault;
   

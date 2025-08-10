@@ -1,6 +1,7 @@
-
+// src/components/MonthContent.js
 import React from 'react';
 import RendimentosSection from './RendimentosSection';
+import DividasSection from './DividasSection';
 import GastosFixosSection from './GastosFixosSection';
 import GastosVariaveisSection from './GastosVariaveisSection';
 import SummarySection from './SummarySection';
@@ -17,6 +18,7 @@ const MonthContent = ({
   return (
     <div className="month-content active">
       <RendimentosSection mes={mes} />
+      <DividasSection mes={mes} />
       <GastosFixosSection mes={mes} />
       <GastosVariaveisSection 
         mes={mes}
