@@ -1,4 +1,4 @@
-
+// src/utils/calculations.js
 import { mesesInfo, gastosFixosDefault, valoresDefault } from '../data/monthsData';
 
 export const calculateRendimentos = (mesId) => {
@@ -20,7 +20,11 @@ export const calculateRendimentos = (mesId) => {
 };
 
 export const calculateGastosFixos = () => {
-  return Object.values(gastosFixosDefault).reduce((total, valor) => total + valor, 0);
+  // Tentar carregar gastos salvos, senão usar padrão
+  const gastosSalvos = localStorage.getItem('gastosFixos');
+  const gastosFixos = gastosSalvos ? JSON.parse(gastosSalvos) : gastosFixosDefault;
+  
+  return Object.values(gastosFixos).reduce((total, valor) => total + valor, 0);
 };
 
 export const calculateGastosVariaveis = (gastos) => {
