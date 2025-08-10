@@ -92,83 +92,136 @@ const DividasSection = ({ mes }) => {
       <div className="section-content">
         
         {/* Resumo das dívidas */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '15px',
-          marginBottom: '20px',
-          padding: '15px',
-          backgroundColor: '#f8f9fa',
-          borderRadius: '8px'
-        }}>
-          <div style={{textAlign: 'center'}}>
-            <div style={{fontSize: '24px', fontWeight: 'bold', color: '#e74c3c'}}>
+        <div className="summary-cards">
+          <div className="summary-card">
+            <div className="summary-value" style={{color: '#e74c3c'}}>
               {formatCurrency(totalDividas)}
             </div>
-            <div style={{fontSize: '12px', color: '#666'}}>Total de Dívidas</div>
+            <div className="summary-label">Total de Dívidas</div>
           </div>
-          <div style={{textAlign: 'center'}}>
-            <div style={{fontSize: '24px', fontWeight: 'bold', color: '#e67e22'}}>
+          <div className="summary-card">
+            <div className="summary-value" style={{color: '#e67e22'}}>
               {formatCurrency(totalPendente)}
             </div>
-            <div style={{fontSize: '12px', color: '#666'}}>Pendentes</div>
+            <div className="summary-label">Pendentes</div>
           </div>
-          <div style={{textAlign: 'center'}}>
-            <div style={{fontSize: '24px', fontWeight: 'bold', color: '#3498db'}}>
+          <div className="summary-card">
+            <div className="summary-value" style={{color: '#3498db'}}>
               {dividas.length}
             </div>
-            <div style={{fontSize: '12px', color: '#666'}}>Total de Itens</div>
+            <div className="summary-label">Total de Itens</div>
           </div>
         </div>
 
-        <table>
-          <thead>
-            <tr>
-              <th>Credor</th>
-              <th>Valor</th>
-              <th>Vencimento</th>
-              <th>Status</th>
-              <th>Descrição</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {dividas.length === 0 ? (
+        {/* TABELA RESPONSIVA */}
+        <div className="table-container">
+          <table>
+            <thead>
               <tr>
-                <td colSpan="6" style={{textAlign: 'center', color: '#666', fontStyle: 'italic', padding: '20px'}}>
-                  Nenhuma dívida registrada para {mes.nome}
-                </td>
+                <th>Credor</th>
+                <th>Valor</th>
+                <th>Vencimento</th>
+                <th>Status</th>
+                <th>Descrição</th>
+                <th>Ações</th>
               </tr>
-            ) : (
-              dividas.map(divida => (
-                <tr key={divida.id} style={{
-                  backgroundColor: divida.status === 'paga' ? '#f0f9f0' : 
-                                   divida.status === 'atrasada' ? '#fff3e0' : 'transparent'
-                }}>
-                  <td>
-                    <strong>{divida.credor}</strong>
+            </thead>
+            <tbody>
+              {dividas.length === 0 ? (
+                <tr>
+                  <td colSpan="6" style={{textAlign: 'center', color: '#666', fontStyle: 'italic', padding: '20px'}}>
+                    Nenhuma dívida registrada para {mes.nome}
                   </td>
-                  <td className="valor">
-                    {formatCurrency(divida.valor)}
+                </tr>
+              ) : (
+                dividas.map(divida => (
+                  <tr key={divida.id} style={{
+                    backgroundColor: divida.status === 'paga' ? '#f0f9f0' : 
+                                     divida.status === 'atrasada' ? '#fff3e0' : 'transparent'
+                  }}>
+                    <td>
+                      <strong>{divida.credor}</strong>
+                    </td>
+                    <td className="valor">
+                      {formatCurrency(divida.valor)}
+                    </td>
+                    <td>
+                      {divida.dataVencimento ? 
+                        new Date(divida.dataVencimento).toLocaleDateString('pt-PT') : 
+                        '-'
+                      }
+                    </td>
+                    <td>
+                      <select
+                        value={divida.status}
+                        onChange={(e) => alterarStatus(divida.id, e.target.value)}
+                        style={{
+                          padding: '5px',
+                          border: '1px solid #ddd',
+                          borderRadius: '3px',
+                          backgroundColor: getStatusColor(divida.status),
+                          color: 'white',
+                          fontSize: '12px'
+                        }}
+                      >
+                        <option value="pendente">⏳ Pendente</option>
+                        <option value="paga">✅ Paga</option>
+                        <option value="atrasada">⚠️ Atrasada</option>
+                      </select>
+                    </td>
+                    <td>
+                      <div style={{fontSize: '12px', color: '#666'}}>
+                        {divida.descricao || '-'}
+                      </div>
+                    </td>
+                    <td>
+                      <button
+                        onClick={() => removerDivida(divida.id)}
+                        className="remove-btn"
+                        title="Remover dívida"
+                      >
+                        🗑️
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+
+              {/* Formulário para adicionar nova dívida */}
+              {editando && (
+                <tr style={{backgroundColor: '#e8f4fd'}}>
+                  <td>
+                    <input
+                      type="text"
+                      placeholder="Ex: Banco, Cartão, Loja..."
+                      value={novaDivida.credor}
+                      onChange={(e) => setNovaDivida({...novaDivida, credor: e.target.value})}
+                      style={{width: '100%', padding: '5px', border: '1px solid #ddd', borderRadius: '3px'}}
+                    />
                   </td>
                   <td>
-                    {divida.dataVencimento ? 
-                      new Date(divida.dataVencimento).toLocaleDateString('pt-PT') : 
-                      '-'
-                    }
+                    <input
+                      type="number"
+                      placeholder="Valor"
+                      value={novaDivida.valor}
+                      onChange={(e) => setNovaDivida({...novaDivida, valor: e.target.value})}
+                      style={{width: '100px', padding: '5px', border: '1px solid #ddd', borderRadius: '3px', textAlign: 'right'}}
+                      step="0.01"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="date"
+                      value={novaDivida.dataVencimento}
+                      onChange={(e) => setNovaDivida({...novaDivida, dataVencimento: e.target.value})}
+                      style={{width: '100%', padding: '5px', border: '1px solid #ddd', borderRadius: '3px'}}
+                    />
                   </td>
                   <td>
                     <select
-                      value={divida.status}
-                      onChange={(e) => alterarStatus(divida.id, e.target.value)}
-                      style={{
-                        padding: '5px',
-                        border: '1px solid #ddd',
-                        borderRadius: '3px',
-                        backgroundColor: getStatusColor(divida.status),
-                        color: 'white',
-                        fontSize: '12px'
-                      }}
+                      value={novaDivida.status}
+                      onChange={(e) => setNovaDivida({...novaDivida, status: e.target.value})}
+                      style={{width: '100%', padding: '5px', border: '1px solid #ddd', borderRadius: '3px'}}
                     >
                       <option value="pendente">⏳ Pendente</option>
                       <option value="paga">✅ Paga</option>
@@ -176,130 +229,72 @@ const DividasSection = ({ mes }) => {
                     </select>
                   </td>
                   <td>
-                    <div style={{fontSize: '12px', color: '#666'}}>
-                      {divida.descricao || '-'}
-                    </div>
+                    <input
+                      type="text"
+                      placeholder="Descrição (opcional)"
+                      value={novaDivida.descricao}
+                      onChange={(e) => setNovaDivida({...novaDivida, descricao: e.target.value})}
+                      style={{width: '100%', padding: '5px', border: '1px solid #ddd', borderRadius: '3px', fontSize: '12px'}}
+                    />
                   </td>
                   <td>
-                    <button
-                      onClick={() => removerDivida(divida.id)}
-                      className="remove-btn"
-                      title="Remover dívida"
-                    >
-                      🗑️
-                    </button>
+                    <div style={{display: 'flex', gap: '5px'}}>
+                      <button
+                        onClick={adicionarDivida}
+                        className="btn"
+                        style={{background: '#27ae60', padding: '5px 10px', fontSize: '12px'}}
+                        title="Salvar"
+                      >
+                        ✅
+                      </button>
+                      <button
+                        onClick={() => {
+                          setEditando(false);
+                          setNovaDivida({
+                            credor: '',
+                            valor: '',
+                            descricao: '',
+                            dataVencimento: '',
+                            status: 'pendente'
+                          });
+                        }}
+                        className="btn"
+                        style={{background: '#e74c3c', padding: '5px 10px', fontSize: '12px'}}
+                        title="Cancelar"
+                      >
+                        ❌
+                      </button>
+                    </div>
                   </td>
                 </tr>
-              ))
-            )}
+              )}
 
-            {/* Formulário para adicionar nova dívida */}
-            {editando && (
-              <tr style={{backgroundColor: '#e8f4fd'}}>
+              <tr className="total">
+                <td><strong>TOTAL DÍVIDAS</strong></td>
+                <td className="valor"><strong>{formatCurrency(totalDividas)}</strong></td>
+                <td></td>
                 <td>
-                  <input
-                    type="text"
-                    placeholder="Ex: Banco, Cartão, Loja..."
-                    value={novaDivida.credor}
-                    onChange={(e) => setNovaDivida({...novaDivida, credor: e.target.value})}
-                    style={{width: '100%', padding: '5px', border: '1px solid #ddd', borderRadius: '3px'}}
-                  />
+                  <span style={{fontSize: '12px', color: '#666'}}>
+                    {dividasPendentes.length} pendente(s)
+                  </span>
                 </td>
+                <td></td>
                 <td>
-                  <input
-                    type="number"
-                    placeholder="Valor"
-                    value={novaDivida.valor}
-                    onChange={(e) => setNovaDivida({...novaDivida, valor: e.target.value})}
-                    style={{width: '100px', padding: '5px', border: '1px solid #ddd', borderRadius: '3px', textAlign: 'right'}}
-                    step="0.01"
-                  />
-                </td>
-                <td>
-                  <input
-                    type="date"
-                    value={novaDivida.dataVencimento}
-                    onChange={(e) => setNovaDivida({...novaDivida, dataVencimento: e.target.value})}
-                    style={{width: '100%', padding: '5px', border: '1px solid #ddd', borderRadius: '3px'}}
-                  />
-                </td>
-                <td>
-                  <select
-                    value={novaDivida.status}
-                    onChange={(e) => setNovaDivida({...novaDivida, status: e.target.value})}
-                    style={{width: '100%', padding: '5px', border: '1px solid #ddd', borderRadius: '3px'}}
-                  >
-                    <option value="pendente">⏳ Pendente</option>
-                    <option value="paga">✅ Paga</option>
-                    <option value="atrasada">⚠️ Atrasada</option>
-                  </select>
-                </td>
-                <td>
-                  <input
-                    type="text"
-                    placeholder="Descrição (opcional)"
-                    value={novaDivida.descricao}
-                    onChange={(e) => setNovaDivida({...novaDivida, descricao: e.target.value})}
-                    style={{width: '100%', padding: '5px', border: '1px solid #ddd', borderRadius: '3px', fontSize: '12px'}}
-                  />
-                </td>
-                <td>
-                  <div style={{display: 'flex', gap: '5px'}}>
+                  {!editando && (
                     <button
-                      onClick={adicionarDivida}
-                      className="btn"
-                      style={{background: '#27ae60', padding: '5px 10px', fontSize: '12px'}}
-                      title="Salvar"
-                    >
-                      ✅
-                    </button>
-                    <button
-                      onClick={() => {
-                        setEditando(false);
-                        setNovaDivida({
-                          credor: '',
-                          valor: '',
-                          descricao: '',
-                          dataVencimento: '',
-                          status: 'pendente'
-                        });
-                      }}
+                      onClick={() => setEditando(true)}
                       className="btn"
                       style={{background: '#e74c3c', padding: '5px 10px', fontSize: '12px'}}
-                      title="Cancelar"
+                      title="Adicionar dívida"
                     >
-                      ❌
+                      ➕
                     </button>
-                  </div>
+                  )}
                 </td>
               </tr>
-            )}
-
-            <tr className="total">
-              <td><strong>TOTAL DÍVIDAS</strong></td>
-              <td className="valor"><strong>{formatCurrency(totalDividas)}</strong></td>
-              <td></td>
-              <td>
-                <span style={{fontSize: '12px', color: '#666'}}>
-                  {dividasPendentes.length} pendente(s)
-                </span>
-              </td>
-              <td></td>
-              <td>
-                {!editando && (
-                  <button
-                    onClick={() => setEditando(true)}
-                    className="btn"
-                    style={{background: '#e74c3c', padding: '5px 10px', fontSize: '12px'}}
-                    title="Adicionar dívida"
-                  >
-                    ➕
-                  </button>
-                )}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
 
         {/* Dicas de uso */}
         <div style={{ 
