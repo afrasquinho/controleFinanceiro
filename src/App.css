@@ -1,36 +1,105 @@
-/* src/App.css */
+/* src/App.css - VERSÃO COMPLETA */
+body {
+  font-family: Arial, sans-serif;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f5f5f5;
+}
 
-/* Tabelas responsivas */
+.container {
+  background: white;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+h1 {
+  color: #2c3e50;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #ecf0f1;
+  overflow-x: auto;
+}
+
+.tab {
+  padding: 12px 24px;
+  background: #ecf0f1;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  margin-right: 2px;
+  border-radius: 5px 5px 0 0;
+  transition: background 0.3s;
+  white-space: nowrap;
+}
+
+.tab.active {
+  background: #3498db;
+  color: white;
+}
+
+.tab:hover {
+  background: #34495e;
+  color: white;
+}
+
+.month-content {
+  display: none;
+}
+
+.month-content.active {
+  display: block;
+}
+
+.section {
+  margin-bottom: 30px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.section-header {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  padding: 15px 20px;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.section-content {
+  padding: 20px;
+}
+
+/* TABELAS RESPONSIVAS - NOVAS REGRAS */
 .table-container {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   margin-bottom: 15px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  margin: 0;
-  font-size: 14px;
-  background: white;
+  margin-bottom: 15px;
 }
 
 th, td {
-  padding: 8px 12px;
+  padding: 12px;
   text-align: left;
   border-bottom: 1px solid #ddd;
-  white-space: nowrap; /* Evita quebra de linha */
 }
 
 th {
   background-color: #f8f9fa;
   font-weight: 600;
   color: #2c3e50;
-  position: sticky;
-  top: 0;
-  z-index: 10;
 }
 
 .valor {
@@ -43,126 +112,221 @@ th {
   font-weight: bold;
 }
 
-/* Responsividade para tablets */
+.saldo-positivo {
+  color: #27ae60;
+  font-weight: bold;
+}
+
+.saldo-negativo {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.input-row {
+  margin-bottom: 10px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.input-row input, .input-row select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  flex: 1;
+  min-width: 120px;
+}
+
+.btn {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 5px;
+}
+
+.btn:hover {
+  background: #2980b9;
+}
+
+.download-section {
+  text-align: center;
+  margin-top: 30px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.summary {
+  background: #e8f4fd;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.remove-btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 2px 8px;
+  margin-left: 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.remove-btn:hover {
+  background: #c0392b;
+}
+
+.excel-btn {
+  background: #27ae60 !important;
+  font-size: 16px !important;
+  padding: 15px 30px !important;
+}
+
+.export-btn {
+  background: #3498db !important;
+  font-size: 16px !important;
+  padding: 15px 30px !important;
+}
+
+.import-btn {
+  background: #9b59b6 !important;
+  font-size: 16px !important;
+  padding: 15px 30px !important;
+}
+
+.clear-btn {
+  background: #e74c3c !important;
+  font-size: 16px !important;
+  padding: 15px 30px !important;
+}
+
+/* Cards flexbox para resumos */
+.summary-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.summary-card {
+  flex: 1;
+  min-width: 150px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  text-align: center;
+}
+
+.summary-value {
+  font-size: 1.4rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.summary-label {
+  font-size: 12px;
+  color: #666;
+  font-weight: normal;
+}
+
+/* Indicador de scroll apenas para tablets/mobile */
+.table-container::after {
+  content: "← Deslize para ver mais →";
+  display: block;
+  text-align: center;
+  font-size: 11px;
+  color: #999;
+  margin-top: 5px;
+}
+
+/* RESPONSIVIDADE */
+@media (min-width: 1024px) {
+  .table-container::after {
+    display: none;
+  }
+}
+
 @media (max-width: 1024px) and (min-width: 768px) {
-  /* Tablets em modo paisagem */
   table {
-    font-size: 13px;
-  }
-  
-  th, td {
-    padding: 6px 8px;
-  }
-  
-  .table-container {
-    margin-bottom: 20px;
+    min-width: 700px;
   }
 }
 
 @media (max-width: 768px) {
-  /* Tablets em modo retrato e smartphones */
+  body {
+    padding: 10px;
+  }
   
-  /* Opção 1: Tabela com scroll horizontal */
-  .table-container {
-    position: relative;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    margin-bottom: 20px;
+  .container {
+    padding: 15px;
   }
   
   table {
-    min-width: 600px; /* Força largura mínima para scroll */
+    min-width: 600px;
+  }
+  
+  .input-row {
+    flex-direction: column;
+  }
+  
+  .input-row input, .input-row select {
+    min-width: 100%;
+  }
+  
+  .summary-cards {
+    flex-direction: column;
+  }
+  
+  .summary-card {
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 10px;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+  }
+  
+  .tab {
+    padding: 8px 12px;
     font-size: 12px;
   }
   
-  th, td {
-    padding: 6px 8px;
-    min-width: 80px; /* Largura mínima das colunas */
-  }
-  
-  /* Indicador de scroll */
-  .table-container::after {
-    content: "← Deslize para ver mais →";
-    display: block;
-    text-align: center;
-    font-size: 11px;
-    color: #999;
-    padding: 5px;
-    background: #f8f9fa;
-    border-top: 1px solid #ddd;
-  }
-}
-
-@media (max-width: 480px) {
-  /* Smartphones */
   table {
     min-width: 500px;
-    font-size: 11px;
   }
   
   th, td {
-    padding: 4px 6px;
-    min-width: 70px;
-  }
-  
-  .valor {
-    min-width: 80px; /* Mais espaço para valores */
+    padding: 6px;
+    font-size: 12px;
   }
 }
 
-/* Alternativa: Layout de cards para telas muito pequenas */
-@media (max-width: 480px) {
-  .table-mobile {
-    display: none; /* Esconde a tabela normal */
-  }
-  
-  .cards-container {
-    display: block;
-  }
-  
-  .card-item {
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 15px;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
-  
-  .card-header {
-    font-weight: bold;
-    color: #2c3e50;
-    margin-bottom: 10px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 5px;
-  }
-  
-  .card-row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 5px;
-  }
-  
-  .card-label {
-    font-weight: 500;
-    color: #666;
-  }
-  
-  .card-value {
-    font-weight: bold;
-    color: #2c3e50;
-  }
+/* Scrollbar personalizada */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-/* Para telas grandes, esconder os cards */
-@media (min-width: 481px) {
-  .cards-container {
-    display: none;
-  }
-  
-  .table-mobile {
-    display: table;
-  }
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
