@@ -17,8 +17,8 @@ const SummarySection = ({ mes, gastos }) => {
     <div className="summary">
       <h3>📊 RESULTADO DO MÊS - {mes.nome.toUpperCase()}</h3>
       
-      {/* Grid responsivo */}
-      <div className="summary-grid">
+      {/* Cards em flexbox */}
+      <div className="summary-cards">
         <div className="summary-card">
           <div className="summary-value" style={{color: '#27ae60'}}>
             {formatCurrency(saldoInfo.rendimentos)}
@@ -70,16 +70,16 @@ const SummarySection = ({ mes, gastos }) => {
           alignItems: 'center', 
           marginBottom: '5px' 
         }}>
-          <span style={{ fontSize: '12px' }}>Gastos vs Rendimentos</span>
-          <span style={{ fontSize: '12px' }}>
+          <span style={{ fontSize: '14px', fontWeight: 'bold' }}>Gastos vs Rendimentos</span>
+          <span style={{ fontSize: '14px', fontWeight: 'bold' }}>
             {((saldoInfo.gastosTotal / saldoInfo.rendimentos) * 100).toFixed(1)}%
           </span>
         </div>
         <div style={{ 
           width: '100%', 
-          height: '10px', 
+          height: '12px', 
           backgroundColor: '#ecf0f1', 
-          borderRadius: '5px',
+          borderRadius: '6px',
           overflow: 'hidden'
         }}>
           <div style={{ 
@@ -89,37 +89,6 @@ const SummarySection = ({ mes, gastos }) => {
             transition: 'width 0.3s ease'
           }}></div>
         </div>
-      </div>
-
-      {/* Análise adicional */}
-      <div style={{ 
-        marginTop: '15px', 
-        padding: '10px', 
-        backgroundColor: '#f8f9fa', 
-        borderRadius: '5px',
-        fontSize: '12px',
-        color: '#666'
-      }}>
-        <p><strong>📈 Análise do Mês:</strong></p>
-        <ul style={{ margin: '5px 0', paddingLeft: '20px' }}>
-          <li>
-            <strong>Situação:</strong> {saldoInfo.saldo >= 0 ? 
-              '✅ Mês positivo - conseguiu poupar!' : 
-              '⚠️ Mês negativo - gastos superiores aos rendimentos'
-            }
-          </li>
-          <li>
-            <strong>Gastos Fixos:</strong> {((saldoInfo.gastosFixos / saldoInfo.rendimentos) * 100).toFixed(1)}% dos rendimentos
-          </li>
-          <li>
-            <strong>Gastos Variáveis:</strong> {((saldoInfo.gastosVariaveis / saldoInfo.rendimentos) * 100).toFixed(1)}% dos rendimentos
-          </li>
-          {saldoInfo.saldo > 0 && (
-            <li>
-              <strong>Poupança:</strong> Conseguiu poupar {getTaxaPoupanca()}% dos rendimentos
-            </li>
-          )}
-        </ul>
       </div>
     </div>
   );

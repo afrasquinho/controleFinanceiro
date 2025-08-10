@@ -1,4 +1,4 @@
-
+// src/components/DownloadSection.js
 import React, { useRef } from 'react';
 import { generateExcel, generateMonthReport } from '../utils/excelGenerator';
 
@@ -37,7 +37,6 @@ const DownloadSection = ({
     const file = event.target.files[0];
     if (file) {
       onImportData(file);
-      // Limpar o input para permitir reimportar o mesmo arquivo
       event.target.value = '';
     }
   };
@@ -46,13 +45,7 @@ const DownloadSection = ({
     <div className="download-section">
       <h3>📁 Opções do Sistema</h3>
       
-      <div style={{ 
-        display: 'flex', 
-        gap: '15px', 
-        justifyContent: 'center', 
-        flexWrap: 'wrap',
-        marginBottom: '20px'
-      }}>
+      <div className="download-buttons">
         <button 
           className="btn excel-btn" 
           onClick={handleGenerateExcel}
@@ -112,8 +105,13 @@ const DownloadSection = ({
         fontSize: '14px', 
         color: '#666' 
       }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-          <div>
+        <div style={{ 
+          display: 'flex', 
+          flexWrap: 'wrap', 
+          gap: '30px', 
+          justifyContent: 'center' 
+        }}>
+          <div style={{ flex: '1', minWidth: '250px' }}>
             <p><strong>💡 Funcionalidades:</strong></p>
             <ul style={{ margin: '5px 0', paddingLeft: '20px' }}>
               <li>📊 <strong>Excel Completo:</strong> Todos os meses + resumo anual</li>
@@ -123,7 +121,7 @@ const DownloadSection = ({
             </ul>
           </div>
           
-          <div>
+          <div style={{ flex: '1', minWidth: '250px' }}>
             <p><strong>🚀 Dicas de Uso:</strong></p>
             <ul style={{ margin: '5px 0', paddingLeft: '20px' }}>
               <li>Os dados são salvos automaticamente na nuvem</li>
@@ -133,6 +131,19 @@ const DownloadSection = ({
             </ul>
           </div>
         </div>
+        
+        <div style={{ 
+          marginTop: '15px', 
+          padding: '10px', 
+          backgroundColor: '#e8f4fd', 
+          borderRadius: '5px',
+          textAlign: 'center'
+        }}>
+          <p><strong>📱 Compatibilidade:</strong></p>
+          <p style={{ margin: '5px 0' }}>
+            ✅ Desktop • ✅ Tablet • ✅ Smartphone • ✅ Todos os navegadores modernos
+          </p>
+        </div>
       </div>
 
       {/* Status de conexão */}
@@ -140,9 +151,30 @@ const DownloadSection = ({
         marginTop: '15px', 
         textAlign: 'center',
         fontSize: '12px',
-        color: '#27ae60'
+        color: '#27ae60',
+        padding: '10px',
+        backgroundColor: '#d5f4e6',
+        borderRadius: '5px',
+        border: '1px solid #27ae60'
       }}>
-        🟢 Conectado ao Firebase - Dados sincronizados automaticamente
+        🟢 <strong>Conectado ao Firebase</strong> - Dados sincronizados automaticamente
+      </div>
+
+      {/* Informações técnicas */}
+      <div style={{ 
+        marginTop: '15px', 
+        fontSize: '11px', 
+        color: '#999',
+        textAlign: 'center',
+        borderTop: '1px solid #eee',
+        paddingTop: '10px'
+      }}>
+        <p>
+          <strong>Controle Financeiro 2025</strong> • 
+          Versão 1.0 • 
+          Desenvolvido com React + Firebase • 
+          © {new Date().getFullYear()} André & Aline
+        </p>
       </div>
     </div>
   );
