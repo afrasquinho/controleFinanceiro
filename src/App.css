@@ -1,62 +1,168 @@
 /* src/App.css */
 
-/* Container principal */
-.container {
-  display: flex;
-  flex-direction: column; /* Alinha os itens em coluna */
-  align-items: center; /* Centraliza os itens horizontalmente */
-  padding: 20px;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-/* Seções */
-.section {
-  width: 100%; /* Garante que as seções ocupem toda a largura */
-  margin-bottom: 30px;
+/* Tabelas responsivas */
+.table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 15px;
   border: 1px solid #ddd;
-  border-radius: 8px;
-  overflow: hidden;
+  border-radius: 5px;
 }
 
-/* Responsividade para telas menores */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  font-size: 14px;
+  background: white;
+}
+
+th, td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  white-space: nowrap; /* Evita quebra de linha */
+}
+
+th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #2c3e50;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.valor {
+  text-align: right;
+  font-weight: 500;
+}
+
+.total {
+  background-color: #e8f4fd;
+  font-weight: bold;
+}
+
+/* Responsividade para tablets */
+@media (max-width: 1024px) and (min-width: 768px) {
+  /* Tablets em modo paisagem */
+  table {
+    font-size: 13px;
+  }
+  
+  th, td {
+    padding: 6px 8px;
+  }
+  
+  .table-container {
+    margin-bottom: 20px;
+  }
+}
+
 @media (max-width: 768px) {
-  .container {
-    padding: 10px; /* Reduz o padding em telas menores */
+  /* Tablets em modo retrato e smartphones */
+  
+  /* Opção 1: Tabela com scroll horizontal */
+  .table-container {
+    position: relative;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 20px;
   }
-
-  .section {
-    margin-bottom: 20px; /* Reduz a margem entre seções */
+  
+  table {
+    min-width: 600px; /* Força largura mínima para scroll */
+    font-size: 12px;
   }
-
-  .tabs {
-    flex-direction: column; /* Muda a direção das tabs para coluna */
+  
+  th, td {
+    padding: 6px 8px;
+    min-width: 80px; /* Largura mínima das colunas */
   }
-
-  .tab {
-    width: 100%; /* Faz as tabs ocuparem toda a largura */
-    margin-bottom: 5px; /* Espaçamento entre as tabs */
-  }
-
-  .download-buttons {
-    flex-direction: column; /* Muda a direção dos botões para coluna */
-    align-items: center; /* Centraliza os botões */
-  }
-
-  .btn {
-    width: 100%; /* Botões ocupam toda a largura disponível */
-    max-width: 300px; /* Largura máxima para os botões */
-    margin-bottom: 10px; /* Espaçamento entre os botões */
+  
+  /* Indicador de scroll */
+  .table-container::after {
+    content: "← Deslize para ver mais →";
+    display: block;
+    text-align: center;
+    font-size: 11px;
+    color: #999;
+    padding: 5px;
+    background: #f8f9fa;
+    border-top: 1px solid #ddd;
   }
 }
 
-/* Para telas muito pequenas */
 @media (max-width: 480px) {
-  h1 {
-    font-size: 1.5rem; /* Reduz o tamanho do título */
+  /* Smartphones */
+  table {
+    min-width: 500px;
+    font-size: 11px;
   }
+  
+  th, td {
+    padding: 4px 6px;
+    min-width: 70px;
+  }
+  
+  .valor {
+    min-width: 80px; /* Mais espaço para valores */
+  }
+}
 
-  .btn {
-    font-size: 14px; /* Reduz o tamanho da fonte dos botões */
+/* Alternativa: Layout de cards para telas muito pequenas */
+@media (max-width: 480px) {
+  .table-mobile {
+    display: none; /* Esconde a tabela normal */
+  }
+  
+  .cards-container {
+    display: block;
+  }
+  
+  .card-item {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .card-header {
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+  }
+  
+  .card-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+  }
+  
+  .card-label {
+    font-weight: 500;
+    color: #666;
+  }
+  
+  .card-value {
+    font-weight: bold;
+    color: #2c3e50;
+  }
+}
+
+/* Para telas grandes, esconder os cards */
+@media (min-width: 481px) {
+  .cards-container {
+    display: none;
+  }
+  
+  .table-mobile {
+    display: table;
   }
 }
