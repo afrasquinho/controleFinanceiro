@@ -1,4 +1,4 @@
-
+// src/components/SummarySection.js
 import React from 'react';
 import { calculateSaldo, formatCurrency } from '../utils/calculations';
 
@@ -16,26 +16,60 @@ const SummarySection = ({ mes, gastos }) => {
   return (
     <div className="summary">
       <h3>📊 RESULTADO DO MÊS - {mes.nome.toUpperCase()}</h3>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px' }}>
-        <div>
-          <p><strong>💰 Rendimentos:</strong> {formatCurrency(saldoInfo.rendimentos)}</p>
-          <p><strong>🏠 Gastos Fixos:</strong> {formatCurrency(saldoInfo.gastosFixos)}</p>
-          <p><strong>🛒 Gastos Variáveis:</strong> {formatCurrency(saldoInfo.gastosVariaveis)}</p>
+      
+      {/* Grid responsivo */}
+      <div className="summary-grid">
+        <div className="summary-card">
+          <div className="summary-value" style={{color: '#27ae60'}}>
+            {formatCurrency(saldoInfo.rendimentos)}
+          </div>
+          <div className="summary-label">💰 Rendimentos</div>
         </div>
-        <div>
-          <p><strong>💸 Gastos Totais:</strong> {formatCurrency(saldoInfo.gastosTotal)}</p>
-          <p><strong>📈 SALDO:</strong> 
-            <span className={getSaldoClass(saldoInfo.saldo)} style={{ marginLeft: '10px' }}>
-              {formatCurrency(saldoInfo.saldo)}
-            </span>
-          </p>
-          <p><strong>🎯 Taxa de Poupança:</strong> {getTaxaPoupanca()}%</p>
+        
+        <div className="summary-card">
+          <div className="summary-value" style={{color: '#3498db'}}>
+            {formatCurrency(saldoInfo.gastosFixos)}
+          </div>
+          <div className="summary-label">🏠 Gastos Fixos</div>
+        </div>
+        
+        <div className="summary-card">
+          <div className="summary-value" style={{color: '#f39c12'}}>
+            {formatCurrency(saldoInfo.gastosVariaveis)}
+          </div>
+          <div className="summary-label">🛒 Gastos Variáveis</div>
+        </div>
+        
+        <div className="summary-card">
+          <div className="summary-value" style={{color: '#e74c3c'}}>
+            {formatCurrency(saldoInfo.gastosTotal)}
+          </div>
+          <div className="summary-label">💸 Gastos Totais</div>
+        </div>
+        
+        <div className="summary-card">
+          <div className={`summary-value ${getSaldoClass(saldoInfo.saldo)}`}>
+            {formatCurrency(saldoInfo.saldo)}
+          </div>
+          <div className="summary-label">📈 SALDO FINAL</div>
+        </div>
+        
+        <div className="summary-card">
+          <div className="summary-value" style={{color: '#9b59b6'}}>
+            {getTaxaPoupanca()}%
+          </div>
+          <div className="summary-label">🎯 Taxa Poupança</div>
         </div>
       </div>
       
-      {/* Indicadores visuais */}
+      {/* Barra de progresso */}
       <div style={{ marginTop: '15px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          marginBottom: '5px' 
+        }}>
           <span style={{ fontSize: '12px' }}>Gastos vs Rendimentos</span>
           <span style={{ fontSize: '12px' }}>
             {((saldoInfo.gastosTotal / saldoInfo.rendimentos) * 100).toFixed(1)}%
@@ -55,6 +89,37 @@ const SummarySection = ({ mes, gastos }) => {
             transition: 'width 0.3s ease'
           }}></div>
         </div>
+      </div>
+
+      {/* Análise adicional */}
+      <div style={{ 
+        marginTop: '15px', 
+        padding: '10px', 
+        backgroundColor: '#f8f9fa', 
+        borderRadius: '5px',
+        fontSize: '12px',
+        color: '#666'
+      }}>
+        <p><strong>📈 Análise do Mês:</strong></p>
+        <ul style={{ margin: '5px 0', paddingLeft: '20px' }}>
+          <li>
+            <strong>Situação:</strong> {saldoInfo.saldo >= 0 ? 
+              '✅ Mês positivo - conseguiu poupar!' : 
+              '⚠️ Mês negativo - gastos superiores aos rendimentos'
+            }
+          </li>
+          <li>
+            <strong>Gastos Fixos:</strong> {((saldoInfo.gastosFixos / saldoInfo.rendimentos) * 100).toFixed(1)}% dos rendimentos
+          </li>
+          <li>
+            <strong>Gastos Variáveis:</strong> {((saldoInfo.gastosVariaveis / saldoInfo.rendimentos) * 100).toFixed(1)}% dos rendimentos
+          </li>
+          {saldoInfo.saldo > 0 && (
+            <li>
+              <strong>Poupança:</strong> Conseguiu poupar {getTaxaPoupanca()}% dos rendimentos
+            </li>
+          )}
+        </ul>
       </div>
     </div>
   );

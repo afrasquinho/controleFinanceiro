@@ -64,6 +64,7 @@ const RendimentosSection = ({ mes }) => {
     <div className="section">
       <div className="section-header">📈 RENDIMENTOS - {mes.nome.toUpperCase()}</div>
       <div className="section-content">
+      <div className="table-container">
         <table>
           <thead>
             <tr>
@@ -219,7 +220,7 @@ const RendimentosSection = ({ mes }) => {
             </tr>
           </tbody>
         </table>
-
+        </div>
         {/* Dicas de uso */}
         <div style={{ 
           marginTop: '15px', 
