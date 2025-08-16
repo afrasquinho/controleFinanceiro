@@ -27,7 +27,7 @@ const RendimentosSection = ({ mes }) => {
       setAndreDias(dias.andre || mes.dias);
       setAlineDias(dias.aline || mes.dias);
     }
-  }, [mes.id]);
+  }, [mes.dias, mes.id]);
 
   // Salvar dias trabalhados
   const salvarDias = () => {
