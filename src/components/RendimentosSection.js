@@ -5,9 +5,10 @@ import { valoresDefault } from '../data/monthsData';
 
 const RendimentosSection = ({ mes }) => {
   const [rendimentosExtras, setRendimentosExtras] = useState([]);
+  const [andreValor, setAndreValor] = useState(valoresDefault.valorAndre);
+  const [alineValor, setAlineValor] = useState(valoresDefault.valorAline);
   const [editando, setEditando] = useState(false);
   const [novoRendimento, setNovoRendimento] = useState({
-    id: null,
     fonte: '',
     valor: '',
     descricao: ''
@@ -27,40 +28,25 @@ const RendimentosSection = ({ mes }) => {
     setRendimentosExtras(novosRendimentos);
   };
 
-  // Adicionar ou editar rendimento
-  const adicionarOuEditarRendimento = () => {
+  // Adicionar novo rendimento
+  const adicionarRendimento = () => {
     if (novoRendimento.fonte && novoRendimento.valor) {
       const rendimento = {
-        id: novoRendimento.id || Date.now(),
+        id: Date.now(),
         fonte: novoRendimento.fonte,
         valor: parseFloat(novoRendimento.valor),
         descricao: novoRendimento.descricao,
         timestamp: new Date().toISOString()
       };
 
-      let novosRendimentos;
-      if (editando) {
-        // Editar rendimento existente
-        novosRendimentos = rendimentosExtras.map(r => r.id === rendimento.id ? rendimento : r);
-      } else {
-        // Adicionar novo rendimento
-        novosRendimentos = [...rendimentosExtras, rendimento];
-      }
-
+      const novosRendimentos = [...rendimentosExtras, rendimento];
       salvarRendimentos(novosRendimentos);
       
       // Limpar formulário
-      setNovoRendimento({ id: null, fonte: '', valor: '', descricao: '' });
-      setEditando(false);
+      setNovoRendimento({ fonte: '', valor: '', descricao: '' });
     } else {
       alert('Por favor, preencha pelo menos a fonte e o valor');
     }
-  };
-
-  // Editar rendimento
-  const editarRendimento = (rendimento) => {
-    setNovoRendimento(rendimento);
-    setEditando(true);
   };
 
   // Remover rendimento
@@ -69,6 +55,12 @@ const RendimentosSection = ({ mes }) => {
       const novosRendimentos = rendimentosExtras.filter(r => r.id !== id);
       salvarRendimentos(novosRendimentos);
     }
+  };
+
+  // Atualizar valores fixos de André e Aline
+  const atualizarValoresFixos = () => {
+    valoresDefault.valorAndre = andreValor;
+    valoresDefault.valorAline = alineValor;
   };
 
   const rendimentos = calculateRendimentos(mes.id);
@@ -94,20 +86,42 @@ const RendimentosSection = ({ mes }) => {
             </thead>
             <tbody>
               <tr>
-                <td>💼 André ({valoresDefault.valorAndre}€ + IVA)</td>
-                <td className="valor">{formatCurrency(valoresDefault.valorAndre)}</td>
+                <td>💼 André</td>
+                <td className="valor">
+                  <input
+                    type="number"
+                    value={andreValor}
+                    onChange={(e) => setAndreValor(e.target.value)}
+                    style={{ width: '80px', textAlign: 'right' }}
+                  />
+                </td>
                 <td className="valor">{mes.dias}</td>
                 <td className="valor">{formatCurrency(rendimentos.andre.iva)}</td>
                 <td className="valor">{formatCurrency(rendimentos.andre.total)}</td>
-                <td><span style={{color: '#27ae60'}}>✓ Fixo</span></td>
+                <td>
+                  <button onClick={atualizarValoresFixos} className="btn" title="Salvar">
+                    💾
+                  </button>
+                </td>
               </tr>
               <tr>
-                <td>👩‍💼 Aline ({valoresDefault.valorAline}€ + IVA)</td>
-                <td className="valor">{formatCurrency(valoresDefault.valorAline)}</td>
+                <td>👩‍💼 Aline</td>
+                <td className="valor">
+                  <input
+                    type="number"
+                    value={alineValor}
+                    onChange={(e) => setAlineValor(e.target.value)}
+                    style={{ width: '80px', textAlign: 'right' }}
+                  />
+                </td>
                 <td className="valor">{mes.dias}</td>
                 <td className="valor">{formatCurrency(rendimentos.aline.iva)}</td>
                 <td className="valor">{formatCurrency(rendimentos.aline.total)}</td>
-                <td><span style={{color: '#27ae60'}}>✓ Fixo</span></td>
+                <td>
+                  <button onClick={atualizarValoresFixos} className="btn" title="Salvar">
+                    💾
+                  </button>
+                </td>
               </tr>
               
               {/* Rendimentos extras */}
@@ -127,13 +141,6 @@ const RendimentosSection = ({ mes }) => {
                   <td className="valor">{formatCurrency(rendimento.valor)}</td>
                   <td>
                     <button
-                      onClick={() => editarRendimento(rendimento)}
-                      className="edit-btn"
-                      title="Editar rendimento"
-                    >
-                      ✏️
-                    </button>
-                    <button
                       onClick={() => removerRendimento(rendimento.id)}
                       className="remove-btn"
                       title="Remover rendimento"
@@ -144,7 +151,7 @@ const RendimentosSection = ({ mes }) => {
                 </tr>
               ))}
 
-              {/* Formulário para adicionar ou editar rendimento */}
+              {/* Formulário para adicionar novo rendimento */}
               <tr style={{backgroundColor: '#e8f4fd'}}>
                 <td>
                   <input
@@ -176,29 +183,14 @@ const RendimentosSection = ({ mes }) => {
                   />
                 </td>
                 <td>
-                  <div style={{display: 'flex', gap: '5px'}}>
-                    <button
-                      onClick={adicionarOuEditarRendimento}
-                      className="btn"
-                      style={{background: '#27ae60', padding: '5px 10px', fontSize: '12px'}}
-                      title={editando ? "Salvar Edição" : "Salvar"}
-                    >
-                      {editando ? '✅' : '➕'}
-                    </button>
-                    {editando && (
-                      <button
-                        onClick={() => {
-                          setEditando(false);
-                          setNovoRendimento({ id: null, fonte: '', valor: '', descricao: '' });
-                        }}
-                        className="btn"
-                        style={{background: '#e74c3c', padding: '5px 10px', fontSize: '12px'}}
-                        title="Cancelar"
-                      >
-                        ❌
-                      </button>
-                    )}
-                  </div>
+                  <button
+                    onClick={adicionarRendimento}
+                    className="btn"
+                    style={{background: '#27ae60', padding: '5px 10px', fontSize: '12px'}}
+                    title="Adicionar rendimento"
+                  >
+                    ➕
+                  </button>
                 </td>
               </tr>
 
@@ -228,21 +220,7 @@ const RendimentosSection = ({ mes }) => {
                 <td></td>
                 <td></td>
                 <td className="valor"><strong>{formatCurrency(totalGeral)}</strong></td>
-                <td>
-                  {!editando && (
-                    <button
-                      onClick={() => {
-                        setNovoRendimento({ id: null, fonte: '', valor: '', descricao: '' });
-                        setEditando(true);
-                      }}
-                      className="btn"
-                      style={{background: '#27ae60', padding: '5px 10px', fontSize: '12px'}}
-                      title="Adicionar rendimento"
-                    >
-                      ➕
-                    </button>
-                  )}
-                </td>
+                <td></td>
               </tr>
             </tbody>
           </table>
@@ -257,13 +235,12 @@ const RendimentosSection = ({ mes }) => {
           fontSize: '12px',
           color: '#666'
         }}>
-          <p><strong>💡 Rendimentos extras:</strong></p>
+          <p><strong>💡 Rendimentos:</strong></p>
           <ul style={{ margin: '5px 0', paddingLeft: '20px' }}>
-            <li>Clique em ➕ para adicionar rendimentos extras (freelances, bônus, etc.)</li>
-            <li>Os rendimentos extras são salvos por mês</li>
-            <li>Use 🗑️ para remover um rendimento extra</li>
-            <li>Use ✏️ para editar um rendimento extra</li>
-            <li>Os valores são incluídos automaticamente nos cálculos</li>
+            <li>Edite os valores de André e Aline diretamente na tabela.</li>
+            <li>Clique em 💾 para salvar as alterações.</li>
+            <li>Adicione rendimentos extras usando o formulário abaixo.</li>
+            <li>Use 🗑️ para remover um rendimento extra.</li>
           </ul>
         </div>
       </div>
