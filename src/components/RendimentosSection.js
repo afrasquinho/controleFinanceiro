@@ -7,6 +7,7 @@ const RendimentosSection = ({ mes }) => {
   const [rendimentosExtras, setRendimentosExtras] = useState([]);
   const [editando, setEditando] = useState(false);
   const [novoRendimento, setNovoRendimento] = useState({
+    id: null,
     fonte: '',
     valor: '',
     descricao: ''
@@ -26,26 +27,40 @@ const RendimentosSection = ({ mes }) => {
     setRendimentosExtras(novosRendimentos);
   };
 
-  // Adicionar novo rendimento
-  const adicionarRendimento = () => {
+  // Adicionar ou editar rendimento
+  const adicionarOuEditarRendimento = () => {
     if (novoRendimento.fonte && novoRendimento.valor) {
       const rendimento = {
-        id: Date.now(),
+        id: novoRendimento.id || Date.now(),
         fonte: novoRendimento.fonte,
-        valor: parseFloat(novoRendimento.valor), // APENAS UMA VEZ
+        valor: parseFloat(novoRendimento.valor),
         descricao: novoRendimento.descricao,
         timestamp: new Date().toISOString()
       };
 
-      const novosRendimentos = [...rendimentosExtras, rendimento];
+      let novosRendimentos;
+      if (editando) {
+        // Editar rendimento existente
+        novosRendimentos = rendimentosExtras.map(r => r.id === rendimento.id ? rendimento : r);
+      } else {
+        // Adicionar novo rendimento
+        novosRendimentos = [...rendimentosExtras, rendimento];
+      }
+
       salvarRendimentos(novosRendimentos);
       
       // Limpar formulário
-      setNovoRendimento({ fonte: '', valor: '', descricao: '' });
+      setNovoRendimento({ id: null, fonte: '', valor: '', descricao: '' });
       setEditando(false);
     } else {
       alert('Por favor, preencha pelo menos a fonte e o valor');
     }
+  };
+
+  // Editar rendimento
+  const editarRendimento = (rendimento) => {
+    setNovoRendimento(rendimento);
+    setEditando(true);
   };
 
   // Remover rendimento
@@ -95,7 +110,7 @@ const RendimentosSection = ({ mes }) => {
                 <td><span style={{color: '#27ae60'}}>✓ Fixo</span></td>
               </tr>
               
-              {/* Rendimentos extras - APENAS UMA VEZ CADA */}
+              {/* Rendimentos extras */}
               {rendimentosExtras.map(rendimento => (
                 <tr key={rendimento.id} style={{backgroundColor: '#f8f9fa'}}>
                   <td>
@@ -112,6 +127,13 @@ const RendimentosSection = ({ mes }) => {
                   <td className="valor">{formatCurrency(rendimento.valor)}</td>
                   <td>
                     <button
+                      onClick={() => editarRendimento(rendimento)}
+                      className="edit-btn"
+                      title="Editar rendimento"
+                    >
+                      ✏️
+                    </button>
+                    <button
                       onClick={() => removerRendimento(rendimento.id)}
                       className="remove-btn"
                       title="Remover rendimento"
@@ -122,52 +144,52 @@ const RendimentosSection = ({ mes }) => {
                 </tr>
               ))}
 
-              {/* Formulário para adicionar novo rendimento */}
-              {editando && (
-                <tr style={{backgroundColor: '#e8f4fd'}}>
-                  <td>
-                    <input
-                      type="text"
-                      placeholder="Ex: Freelance, Bonus, etc."
-                      value={novoRendimento.fonte}
-                      onChange={(e) => setNovoRendimento({...novoRendimento, fonte: e.target.value})}
-                      style={{width: '100%', padding: '5px', border: '1px solid #ddd', borderRadius: '3px'}}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Descrição (opcional)"
-                      value={novoRendimento.descricao}
-                      onChange={(e) => setNovoRendimento({...novoRendimento, descricao: e.target.value})}
-                      style={{width: '100%', padding: '5px', border: '1px solid #ddd', borderRadius: '3px', marginTop: '5px', fontSize: '12px'}}
-                    />
-                  </td>
-                  <td>-</td>
-                  <td>-</td>
-                  <td>-</td>
-                  <td>
-                    <input
-                      type="number"
-                      placeholder="Valor"
-                      value={novoRendimento.valor}
-                      onChange={(e) => setNovoRendimento({...novoRendimento, valor: e.target.value})}
-                      style={{width: '100px', padding: '5px', border: '1px solid #ddd', borderRadius: '3px', textAlign: 'right'}}
-                      step="0.01"
-                    />
-                  </td>
-                  <td>
-                    <div style={{display: 'flex', gap: '5px'}}>
-                      <button
-                        onClick={adicionarRendimento}
-                        className="btn"
-                        style={{background: '#27ae60', padding: '5px 10px', fontSize: '12px'}}
-                        title="Salvar"
-                      >
-                        ✅
-                      </button>
+              {/* Formulário para adicionar ou editar rendimento */}
+              <tr style={{backgroundColor: '#e8f4fd'}}>
+                <td>
+                  <input
+                    type="text"
+                    placeholder="Ex: Freelance, Bonus, etc."
+                    value={novoRendimento.fonte}
+                    onChange={(e) => setNovoRendimento({...novoRendimento, fonte: e.target.value})}
+                    style={{width: '100%', padding: '5px', border: '1px solid #ddd', borderRadius: '3px'}}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Descrição (opcional)"
+                    value={novoRendimento.descricao}
+                    onChange={(e) => setNovoRendimento({...novoRendimento, descricao: e.target.value})}
+                    style={{width: '100%', padding: '5px', border: '1px solid #ddd', borderRadius: '3px', marginTop: '5px', fontSize: '12px'}}
+                  />
+                </td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>
+                  <input
+                    type="number"
+                    placeholder="Valor"
+                    value={novoRendimento.valor}
+                    onChange={(e) => setNovoRendimento({...novoRendimento, valor: e.target.value})}
+                    style={{width: '100px', padding: '5px', border: '1px solid #ddd', borderRadius: '3px', textAlign: 'right'}}
+                    step="0.01"
+                  />
+                </td>
+                <td>
+                  <div style={{display: 'flex', gap: '5px'}}>
+                    <button
+                      onClick={adicionarOuEditarRendimento}
+                      className="btn"
+                      style={{background: '#27ae60', padding: '5px 10px', fontSize: '12px'}}
+                      title={editando ? "Salvar Edição" : "Salvar"}
+                    >
+                      {editando ? '✅' : '➕'}
+                    </button>
+                    {editando && (
                       <button
                         onClick={() => {
                           setEditando(false);
-                          setNovoRendimento({fonte: '', valor: '', descricao: ''});
+                          setNovoRendimento({ id: null, fonte: '', valor: '', descricao: '' });
                         }}
                         className="btn"
                         style={{background: '#e74c3c', padding: '5px 10px', fontSize: '12px'}}
@@ -175,10 +197,10 @@ const RendimentosSection = ({ mes }) => {
                       >
                         ❌
                       </button>
-                    </div>
-                  </td>
-                </tr>
-              )}
+                    )}
+                  </div>
+                </td>
+              </tr>
 
               <tr className="total">
                 <td><strong>SUBTOTAL TRABALHO</strong></td>
@@ -209,7 +231,10 @@ const RendimentosSection = ({ mes }) => {
                 <td>
                   {!editando && (
                     <button
-                      onClick={() => setEditando(true)}
+                      onClick={() => {
+                        setNovoRendimento({ id: null, fonte: '', valor: '', descricao: '' });
+                        setEditando(true);
+                      }}
                       className="btn"
                       style={{background: '#27ae60', padding: '5px 10px', fontSize: '12px'}}
                       title="Adicionar rendimento"
@@ -237,6 +262,7 @@ const RendimentosSection = ({ mes }) => {
             <li>Clique em ➕ para adicionar rendimentos extras (freelances, bônus, etc.)</li>
             <li>Os rendimentos extras são salvos por mês</li>
             <li>Use 🗑️ para remover um rendimento extra</li>
+            <li>Use ✏️ para editar um rendimento extra</li>
             <li>Os valores são incluídos automaticamente nos cálculos</li>
           </ul>
         </div>

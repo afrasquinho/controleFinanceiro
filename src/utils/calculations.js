@@ -20,8 +20,8 @@ export const calculateRendimentos = (mesId) => {
   return {
     andre: { base: rendimentoAndre, iva: ivaAndre, total: totalAndre },
     aline: { base: rendimentoAline, iva: ivaAline, total: totalAline },
-    extras: totalExtras, // Apenas uma vez
-    total: totalAndre + totalAline + totalExtras // Soma correta
+    extras: totalExtras,
+    total: totalAndre + totalAline + totalExtras 
   };
 };
 
