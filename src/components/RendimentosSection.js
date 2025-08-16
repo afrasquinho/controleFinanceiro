@@ -5,9 +5,10 @@ import { valoresDefault } from '../data/monthsData';
 
 const RendimentosSection = ({ mes }) => {
   const [rendimentosExtras, setRendimentosExtras] = useState([]);
+  const [andreDias, setAndreDias] = useState(mes.dias);
+  const [alineDias, setAlineDias] = useState(mes.dias);
   const [andreValor, setAndreValor] = useState(valoresDefault.valorAndre);
   const [alineValor, setAlineValor] = useState(valoresDefault.valorAline);
-  const [editando, setEditando] = useState(false);
   const [novoRendimento, setNovoRendimento] = useState({
     fonte: '',
     valor: '',
@@ -57,15 +58,13 @@ const RendimentosSection = ({ mes }) => {
     }
   };
 
-  // Atualizar valores fixos de André e Aline
-  const atualizarValoresFixos = () => {
-    valoresDefault.valorAndre = andreValor;
-    valoresDefault.valorAline = alineValor;
-  };
-
   const rendimentos = calculateRendimentos(mes.id);
   const totalRendimentosExtras = rendimentosExtras.reduce((total, r) => total + r.valor, 0);
-  const totalGeral = rendimentos.andre.total + rendimentos.aline.total + totalRendimentosExtras;
+  
+  // Cálculo dos totais com base nos dias
+  const totalAndre = andreValor * andreDias;
+  const totalAline = alineValor * alineDias;
+  const totalGeral = totalAndre + totalAline + totalRendimentosExtras;
 
   return (
     <div className="section">
@@ -79,7 +78,6 @@ const RendimentosSection = ({ mes }) => {
                 <th>Fonte</th>
                 <th>Valor/Dia</th>
                 <th>Dias</th>
-                <th>IVA (23%)</th>
                 <th>Total Bruto</th>
                 <th>Ações</th>
               </tr>
@@ -95,11 +93,17 @@ const RendimentosSection = ({ mes }) => {
                     style={{ width: '80px', textAlign: 'right' }}
                   />
                 </td>
-                <td className="valor">{mes.dias}</td>
-                <td className="valor">{formatCurrency(rendimentos.andre.iva)}</td>
-                <td className="valor">{formatCurrency(rendimentos.andre.total)}</td>
+                <td className="valor">
+                  <input
+                    type="number"
+                    value={andreDias}
+                    onChange={(e) => setAndreDias(e.target.value)}
+                    style={{ width: '50px', textAlign: 'right' }}
+                  />
+                </td>
+                <td className="valor">{formatCurrency(totalAndre)}</td>
                 <td>
-                  <button onClick={atualizarValoresFixos} className="btn" title="Salvar">
+                  <button onClick={() => {}} className="btn" title="Salvar">
                     💾
                   </button>
                 </td>
@@ -114,11 +118,17 @@ const RendimentosSection = ({ mes }) => {
                     style={{ width: '80px', textAlign: 'right' }}
                   />
                 </td>
-                <td className="valor">{mes.dias}</td>
-                <td className="valor">{formatCurrency(rendimentos.aline.iva)}</td>
-                <td className="valor">{formatCurrency(rendimentos.aline.total)}</td>
+                <td className="valor">
+                  <input
+                    type="number"
+                    value={alineDias}
+                    onChange={(e) => setAlineDias(e.target.value)}
+                    style={{ width: '50px', textAlign: 'right' }}
+                  />
+                </td>
+                <td className="valor">{formatCurrency(totalAline)}</td>
                 <td>
-                  <button onClick={atualizarValoresFixos} className="btn" title="Salvar">
+                  <button onClick={() => {}} className="btn" title="Salvar">
                     💾
                   </button>
                 </td>
@@ -135,7 +145,6 @@ const RendimentosSection = ({ mes }) => {
                       </div>
                     )}
                   </td>
-                  <td className="valor">-</td>
                   <td className="valor">-</td>
                   <td className="valor">-</td>
                   <td className="valor">{formatCurrency(rendimento.valor)}</td>
@@ -171,7 +180,6 @@ const RendimentosSection = ({ mes }) => {
                 </td>
                 <td>-</td>
                 <td>-</td>
-                <td>-</td>
                 <td>
                   <input
                     type="number"
@@ -198,27 +206,6 @@ const RendimentosSection = ({ mes }) => {
                 <td><strong>SUBTOTAL TRABALHO</strong></td>
                 <td></td>
                 <td></td>
-                <td></td>
-                <td className="valor"><strong>{formatCurrency(rendimentos.andre.total + rendimentos.aline.total)}</strong></td>
-                <td></td>
-              </tr>
-              
-              {totalRendimentosExtras > 0 && (
-                <tr className="total" style={{backgroundColor: '#d5f4e6'}}>
-                  <td><strong>SUBTOTAL EXTRAS</strong></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td className="valor"><strong>{formatCurrency(totalRendimentosExtras)}</strong></td>
-                  <td></td>
-                </tr>
-              )}
-
-              <tr className="total" style={{backgroundColor: '#3498db', color: 'white'}}>
-                <td><strong>TOTAL RENDIMENTOS</strong></td>
-                <td></td>
-                <td></td>
-                <td></td>
                 <td className="valor"><strong>{formatCurrency(totalGeral)}</strong></td>
                 <td></td>
               </tr>
@@ -237,8 +224,7 @@ const RendimentosSection = ({ mes }) => {
         }}>
           <p><strong>💡 Rendimentos:</strong></p>
           <ul style={{ margin: '5px 0', paddingLeft: '20px' }}>
-            <li>Edite os valores de André e Aline diretamente na tabela.</li>
-            <li>Clique em 💾 para salvar as alterações.</li>
+            <li>Edite os valores diários e os dias de André e Aline diretamente na tabela.</li>
             <li>Adicione rendimentos extras usando o formulário abaixo.</li>
             <li>Use 🗑️ para remover um rendimento extra.</li>
           </ul>
