@@ -1,27 +1,43 @@
 // src/components/RendimentosSection.js
 import React, { useState, useEffect } from 'react';
-import { calculateRendimentos, formatCurrency } from '../utils/calculations';
+import { formatCurrency } from '../utils/calculations';
 import { valoresDefault } from '../data/monthsData';
 
 const RendimentosSection = ({ mes }) => {
   const [rendimentosExtras, setRendimentosExtras] = useState([]);
   const [andreDias, setAndreDias] = useState(mes.dias);
   const [alineDias, setAlineDias] = useState(mes.dias);
-  const [andreValor, setAndreValor] = useState(valoresDefault.valorAndre);
-  const [alineValor, setAlineValor] = useState(valoresDefault.valorAline);
   const [novoRendimento, setNovoRendimento] = useState({
     fonte: '',
     valor: '',
     descricao: ''
   });
 
-  // Carregar rendimentos extras salvos
+  // Carregar dados salvos
   useEffect(() => {
     const rendimentosSalvos = localStorage.getItem(`rendimentosExtras_${mes.id}`);
     if (rendimentosSalvos) {
       setRendimentosExtras(JSON.parse(rendimentosSalvos));
     }
+
+    // Carregar dias salvos
+    const diasSalvos = localStorage.getItem(`diasTrabalhados_${mes.id}`);
+    if (diasSalvos) {
+      const dias = JSON.parse(diasSalvos);
+      setAndreDias(dias.andre || mes.dias);
+      setAlineDias(dias.aline || mes.dias);
+    }
   }, [mes.id]);
+
+  // Salvar dias trabalhados
+  const salvarDias = () => {
+    const dias = {
+      andre: parseInt(andreDias),
+      aline: parseInt(alineDias)
+    };
+    localStorage.setItem(`diasTrabalhados_${mes.id}`, JSON.stringify(dias));
+    alert('Dias trabalhados salvos!');
+  };
 
   // Salvar rendimentos extras
   const salvarRendimentos = (novosRendimentos) => {
@@ -58,12 +74,16 @@ const RendimentosSection = ({ mes }) => {
     }
   };
 
-  const rendimentos = calculateRendimentos(mes.id);
+  // Cálculos
+  const rendimentoBaseAndre = valoresDefault.valorAndre * andreDias;
+  const ivaAndre = rendimentoBaseAndre * valoresDefault.iva;
+  const totalAndre = rendimentoBaseAndre + ivaAndre;
+
+  const rendimentoBaseAline = valoresDefault.valorAline * alineDias;
+  const ivaAline = rendimentoBaseAline * valoresDefault.iva;
+  const totalAline = rendimentoBaseAline + ivaAline;
+
   const totalRendimentosExtras = rendimentosExtras.reduce((total, r) => total + r.valor, 0);
-  
-  // Cálculo dos totais com base nos dias
-  const totalAndre = andreValor * andreDias;
-  const totalAline = alineValor * alineDias;
   const totalGeral = totalAndre + totalAline + totalRendimentosExtras;
 
   return (
@@ -78,6 +98,7 @@ const RendimentosSection = ({ mes }) => {
                 <th>Fonte</th>
                 <th>Valor/Dia</th>
                 <th>Dias</th>
+                <th>IVA (23%)</th>
                 <th>Total Bruto</th>
                 <th>Ações</th>
               </tr>
@@ -85,50 +106,64 @@ const RendimentosSection = ({ mes }) => {
             <tbody>
               <tr>
                 <td>💼 André</td>
-                <td className="valor">
-                  <input
-                    type="number"
-                    value={andreValor}
-                    onChange={(e) => setAndreValor(e.target.value)}
-                    style={{ width: '80px', textAlign: 'right' }}
-                  />
-                </td>
+                <td className="valor">{formatCurrency(valoresDefault.valorAndre)}</td>
                 <td className="valor">
                   <input
                     type="number"
                     value={andreDias}
                     onChange={(e) => setAndreDias(e.target.value)}
-                    style={{ width: '50px', textAlign: 'right' }}
+                    style={{ 
+                      width: '60px', 
+                      textAlign: 'center',
+                      padding: '5px',
+                      border: '1px solid #3498db',
+                      borderRadius: '3px'
+                    }}
+                    min="0"
+                    max="31"
                   />
                 </td>
+                <td className="valor">{formatCurrency(ivaAndre)}</td>
                 <td className="valor">{formatCurrency(totalAndre)}</td>
                 <td>
-                  <button onClick={() => {}} className="btn" title="Salvar">
+                  <button 
+                    onClick={salvarDias} 
+                    className="btn" 
+                    style={{background: '#27ae60', padding: '5px 10px', fontSize: '12px'}}
+                    title="Salvar dias"
+                  >
                     💾
                   </button>
                 </td>
               </tr>
               <tr>
                 <td>👩‍💼 Aline</td>
-                <td className="valor">
-                  <input
-                    type="number"
-                    value={alineValor}
-                    onChange={(e) => setAlineValor(e.target.value)}
-                    style={{ width: '80px', textAlign: 'right' }}
-                  />
-                </td>
+                <td className="valor">{formatCurrency(valoresDefault.valorAline)}</td>
                 <td className="valor">
                   <input
                     type="number"
                     value={alineDias}
                     onChange={(e) => setAlineDias(e.target.value)}
-                    style={{ width: '50px', textAlign: 'right' }}
+                    style={{ 
+                      width: '60px', 
+                      textAlign: 'center',
+                      padding: '5px',
+                      border: '1px solid #3498db',
+                      borderRadius: '3px'
+                    }}
+                    min="0"
+                    max="31"
                   />
                 </td>
+                <td className="valor">{formatCurrency(ivaAline)}</td>
                 <td className="valor">{formatCurrency(totalAline)}</td>
                 <td>
-                  <button onClick={() => {}} className="btn" title="Salvar">
+                  <button 
+                    onClick={salvarDias} 
+                    className="btn" 
+                    style={{background: '#27ae60', padding: '5px 10px', fontSize: '12px'}}
+                    title="Salvar dias"
+                  >
                     💾
                   </button>
                 </td>
@@ -145,6 +180,7 @@ const RendimentosSection = ({ mes }) => {
                       </div>
                     )}
                   </td>
+                  <td className="valor">-</td>
                   <td className="valor">-</td>
                   <td className="valor">-</td>
                   <td className="valor">{formatCurrency(rendimento.valor)}</td>
@@ -180,6 +216,7 @@ const RendimentosSection = ({ mes }) => {
                 </td>
                 <td>-</td>
                 <td>-</td>
+                <td>-</td>
                 <td>
                   <input
                     type="number"
@@ -206,6 +243,27 @@ const RendimentosSection = ({ mes }) => {
                 <td><strong>SUBTOTAL TRABALHO</strong></td>
                 <td></td>
                 <td></td>
+                <td></td>
+                <td className="valor"><strong>{formatCurrency(totalAndre + totalAline)}</strong></td>
+                <td></td>
+              </tr>
+              
+              {totalRendimentosExtras > 0 && (
+                <tr className="total" style={{backgroundColor: '#d5f4e6'}}>
+                  <td><strong>SUBTOTAL EXTRAS</strong></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td className="valor"><strong>{formatCurrency(totalRendimentosExtras)}</strong></td>
+                  <td></td>
+                </tr>
+              )}
+
+              <tr className="total" style={{backgroundColor: '#3498db', color: 'white'}}>
+                <td><strong>TOTAL RENDIMENTOS</strong></td>
+                <td></td>
+                <td></td>
+                <td></td>
                 <td className="valor"><strong>{formatCurrency(totalGeral)}</strong></td>
                 <td></td>
               </tr>
@@ -213,7 +271,7 @@ const RendimentosSection = ({ mes }) => {
           </table>
         </div>
 
-        {/* Dicas de uso */}
+        {/* Informações */}
         <div style={{ 
           marginTop: '15px', 
           padding: '10px', 
@@ -222,11 +280,12 @@ const RendimentosSection = ({ mes }) => {
           fontSize: '12px',
           color: '#666'
         }}>
-          <p><strong>💡 Rendimentos:</strong></p>
+          <p><strong>💡 Como usar:</strong></p>
           <ul style={{ margin: '5px 0', paddingLeft: '20px' }}>
-            <li>Edite os valores diários e os dias de André e Aline diretamente na tabela.</li>
-            <li>Adicione rendimentos extras usando o formulário abaixo.</li>
-            <li>Use 🗑️ para remover um rendimento extra.</li>
+            <li><strong>Valores fixos:</strong> André: {formatCurrency(valoresDefault.valorAndre)}/dia • Aline: {formatCurrency(valoresDefault.valorAline)}/dia</li>
+            <li><strong>Editar dias:</strong> Altere apenas o número de dias trabalhados</li>
+            <li><strong>Salvar:</strong> Clique em 💾 para salvar os dias trabalhados</li>
+            <li><strong>Rendimentos extras:</strong> Use ➕ para adicionar freelances, bônus, etc.</li>
           </ul>
         </div>
       </div>
