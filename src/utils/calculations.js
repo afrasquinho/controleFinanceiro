@@ -12,7 +12,7 @@ export const calculateRendimentos = (mesId) => {
   const ivaAline = rendimentoAline * valoresDefault.iva;
   const totalAline = rendimentoAline + ivaAline;
   
-  // Calcular rendimentos extras
+  // Calcular rendimentos extras (SEM DUPLICAR)
   const rendimentosExtrasSalvos = localStorage.getItem(`rendimentosExtras_${mesId}`);
   const rendimentosExtras = rendimentosExtrasSalvos ? JSON.parse(rendimentosExtrasSalvos) : [];
   const totalExtras = rendimentosExtras.reduce((total, r) => total + r.valor, 0);
@@ -20,11 +20,12 @@ export const calculateRendimentos = (mesId) => {
   return {
     andre: { base: rendimentoAndre, iva: ivaAndre, total: totalAndre },
     aline: { base: rendimentoAline, iva: ivaAline, total: totalAline },
-    extras: totalExtras,
-    total: totalAndre + totalAline + totalExtras
+    extras: totalExtras, // Apenas uma vez
+    total: totalAndre + totalAline + totalExtras // Soma correta
   };
 };
 
+// Resto das funções permanecem iguais...
 export const calculateGastosFixos = () => {
   const gastosSalvos = localStorage.getItem('gastosFixos');
   const gastosFixos = gastosSalvos ? JSON.parse(gastosSalvos) : gastosFixosDefault;
