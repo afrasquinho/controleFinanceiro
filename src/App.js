@@ -1,43 +1,30 @@
-
-import React, { useState } from 'react';
+// src/App.js
+import React, { useState, useEffect } from 'react';
 import { mesesInfo } from './data/monthsData';
 import { useFinanceData } from './hooks/useFinanceData';
 import MonthContent from './components/MonthContent';
+import AIDashboard from './components/AIDashboard'; // NOVA IMPORTAÇÃO
 import DownloadSection from './components/DownloadSection';
 import './App.css';
 
 function App() {
   const [currentMonth, setCurrentMonth] = useState('jan');
-  
-  const {
-    gastosData,
-    loading,
-    error,
-    addGasto,
-    removeGasto,
-    exportData,
-    importData,
-    clearAllData
+  const [showAI, setShowAI] = useState(false); // NOVO ESTADO
+  const { 
+    gastosData, 
+    loading, 
+    error, 
+    addGasto, 
+    removeGasto, 
+    exportData, 
+    importData, 
+    clearAllData 
   } = useFinanceData();
-
-  const showMonth = (monthId) => {
-    setCurrentMonth(monthId);
-  };
 
   if (loading) {
     return (
       <div className="container">
-        <div style={{ 
-          textAlign: 'center', 
-          padding: '50px',
-          fontSize: '18px',
-          color: '#666'
-        }}>
-          <div>🔄 Carregando dados...</div>
-          <div style={{ fontSize: '14px', marginTop: '10px' }}>
-            Conectando ao Firebase
-          </div>
-        </div>
+        <h1>Carregando dados...</h1>
       </div>
     );
   }
@@ -45,72 +32,82 @@ function App() {
   if (error) {
     return (
       <div className="container">
-        <div style={{ 
-          textAlign: 'center', 
-          padding: '50px',
-          color: '#e74c3c'
-        }}>
-          <h2>❌ Erro ao carregar dados</h2>
-          <p>{error}</p>
-          <button 
-            className="btn" 
-            onClick={() => window.location.reload()}
-            style={{ marginTop: '20px' }}
-          >
-            🔄 Tentar Novamente
-          </button>
-        </div>
+        <h1>Erro: {error}</h1>
       </div>
     );
   }
 
   return (
     <div className="container">
-      <header style={{ textAlign: 'center', marginBottom: '30px' }}>
-        <h1>💰 Controle Financeiro 2025</h1>
-        <p style={{ color: '#666', fontSize: '14px' }}>
-          Sistema completo de gestão financeira pessoal
-        </p>
-      </header>
+      <h1>💰 Controle Financeiro 2025</h1>
       
-      {/* Navegação por abas */}
-      <nav className="tabs">
+      {/* Botão para mostrar/esconder IA */}
+      <div style={{ 
+        textAlign: 'center', 
+        marginBottom: '20px',
+        padding: '15px',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '8px'
+      }}>
+        <button
+          onClick={() => setShowAI(!showAI)}
+          className="btn"
+          style={{
+            background: showAI ? '#e74c3c' : '#27ae60',
+            fontSize: '16px',
+            padding: '12px 24px'
+          }}
+        >
+          {showAI ? '❌ Fechar IA' : '🤖 Abrir Assistente IA'}
+        </button>
+        <div style={{ fontSize: '12px', color: '#666', marginTop: '5px' }}>
+          {showAI ? 'IA ativa - analisando seus dados' : 'Clique para ativar análise inteligente'}
+        </div>
+      </div>
+
+      {/* Mostrar IA se ativada */}
+      {showAI && (
+        <AIDashboard 
+          gastosData={gastosData} 
+          rendimentosData={{}} // Você pode passar dados de rendimentos aqui se tiver
+          currentMonth={currentMonth}
+        />
+      )}
+
+      {/* Tabs dos meses */}
+      <div className="tabs">
         {mesesInfo.map(mes => (
-          <button 
+          <button
             key={mes.id}
             className={`tab ${currentMonth === mes.id ? 'active' : ''}`}
-            onClick={() => showMonth(mes.id)}
-            title={`${mes.nome} - ${mes.dias} dias úteis`}
+            onClick={() => setCurrentMonth(mes.id)}
           >
             {mes.nome}
           </button>
         ))}
-      </nav>
+      </div>
 
       {/* Conteúdo dos meses */}
-      <main>
-        {mesesInfo.map(mes => (
-          <MonthContent 
-            key={mes.id}
-            mes={mes}
-            isActive={currentMonth === mes.id}
-            gastos={gastosData[mes.id] || []}
-            onAddGasto={addGasto}
-            onRemoveGasto={removeGasto}
-          />
-        ))}
-      </main>
-
-      {/* Seção de downloads e opções */}
-      <footer>
-        <DownloadSection 
+      {mesesInfo.map(mes => (
+        <MonthContent
+          key={mes.id}
+          mes={mes}
+          isActive={currentMonth === mes.id}
+          gastos={gastosData[mes.id] || []}
+          onAddGasto={(data, desc, valor) => addGasto(mes.id, data, desc, valor)}
+          onRemoveGasto={(index) => removeGasto(mes.id, index)}
           gastosData={gastosData}
-          onExportData={exportData}
-          onImportData={importData}
-          onClearAllData={clearAllData}
-          currentMonth={currentMonth}
         />
-      </footer>
+      ))}
+
+      {/* Seção de download */}
+      <DownloadSection
+        gastosData={gastosData}
+        onExportData={exportData}
+        onImportData={importData}
+        onClearAllData={clearAllData}
+        currentMonth={currentMonth}
+      />
     </div>
   );
 }

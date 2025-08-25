@@ -330,3 +330,30 @@ th {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+/* Estilos específicos para IA */
+.ai-button {
+  background: linear-gradient(135deg, #27ae60, #2ecc71) !important;
+  box-shadow: 0 4px 8px rgba(39, 174, 96, 0.3);
+  transform: scale(1.05);
+  transition: all 0.3s ease;
+}
+
+.ai-button:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 12px rgba(39, 174, 96, 0.4);
+}
+
+.ai-tab {
+  background: linear-gradient(135deg, #27ae60, #2ecc71) !important;
+  color: white !important;
+  font-weight: bold;
+  position: relative;
+}
+
+.ai-tab::before {
+  content: "✨";
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  font-size: 12px;
+}
