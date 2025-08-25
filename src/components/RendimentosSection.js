@@ -39,7 +39,7 @@ const RendimentosSection = ({ mes }) => {
     };
     localStorage.setItem(`diasTrabalhados_${mes.id}`, JSON.stringify(dias));
     alert('Dias trabalhados salvos!');
-    setEditandoDias(false); // Fechar o modo de edição
+    setEditandoDias(false); 
   };
 
   // Salvar rendimentos extras
