@@ -1,20 +1,30 @@
 // src/App.js
 import React, { useState } from 'react';
 import { mesesInfo } from './data/monthsData';
-import { useFirebaseData } from './hooks/useFirebaseData';
+import { useFinanceData } from './hooks/useFinanceData';
 import MonthContent from './components/MonthContent';
 import AIDashboard from './components/AIDashboard';
 import QuickStats from './components/QuickStats';
 import DownloadSection from './components/DownloadSection';
 import './App.css';
 
+// Importar IA
+import { analyzeWithAI, getQuickStats } from './utils/aiAdvanced';
+
+// Expor IA globalmente para debug
+if (typeof window !== 'undefined') {
+  window.analyzeWithAI = analyzeWithAI;
+  window.getQuickStats = getQuickStats;
+  console.log('🔧 IA exposta globalmente via App.js');
+}
+
 function App() {
   const [currentTab, setCurrentTab] = useState('jan');
   const [showAI, setShowAI] = useState(false);
   
+  // USAR O HOOK useFinanceData
   const { 
     gastosData, 
-    aiAnalysis,
     loading, 
     error, 
     addGasto, 
@@ -22,34 +32,18 @@ function App() {
     exportData, 
     importData, 
     clearAllData,
-    refreshAI,
     setError
-  } = useFirebaseData();
+  } = useFinanceData();
 
   // Loading state
   if (loading) {
     return (
       <div className="container">
         <div style={{ textAlign: 'center', padding: '100px 20px' }}>
-          <div className="ai-loading" style={{ fontSize: '48px', marginBottom: '20px' }}>💰</div>
+          <div style={{ fontSize: '48px', marginBottom: '20px', animation: 'pulse 2s infinite' }}>💰</div>
           <h2>Carregando Controle Financeiro...</h2>
           <div style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
             Inicializando IA e carregando seus dados
-          </div>
-          <div style={{
-            width: '200px',
-            height: '4px',
-            backgroundColor: '#e9ecef',
-            borderRadius: '2px',
-            margin: '20px auto',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              width: '100%',
-              height: '100%',
-              background: 'linear-gradient(90deg, #3498db, #27ae60)',
-              animation: 'loading 2s infinite'
-            }}></div>
           </div>
         </div>
       </div>
@@ -111,18 +105,6 @@ function App() {
           <span>📅 {Object.keys(gastosData).length} meses ativos</span>
           <span>•</span>
           <span>📝 {Object.values(gastosData).flat().length} transações</span>
-          {aiAnalysis && (
-            <>
-              <span>•</span>
-              <span style={{ 
-                color: aiAnalysis.healthScore.score > 70 ? '#27ae60' : 
-                       aiAnalysis.healthScore.score > 40 ? '#f39c12' : '#e74c3c',
-                fontWeight: 'bold'
-              }}>
-                ❤️ Saúde: {aiAnalysis.healthScore.score}/100
-              </span>
-            </>
-          )}
         </div>
       </header>
 
@@ -152,9 +134,7 @@ function App() {
               fontSize: '24px',
               cursor: 'pointer',
               boxShadow: '0 4px 20px rgba(102, 126, 234, 0.4)',
-              transition: 'all 0.3s ease',
-              position: 'relative',
-              overflow: 'hidden'
+              transition: 'all 0.3s ease'
             }}
             onMouseOver={(e) => {
               e.target.style.transform = 'scale(1.1)';
@@ -167,18 +147,6 @@ function App() {
             title="Abrir Assistente IA Completo"
           >
             🤖
-            {/* Pulse effect */}
-            <div style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              width: '100%',
-              height: '100%',
-              borderRadius: '50%',
-              background: 'rgba(255,255,255,0.3)',
-              transform: 'translate(-50%, -50%)',
-              animation: 'pulse 2s infinite'
-            }}></div>
           </button>
         </div>
       )}
@@ -206,7 +174,7 @@ function App() {
             </div>
             <div style={{ display: 'flex', gap: '10px' }}>
               <button
-                onClick={refreshAI}
+                onClick={() => window.location.reload()}
                 className="btn"
                 style={{
                   background: 'rgba(255,255,255,0.2)',
@@ -214,11 +182,8 @@ function App() {
                   border: '1px solid rgba(255,255,255,0.3)',
                   fontSize: '12px',
                   padding: '8px 12px',
-                  borderRadius: '6px',
-                  transition: 'all 0.3s ease'
+                  borderRadius: '6px'
                 }}
-                onMouseOver={(e) => e.target.style.background = 'rgba(255,255,255,0.3)'}
-                onMouseOut={(e) => e.target.style.background = 'rgba(255,255,255,0.2)'}
               >
                 🔄 Atualizar
               </button>
@@ -231,11 +196,8 @@ function App() {
                   border: '1px solid rgba(255,255,255,0.3)',
                   fontSize: '12px',
                   padding: '8px 12px',
-                  borderRadius: '6px',
-                  transition: 'all 0.3s ease'
+                  borderRadius: '6px'
                 }}
-                onMouseOver={(e) => e.target.style.background = 'rgba(255,255,255,0.3)'}
-                onMouseOut={(e) => e.target.style.background = 'rgba(255,255,255,0.2)'}
               >
                 ✕ Fechar
               </button>
@@ -246,7 +208,6 @@ function App() {
             gastosData={gastosData} 
             rendimentosData={{}}
             currentMonth={currentTab}
-            aiAnalysis={aiAnalysis}
           />
         </div>
       )}
@@ -293,8 +254,7 @@ function App() {
                   width: '8px',
                   height: '8px',
                   background: '#27ae60',
-                  borderRadius: '50%',
-                  fontSize: '8px'
+                  borderRadius: '50%'
                 }}></div>
               )}
             </button>
@@ -336,7 +296,7 @@ function App() {
         />
       </div>
 
-      {/* Informações adicionais */}
+      {/* Informações para novos usuários */}
       {Object.keys(gastosData).length === 0 && (
         <div style={{
           textAlign: 'center',
@@ -369,6 +329,41 @@ function App() {
         </div>
       )}
 
+      {/* Debug panel (apenas em desenvolvimento) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div style={{
+          position: 'fixed',
+          top: '10px',
+          left: '10px',
+          background: 'white',
+          padding: '10px',
+          borderRadius: '5px',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+          fontSize: '11px',
+          zIndex: 1000,
+          maxWidth: '200px'
+        }}>
+          <div><strong>🔧 Debug</strong></div>
+          <div>Meses: {Object.keys(gastosData).length}</div>
+          <div>Gastos: {Object.values(gastosData).flat().length}</div>
+          <button 
+            onClick={() => console.log('gastosData:', gastosData)}
+            style={{ fontSize: '10px', padding: '2px 5px', margin: '2px' }}
+          >
+            📊 Log Dados
+          </button>
+          <button 
+            onClick={() => {
+              const result = analyzeWithAI(gastosData);
+              console.log('IA Result:', result);
+            }}
+            style={{ fontSize: '10px', padding: '2px 5px', margin: '2px' }}
+          >
+            🤖 Test IA
+          </button>
+        </div>
+      )}
+
       {/* Footer */}
       <footer style={{
         textAlign: 'center',
@@ -376,234 +371,15 @@ function App() {
         color: '#6c757d',
         fontSize: '12px',
         borderTop: '1px solid #dee2e6',
-        marginTop: '60px',
-        background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)'
+        marginTop: '60px'
       }}>
         <div style={{ marginBottom: '10px' }}>
           <strong>💰 Controle Financeiro 2025</strong> - Powered by IA JavaScript Avançada
         </div>
-        <div style={{ marginBottom: '10px', opacity: 0.8 }}>
-          🧠 Algoritmos: Regressão Linear • Média Móvel Exponencial • Z-Score • Análise Sazonal
+        <div style={{ opacity: 0.8 }}>
+          🧠 Algoritmos: Categorização Inteligente • Análise Estatística • Insights Personalizados
         </div>
-        <div style={{ opacity: 0.6 }}>
-          Desenvolvido com React • Machine Learning • Análise Preditiva
-        </div>
-        
-        {/* Estatísticas do footer */}
-        {Object.keys(gastosData).length > 0 && (
-          <div style={{
-            marginTop: '15px',
-            padding: '10px',
-            background: 'rgba(102, 126, 234, 0.1)',
-            borderRadius: '6px',
-            display: 'inline-block'
-          }}>
-                        <div style={{
-              display: 'flex',
-              gap: '20px',
-              justifyContent: 'center',
-              flexWrap: 'wrap',
-              fontSize: '11px'
-            }}>
-              <span>📊 {Object.values(gastosData).flat().length} transações processadas</span>
-              <span>💰 {Object.keys(gastosData).filter(month => gastosData[month].length > 0).length} meses ativos</span>
-              {aiAnalysis && (
-                <>
-                  <span>🤖 {aiAnalysis.metadata.algorithmsUsed.length} algoritmos IA</span>
-                  <span>⚡ {aiAnalysis.metadata.processingTime}ms processamento</span>
-                </>
-              )}
-            </div>
-          </div>
-        )}
       </footer>
-
-      {/* Estilos inline para animações */}
-      <style jsx>{`
-        @keyframes loading {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-        
-        @keyframes pulse {
-          0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-          100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
-        }
-        
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes slideIn {
-          from { transform: translateX(-100%); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
-        }
-        
-        .ai-loading {
-          animation: pulse 2s infinite;
-        }
-        
-        .summary-card {
-          transition: all 0.3s ease;
-          position: relative;
-          overflow: hidden;
-        }
-        
-        .summary-card:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-        
-        .tab {
-          transition: all 0.3s ease;
-          position: relative;
-        }
-        
-        .tab:hover {
-          transform: translateY(-2px);
-        }
-        
-        .tab.active {
-          animation: fadeIn 0.5s ease-out;
-        }
-        
-        .container {
-          animation: fadeIn 0.8s ease-out;
-        }
-        
-        /* Responsividade */
-        @media (max-width: 768px) {
-          .tabs {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 5px;
-          }
-          
-          .tab {
-            font-size: 12px;
-            padding: 8px 4px;
-          }
-          
-          .summary-card {
-            padding: 10px !important;
-          }
-          
-          .container {
-            padding: 10px;
-          }
-          
-          h1 {
-            font-size: 1.8rem !important;
-          }
-        }
-        
-        @media (max-width: 480px) {
-          .tabs {
-            grid-template-columns: repeat(2, 1fr);
-          }
-          
-          .summary-card {
-            padding: 8px !important;
-          }
-          
-          .summary-card div:first-child {
-            font-size: 16px !important;
-          }
-        }
-      `}</style>
-
-      {/* Toast notifications (se necessário) */}
-      {error && (
-        <div style={{
-          position: 'fixed',
-          top: '20px',
-          right: '20px',
-          background: '#e74c3c',
-          color: 'white',
-          padding: '15px 20px',
-          borderRadius: '8px',
-          boxShadow: '0 4px 12px rgba(231, 76, 60, 0.3)',
-          zIndex: 2000,
-          animation: 'slideIn 0.3s ease-out'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span>⚠️</span>
-            <span>{error}</span>
-            <button
-              onClick={() => setError(null)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'white',
-                cursor: 'pointer',
-                fontSize: '16px',
-                marginLeft: '10px'
-              }}
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Indicador de carregamento da IA */}
-      {showAI && loading && (
-        <div style={{
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          background: 'rgba(0,0,0,0.8)',
-          color: 'white',
-          padding: '20px',
-          borderRadius: '10px',
-          zIndex: 3000,
-          textAlign: 'center'
-        }}>
-          <div className="ai-loading" style={{ fontSize: '32px', marginBottom: '10px' }}>🤖</div>
-          <div>Processando análise IA...</div>
-        </div>
-      )}
-
-      {/* Shortcuts de teclado (Easter egg) */}
-      <div style={{ display: 'none' }}>
-        {/* Adicionar listeners de teclado se necessário */}
-        {typeof window !== 'undefined' && window.addEventListener('keydown', (e) => {
-          if (e.ctrlKey || e.metaKey) {
-            switch(e.key) {
-              case 'i':
-                e.preventDefault();
-                setShowAI(!showAI);
-                break;
-              case 'e':
-                e.preventDefault();
-                exportData();
-                break;
-              default:
-                break;
-            }
-          }
-        })}
-      </div>
-
-      {/* Debug info (apenas em desenvolvimento) */}
-      {process.env.NODE_ENV === 'development' && (
-        <div style={{
-          position: 'fixed',
-          bottom: '10px',
-          left: '10px',
-          background: 'rgba(0,0,0,0.8)',
-          color: 'white',
-          padding: '5px 10px',
-          borderRadius: '5px',
-          fontSize: '10px',
-          zIndex: 1000
-        }}>
-          Debug: {Object.keys(gastosData).length} meses | {Object.values(gastosData).flat().length} gastos
-          {aiAnalysis && ` | IA: ${aiAnalysis.healthScore.score}/100`}
-        </div>
-      )}
     </div>
   );
 }

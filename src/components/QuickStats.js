@@ -1,208 +1,275 @@
-// src/App.js (versão final melhorada)
-import React, { useState } from 'react';
-import { mesesInfo } from './data/monthsData';
-import { useFinanceData } from './hooks/useFinanceData';
-import MonthContent from './components/MonthContent';
-import AIDashboard from './components/AIDashboard';
-import QuickStats from './components/QuickStats';
-import DownloadSection from './components/DownloadSection';
-import './App.css';
+// src/components/QuickStats.js
+import React, { useState, useEffect } from 'react';
+import { analyzeWithAI } from '../utils/aiAdvanced';
+import { formatCurrency } from '../utils/calculations';
 
-function App() {
-  const [currentTab, setCurrentTab] = useState('jan');
-  const [showAI, setShowAI] = useState(false);
-  
-  const { 
-    gastosData, 
-    aiAnalysis,
-    loading, 
-    error, 
-    addGasto, 
-    removeGasto, 
-    exportData, 
-    importData, 
-    clearAllData,
-    refreshAI,
-    setError
-  } = useFinanceData();
+const QuickStats = ({ gastosData, onOpenAI }) => {
+  const [stats, setStats] = useState(null);
+  const [aiWorking, setAiWorking] = useState(false);
+  const [error, setError] = useState(null);
 
-  if (loading) {
+  useEffect(() => {
+    const testAI = () => {
+      console.log('🧪 QuickStats testando IA...');
+      console.log('📊 Dados recebidos:', gastosData);
+      
+      try {
+        // Verificar se há dados
+        const totalTransactions = Object.values(gastosData).flat().length;
+        console.log('📝 Total de transações:', totalTransactions);
+        
+        if (totalTransactions === 0) {
+          setStats({
+            totalExpenses: 0,
+            totalTransactions: 0,
+            averageTransaction: 0,
+            topCategory: null,
+            healthScore: 0
+          });
+          return;
+        }
+
+        // Testar IA
+        console.log('🤖 Chamando analyzeWithAI...');
+        const result = analyzeWithAI(gastosData);
+        console.log('✅ Resultado da IA:', result);
+        
+        if (result && result.processedData) {
+          setStats({
+            totalExpenses: result.processedData.totalExpenses || 0,
+            totalTransactions: result.processedData.totalTransactions || 0,
+            averageTransaction: result.processedData.averageTransaction || 0,
+            topCategory: result.patterns?.topCategories?.[0] || null,
+            healthScore: result.healthScore?.score || 0
+          });
+          setAiWorking(true);
+        } else {
+          throw new Error('IA retornou dados inválidos');
+        }
+        
+      } catch (err) {
+        console.error('❌ Erro na IA:', err);
+        setError(err.message);
+        
+        // Fallback: calcular estatísticas básicas
+        const allExpenses = Object.values(gastosData).flat();
+        const total = allExpenses.reduce((sum, expense) => sum + (expense.valor || 0), 0);
+        
+        setStats({
+          totalExpenses: total,
+          totalTransactions: allExpenses.length,
+          averageTransaction: allExpenses.length > 0 ? total / allExpenses.length : 0,
+          topCategory: null,
+          healthScore: 50
+        });
+      }
+    };
+
+    testAI();
+  }, [gastosData]);
+
+  if (!stats) {
     return (
-      <div className="container">
-        <div style={{ textAlign: 'center', padding: '100px 20px' }}>
-          <div className="ai-loading" style={{ fontSize: '48px', marginBottom: '20px' }}>💰</div>
-          <h2>Carregando Controle Financeiro...</h2>
-          <div style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
-            Inicializando IA e carregando seus dados
-          </div>
-        </div>
+      <div style={{
+        padding: '20px',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '8px',
+        marginBottom: '20px',
+        textAlign: 'center'
+      }}>
+        <div style={{ fontSize: '24px', marginBottom: '10px' }}>⏳</div>
+        <div>Carregando estatísticas...</div>
       </div>
     );
   }
 
-  if (error) {
+  if (stats.totalTransactions === 0) {
     return (
-      <div className="container">
-        <div style={{ textAlign: 'center', padding: '100px 20px', color: '#e74c3c' }}>
-          <div style={{ fontSize: '48px', marginBottom: '20px' }}>⚠️</div>
-          <h2>Erro: {error}</h2>
-          <button 
-            onClick={() => setError(null)} 
-            className="btn"
-            style={{ marginTop: '20px' }}
-          >
-            Tentar Novamente
-          </button>
+      <div style={{
+        padding: '20px',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '8px',
+        marginBottom: '20px',
+        textAlign: 'center',
+        border: '2px dashed #dee2e6'
+      }}>
+        <div style={{ fontSize: '48px', marginBottom: '10px' }}>📊</div>
+        <div style={{ fontSize: '16px', color: '#495057', marginBottom: '5px' }}>
+          Nenhum dado para análise
+        </div>
+        <div style={{ fontSize: '14px', color: '#6c757d' }}>
+          Adicione alguns gastos para ver estatísticas inteligentes
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container">
-      <header style={{ textAlign: 'center', marginBottom: '30px' }}>
-        <h1>💰 Controle Financeiro 2025</h1>
-        <div style={{ fontSize: '14px', color: '#666' }}>
-          Powered by IA Avançada • {Object.keys(gastosData).length} meses • {
-            Object.values(gastosData).flat().length
-          } transações
+    <div style={{ marginBottom: '25px' }}>
+      {/* Header com status da IA */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '15px'
+      }}>
+        <h3 style={{ margin: 0, color: '#495057' }}>
+          📊 Resumo {aiWorking ? '🤖 IA' : '📱 Básico'}
+        </h3>
+        <div style={{ fontSize: '12px' }}>
+          {aiWorking ? (
+            <span style={{ color: '#27ae60' }}>✅ IA Funcionando</span>
+          ) : (
+            <span style={{ color: '#e74c3c' }}>⚠️ IA com Problemas</span>
+          )}
         </div>
-      </header>
-
-      {/* Estatísticas rápidas */}
-      <QuickStats 
-        gastosData={gastosData} 
-        onOpenAI={() => setShowAI(true)}
-      />
-
-      {/* Botão IA flutuante */}
-      {!showAI && Object.keys(gastosData).length > 0 && (
-        <div style={{
-          position: 'fixed',
-          bottom: '20px',
-          right: '20px',
-          zIndex: 1000
-        }}>
-          <button
-            onClick={() => setShowAI(true)}
-            style={{
-              width: '60px',
-              height: '60px',
-              borderRadius: '50%',
-              border: 'none',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
-              fontSize: '24px',
-              cursor: 'pointer',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseOver={(e) => e.target.style.transform = 'scale(1.1)'}
-            onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
-            title="Abrir Assistente IA"
-          >
-            🤖
-            </button>
-        </div>
-      )}
-
-      {/* Dashboard IA */}
-      {showAI && (
-        <div style={{ marginBottom: '30px' }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '15px'
-          }}>
-            <h2 style={{ margin: 0 }}>🤖 Assistente Financeiro IA</h2>
-            <div>
-              <button
-                onClick={refreshAI}
-                className="btn"
-                style={{
-                  marginRight: '10px',
-                  background: '#17a2b8',
-                  fontSize: '14px',
-                  padding: '8px 16px'
-                }}
-              >
-                🔄 Atualizar IA
-              </button>
-              <button
-                onClick={() => setShowAI(false)}
-                className="btn"
-                style={{
-                  background: '#6c757d',
-                  fontSize: '14px',
-                  padding: '8px 16px'
-                }}
-              >
-                ✕ Fechar
-              </button>
-            </div>
-          </div>
-          
-          <AIDashboard 
-            gastosData={gastosData} 
-            rendimentosData={{}}
-            currentMonth={currentTab}
-            aiAnalysis={aiAnalysis}
-          />
-        </div>
-      )}
-
-      {/* Tabs dos meses */}
-      <div className="tabs">
-        {mesesInfo.map(mes => (
-          <button
-            key={mes.id}
-            className={`tab ${currentTab === mes.id ? 'active' : ''}`}
-            onClick={() => setCurrentTab(mes.id)}
-          >
-            {mes.nome}
-          </button>
-        ))}
       </div>
 
-      {/* Conteúdo dos meses */}
-      {mesesInfo.map(mes => (
-        <MonthContent
-          key={mes.id}
-          mes={mes}
-          isActive={currentTab === mes.id}
-          gastos={gastosData[mes.id] || []}
-          onAddGasto={(data, desc, valor) => addGasto(mes.id, data, desc, valor)}
-          onRemoveGasto={(index) => removeGasto(mes.id, index)}
-          gastosData={gastosData}
-        />
-      ))}
-
-      {/* Seção de download */}
-      <DownloadSection
-        gastosData={gastosData}
-        onExportData={exportData}
-        onImportData={importData}
-        onClearAllData={clearAllData}
-        currentMonth={currentTab}
-      />
-
-      {/* Footer */}
-      <footer style={{
-        textAlign: 'center',
-        padding: '30px 20px',
-        color: '#6c757d',
-        fontSize: '12px',
-        borderTop: '1px solid #dee2e6',
-        marginTop: '40px'
-      }}>
-        <div>💰 Controle Financeiro 2025 - Powered by IA JavaScript Avançada</div>
-        <div style={{ marginTop: '5px' }}>
-          Algoritmos: Regressão Linear • Média Móvel • Z-Score • Análise Sazonal
+      {/* Mostrar erro se houver */}
+      {error && (
+        <div style={{
+          padding: '10px',
+          backgroundColor: '#fff3cd',
+          border: '1px solid #ffeaa7',
+          borderRadius: '5px',
+          marginBottom: '15px',
+          fontSize: '12px',
+          color: '#856404'
+        }}>
+          <strong>⚠️ Problema na IA:</strong> {error}
         </div>
-      </footer>
+      )}
+
+      {/* Grid de estatísticas */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+        gap: '15px'
+      }}>
+        
+        {/* Total de Gastos */}
+        <div className="summary-card" style={{ 
+          padding: '15px', 
+          textAlign: 'center',
+          background: 'linear-gradient(135deg, #ff6b6b, #ee5a52)',
+          color: 'white',
+          borderRadius: '10px'
+        }}>
+          <div style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '5px' }}>
+            {formatCurrency(stats.totalExpenses)}
+          </div>
+          <div style={{ fontSize: '12px', opacity: 0.9 }}>Total de Gastos</div>
+        </div>
+
+        {/* Total de Transações */}
+        <div className="summary-card" style={{ 
+          padding: '15px', 
+          textAlign: 'center',
+          background: 'linear-gradient(135deg, #4ecdc4, #44a08d)',
+          color: 'white',
+          borderRadius: '10px'
+        }}>
+          <div style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '5px' }}>
+            {stats.totalTransactions}
+          </div>
+          <div style={{ fontSize: '12px', opacity: 0.9 }}>Transações</div>
+        </div>
+
+        {/* Média por Transação */}
+        <div className="summary-card" style={{ 
+          padding: '15px', 
+          textAlign: 'center',
+          background: 'linear-gradient(135deg, #ffeaa7, #fdcb6e)',
+          color: '#2d3436',
+          borderRadius: '10px'
+        }}>
+          <div style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '5px' }}>
+            {formatCurrency(stats.averageTransaction)}
+          </div>
+          <div style={{ fontSize: '12px', opacity: 0.8 }}>Média por Gasto</div>
+        </div>
+
+        {/* Categoria Principal */}
+        {stats.topCategory && (
+          <div className="summary-card" style={{ 
+            padding: '15px', 
+            textAlign: 'center',
+            background: 'linear-gradient(135deg, #a29bfe, #6c5ce7)',
+            color: 'white',
+            borderRadius: '10px'
+          }}>
+            <div style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '5px' }}>
+              {stats.topCategory.name}
+            </div>
+            <div style={{ fontSize: '12px', opacity: 0.9 }}>Categoria Principal</div>
+            <div style={{ fontSize: '10px', opacity: 0.7, marginTop: '3px' }}>
+              {formatCurrency(stats.topCategory.total)}
+            </div>
+          </div>
+        )}
+
+        {/* Score de Saúde */}
+        <div className="summary-card" style={{ 
+          padding: '15px', 
+          textAlign: 'center',
+          background: stats.healthScore > 70 ? 
+            'linear-gradient(135deg, #00b894, #00a085)' : 
+            stats.healthScore > 40 ? 
+            'linear-gradient(135deg, #fdcb6e, #e17055)' : 
+            'linear-gradient(135deg, #e17055, #d63031)',
+          color: 'white',
+          borderRadius: '10px'
+        }}>
+          <div style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '5px' }}>
+            {stats.healthScore}/100
+          </div>
+          <div style={{ fontSize: '12px', opacity: 0.9 }}>
+            Saúde {aiWorking ? 'IA' : 'Básica'}
+          </div>
+        </div>
+
+        {/* Botão IA */}
+        <div 
+          className="summary-card" 
+          style={{ 
+            padding: '15px', 
+            textAlign: 'center', 
+            cursor: 'pointer',
+            background: aiWorking ? 
+              'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' :
+              'linear-gradient(135deg, #95a5a6, #7f8c8d)',
+            color: 'white',
+            borderRadius: '10px'
+          }}
+          onClick={onOpenAI}
+        >
+          <div style={{ fontSize: '24px', marginBottom: '5px' }}>
+            {aiWorking ? '🤖' : '🔧'}
+          </div>
+          <div style={{ fontSize: '12px', opacity: 0.9, fontWeight: 'bold' }}>
+            {aiWorking ? 'IA Completa' : 'Debug IA'}
+          </div>
+        </div>
+      </div>
+
+      {/* Debug info */}
+      {process.env.NODE_ENV === 'development' && (
+        <div style={{
+          marginTop: '15px',
+          padding: '10px',
+          backgroundColor: '#e9ecef',
+          borderRadius: '5px',
+          fontSize: '11px',
+          color: '#495057'
+        }}>
+          <strong>🔧 Debug:</strong> IA {aiWorking ? 'OK' : 'ERRO'} | 
+          Dados: {Object.keys(gastosData).join(', ')} | 
+          Total: {stats.totalTransactions} transações
+          {error && ` | Erro: ${error}`}
+        </div>
+      )}
     </div>
   );
-}
+};
 
-export default App;
+export default QuickStats;
