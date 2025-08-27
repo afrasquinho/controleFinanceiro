@@ -1034,53 +1034,165 @@ getErrorFallback() {
 }
 
 // Instância global da IA
+// src/utils/aiAdvanced.js (final do arquivo - substituir as exportações)
+
+// Instância global da IA
 export const advancedAI = new AdvancedFinancialAI();
 
-// Função principal para usar nos componentes
+// Função principal para usar nos componentes - CORRIGIDA
 export const analyzeWithAI = (gastosData, rendimentosData = {}) => {
-return advancedAI.analyze(gastosData, rendimentosData);
+  try {
+    console.log('🤖 analyzeWithAI chamada com:', gastosData);
+    
+    if (!gastosData || typeof gastosData !== 'object') {
+      console.error('❌ gastosData inválido:', gastosData);
+      return getErrorFallback();
+    }
+
+    const result = advancedAI.analyze(gastosData, rendimentosData);
+    console.log('✅ analyzeWithAI resultado:', result);
+    
+    return result;
+  } catch (error) {
+    console.error('❌ Erro em analyzeWithAI:', error);
+    return getErrorFallback();
+  }
+};
+
+// Função de fallback para erros
+const getErrorFallback = () => {
+  return {
+    processedData: {
+      totalExpenses: 0,
+      categories: {},
+      monthlyData: {},
+      expenses: []
+    },
+    patterns: {
+      trend: { direction: 'stable', percentage: 0 },
+      volatility: 0,
+      topCategories: []
+    },
+    predictions: {
+      nextMonth: 0,
+      confidence: 'low',
+      range: { min: 0, max: 0 }
+    },
+    insights: [{
+      type: 'error',
+      title: '⚠️ Erro na análise',
+      description: 'Não foi possível processar os dados. Verifique se há gastos registrados.',
+      priority: 'low'
+    }],
+    recommendations: [{
+      type: 'basic',
+      title: 'Adicionar mais dados',
+      description: 'A IA precisa de mais informações para gerar recomendações',
+      tips: ['Adicione descrições detalhadas nos gastos', 'Registre gastos regularmente'],
+      potentialSaving: 0,
+      difficulty: 'Fácil',
+      confidence: 0.5
+    }],
+    alerts: [],
+    healthScore: {
+      score: 50,
+      status: 'Desconhecido',
+      color: '#95a5a6',
+      message: 'Dados insuficientes para análise',
+      factors: []
+    },
+    anomalies: [],
+    metadata: {
+      processingTime: 0,
+      dataQuality: 'Erro',
+      algorithmsUsed: ['Fallback'],
+      totalTransactions: 0,
+      lastAnalysis: new Date().toISOString()
+    }
+  };
 };
 
 // Funções auxiliares para usar em outros lugares
 export const categorizeExpense = (description) => {
-return advancedAI.smartCategorize(description);
+  try {
+    return advancedAI.smartCategorize(description);
+  } catch (error) {
+    console.error('Erro ao categorizar:', error);
+    return 'Outros';
+  }
 };
 
 export const predictNextMonth = (gastosData) => {
-const processedData = advancedAI.processData(gastosData);
-const categorizedData = advancedAI.categorizeExpenses(processedData);
-return advancedAI.generatePredictions(categorizedData);
+  try {
+    const processedData = advancedAI.processData(gastosData);
+    const categorizedData = advancedAI.categorizeExpenses(processedData);
+    return advancedAI.generatePredictions(categorizedData);
+  } catch (error) {
+    console.error('Erro na previsão:', error);
+    return { nextMonth: 0, confidence: 'low' };
+  }
 };
 
 export const getFinancialHealth = (gastosData, rendimentosData = {}) => {
-const processedData = advancedAI.processData(gastosData);
-const categorizedData = advancedAI.categorizeExpenses(processedData);
-return advancedAI.calculateHealthScore(categorizedData, rendimentosData);
+  try {
+    const processedData = advancedAI.processData(gastosData);
+    const categorizedData = advancedAI.categorizeExpenses(processedData);
+    return advancedAI.calculateHealthScore(categorizedData, rendimentosData);
+  } catch (error) {
+    console.error('Erro no health score:', error);
+    return { score: 0, status: 'Erro' };
+  }
 };
 
 export const detectExpenseAnomalies = (gastosData) => {
-const processedData = advancedAI.processData(gastosData);
-return advancedAI.detectAnomalies(processedData.expenses);
+  try {
+    const processedData = advancedAI.processData(gastosData);
+    return advancedAI.detectAnomalies(processedData.expenses);
+  } catch (error) {
+    console.error('Erro na detecção de anomalias:', error);
+    return [];
+  }
 };
 
 // Função para testar a IA
 export const testAI = (gastosData) => {
-console.log('🧪 Testando IA com dados:', gastosData);
-const result = analyzeWithAI(gastosData);
-console.log('📊 Resultado da IA:', result);
-return result;
+  console.log('🧪 Testando IA com dados:', gastosData);
+  const result = analyzeWithAI(gastosData);
+  console.log('📊 Resultado da IA:', result);
+  return result;
 };
 
 // Função para obter estatísticas rápidas
 export const getQuickStats = (gastosData) => {
-const processedData = advancedAI.processData(gastosData);
-const categorizedData = advancedAI.categorizeExpenses(processedData);
+  try {
+    if (!gastosData || Object.keys(gastosData).length === 0) {
+      return {
+        totalExpenses: 0,
+        totalTransactions: 0,
+        averageTransaction: 0,
+        topCategory: null,
+        healthScore: 0
+      };
+    }
 
-return {
-  totalExpenses: categorizedData.totalExpenses,
-  totalTransactions: categorizedData.totalTransactions,
-  averageTransaction: categorizedData.averageTransaction,
-  topCategory: advancedAI.getTopCategories(categorizedData.categories)[0],
-  healthScore: advancedAI.calculateHealthScore(categorizedData, {}).score
-};
+    const processedData = advancedAI.processData(gastosData);
+    const categorizedData = advancedAI.categorizeExpenses(processedData);
+    
+    return {
+      totalExpenses: categorizedData.totalExpenses,
+      totalTransactions: categorizedData.totalTransactions,
+      averageTransaction: categorizedData.averageTransaction,
+      topCategory: advancedAI.getTopCategories(categorizedData.categories)[0] || null,
+      healthScore: advancedAI.calculateHealthScore(categorizedData, {}).score
+    };
+  } catch (error) {
+    console.error('Erro nas estatísticas rápidas:', error);
+    return {
+      totalExpenses: 0,
+      totalTransactions: 0,
+      averageTransaction: 0,
+      topCategory: null,
+      healthScore: 0
+    };
+  }
 };

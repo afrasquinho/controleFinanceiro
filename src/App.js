@@ -1,7 +1,7 @@
 // src/App.js
 import React, { useState } from 'react';
 import { mesesInfo } from './data/monthsData';
-import { useFinanceData } from './hooks/useFinanceData';
+import { useFirebaseData } from './hooks/useFirebaseData';
 import MonthContent from './components/MonthContent';
 import AIDashboard from './components/AIDashboard';
 import QuickStats from './components/QuickStats';
@@ -24,7 +24,7 @@ function App() {
     clearAllData,
     refreshAI,
     setError
-  } = useFinanceData();
+  } = useFirebaseData();
 
   // Loading state
   if (loading) {

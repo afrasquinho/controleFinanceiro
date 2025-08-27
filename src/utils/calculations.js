@@ -294,4 +294,35 @@ export const getEnhancedMonthAnalysis = (mesId, gastosVariaveis, gastosData) => 
     }
   };
 }
-// Removido export duplicado de analyzeWithAI para evitar conflito de declaração
+/// src/utils/calculations.js (adicionar no final)
+
+// Importar e re-exportar as funções da IA
+export { 
+  categorizeExpense,
+  predictNextMonth,
+  getFinancialHealth,
+  detectExpenseAnomalies
+} from './aiAdvanced';
+
+// Função de teste para verificar se a IA está funcionando
+export const testAIIntegration = () => {
+  console.log('🧪 Testando integração da IA...');
+  
+  const testData = {
+    set: [
+      { desc: 'Supermercado Continente', valor: 45.50, data: '2024-09-01' },
+      { desc: 'Gasolina BP', valor: 60.00, data: '2024-09-05' },
+      { desc: 'Restaurante', valor: 25.30, data: '2024-09-10' }
+    ]
+  };
+  
+  try {
+    const result = analyzeWithAI(testData);
+    console.log('✅ IA funcionando! Resultado:', result);
+    return result;
+  } catch (error) {
+    console.error('❌ Erro na IA:', error);
+    return null;
+  }
+};
+
