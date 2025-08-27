@@ -3,6 +3,8 @@ import { mesesInfo, gastosFixosDefault, valoresDefault } from '../data/monthsDat
 
 // Importar a IA
 import { financialAI } from './aiFinancialAdvanced';
+// Importar a IA avançada
+import { analyzeWithAI, getQuickStats, testAI } from './aiAdvanced';
 
 export const calculateRendimentos = (mesId) => {
   const mes = mesesInfo.find(m => m.id === mesId);
@@ -275,6 +277,21 @@ export const getGeneralStats = (gastosData) => {
     minTransaction: Math.min(...values)
   };
 };
-
-// Exportar função principal para o AIDashboard
-export const analyzeWithAI = analyzeFinancialDataWithAI;
+// Exportar as funções da IA
+export { analyzeWithAI, getQuickStats, testAI };
+// Função para integrar IA com os cálculos existentes
+export const getEnhancedMonthAnalysis = (mesId, gastosVariaveis, gastosData) => {
+  const basicAnalysis = calculateSaldo(mesId, gastosVariaveis);
+  const aiAnalysis = analyzeWithAI(gastosData);
+  
+  return {
+    ...basicAnalysis,
+    ai: {
+      healthScore: aiAnalysis.healthScore.score,
+      topInsight: aiAnalysis.insights[0],
+      nextMonthPrediction: aiAnalysis.predictions.nextMonth,
+      topRecommendation: aiAnalysis.recommendations[0]
+    }
+  };
+}
+// Removido export duplicado de analyzeWithAI para evitar conflito de declaração
