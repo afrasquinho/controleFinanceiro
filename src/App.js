@@ -28,7 +28,6 @@ const {
   loading,
   error,
   connectionStatus,
-  hasData,
   totalTransactions,
   clearError,
   reloadData
