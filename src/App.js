@@ -1,7 +1,7 @@
 // src/App.js
 import React, { useState } from 'react';
 import { mesesInfo } from './data/monthsData';
-import { useFinanceData } from './hooks/useFinanceData';
+import { useFirestore } from './hooks/useFirestore';
 import MonthContent from './components/MonthContent';
 import AIDashboard from './components/AIDashboard';
 import QuickStats from './components/QuickStats';
@@ -23,58 +23,36 @@ function App() {
   const [showAI, setShowAI] = useState(false);
   
   // USAR O HOOK useFinanceData
-  const { 
-    gastosData, 
-    loading, 
-    error, 
-    addGasto, 
-    removeGasto, 
-    exportData, 
-    importData, 
-    clearAllData,
-    setError
-  } = useFinanceData();
+// src/App.js - Apenas a parte do hook
+const { 
+  gastosData, 
+  
+  syncing, 
+  addGasto, 
+  removeGasto, 
+  exportData, 
+  importData, 
+  clearAllData,
+} = useFirestore();
 
-  // Loading state
-  if (loading) {
-    return (
-      <div className="container">
-        <div style={{ textAlign: 'center', padding: '100px 20px' }}>
-          <div style={{ fontSize: '48px', marginBottom: '20px', animation: 'pulse 2s infinite' }}>💰</div>
-          <h2>Carregando Controle Financeiro...</h2>
-          <div style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
-            Inicializando IA e carregando seus dados
-          </div>
-        </div>
-      </div>
-    );
-  }
+// Mostrar indicador de sincronização se necessário
+// eslint-disable-next-line no-lone-blocks
+{syncing && (
+  <div style={{
+    position: 'fixed',
+    top: '10px',
+    right: '10px',
+    background: '#17a2b8',
+    color: 'white',
+    padding: '8px 15px',
+    borderRadius: '20px',
+    fontSize: '12px',
+    zIndex: 1000
+  }}>
+    🔄 Sincronizando...
+  </div>
+)}
 
-  // Error state
-  if (error) {
-    return (
-      <div className="container">
-        <div style={{ textAlign: 'center', padding: '100px 20px', color: '#e74c3c' }}>
-          <div style={{ fontSize: '48px', marginBottom: '20px' }}>⚠️</div>
-          <h2>Erro: {error}</h2>
-          <div style={{ fontSize: '14px', color: '#666', marginBottom: '20px' }}>
-            Ocorreu um problema ao carregar a aplicação
-          </div>
-          <button 
-            onClick={() => setError(null)} 
-            className="btn"
-            style={{ 
-              marginTop: '20px',
-              background: '#e74c3c',
-              color: 'white'
-            }}
-          >
-            🔄 Tentar Novamente
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="container">
