@@ -1,8 +1,6 @@
 // src/utils/calculations.js
 import { mesesInfo, gastosFixosDefault, valoresDefault } from '../data/monthsData';
 
-// Importar a IA
-import { financialAI } from './aiFinancialAdvanced';
 // Importar a IA avançada
 import { analyzeWithAI, getQuickStats, testAI } from './aiAdvanced';
 
@@ -81,7 +79,7 @@ export const formatCurrency = (value) => {
 // Análise completa com IA
 export const analyzeFinancialDataWithAI = (gastosData, rendimentosData = {}) => {
   try {
-    return financialAI.analyzeFinances(gastosData, rendimentosData);
+    return analyzeWithAI(gastosData, rendimentosData);
   } catch (error) {
     console.error('Erro na análise IA:', error);
     return getBasicAnalysis(gastosData);
