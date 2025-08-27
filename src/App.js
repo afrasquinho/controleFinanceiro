@@ -22,40 +22,67 @@ function App() {
   const [currentTab, setCurrentTab] = useState('jan');
   const [showAI, setShowAI] = useState(false);
   
-  // USAR O HOOK useFinanceData
-// src/App.js - Apenas a parte do hook
+// Hook do Firebase com recursos aprimorados
 const { 
   gastosData, 
-  
-  syncing, 
-  addGasto, 
-  removeGasto, 
-  exportData, 
-  importData, 
-  clearAllData,
+  loading,
+  error,
+  connectionStatus,
+  hasData,
+  totalTransactions,
+  clearError,
+  reloadData
 } = useFirestore();
-
-// Mostrar indicador de sincronização se necessário
-// eslint-disable-next-line no-lone-blocks
-{syncing && (
-  <div style={{
-    position: 'fixed',
-    top: '10px',
-    right: '10px',
-    background: '#17a2b8',
-    color: 'white',
-    padding: '8px 15px',
-    borderRadius: '20px',
-    fontSize: '12px',
-    zIndex: 1000
-  }}>
-    🔄 Sincronizando...
-  </div>
-)}
 
 
   return (
     <div className="container">
+      {/* Loading Overlay */}
+      {loading && (
+        <div className="loading-overlay">
+          <div className="loading-content">
+            <div className="loading-spinner"></div>
+            <div className="loading-text">Conectando ao Firebase</div>
+            <div className="loading-subtext">Carregando seus dados financeiros...</div>
+          </div>
+        </div>
+      )}
+
+      {/* Error Banner */}
+      {error && (
+        <div className="error-banner">
+          <div className="error-content">
+            <div className="error-message">
+              ❌ {error}
+            </div>
+            <div className="error-actions">
+              <button 
+                className="error-btn" 
+                onClick={clearError}
+                title="Fechar erro"
+              >
+                ✕ Fechar
+              </button>
+              <button 
+                className="error-btn" 
+                onClick={reloadData}
+                title="Tentar novamente"
+              >
+                🔄 Tentar Novamente
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Connection Status Indicator */}
+      <div className={`connection-status ${connectionStatus}`}>
+        <div className="status-dot"></div>
+        {connectionStatus === 'connecting' && 'Conectando...'}
+        {connectionStatus === 'connected' && 'Firebase Conectado'}
+        {connectionStatus === 'error' && 'Erro de Conexão'}
+      </div>
+
       {/* Header */}
       <header style={{ textAlign: 'center', marginBottom: '30px' }}>
         <h1 style={{ 
@@ -82,7 +109,7 @@ const {
           <span>•</span>
           <span>📅 {Object.keys(gastosData).length} meses ativos</span>
           <span>•</span>
-          <span>📝 {Object.values(gastosData).flat().length} transações</span>
+          <span>📝 {totalTransactions} transações</span>
         </div>
       </header>
 
@@ -247,8 +274,14 @@ const {
           mes={mes}
           isActive={currentTab === mes.id}
           gastos={gastosData[mes.id] || []}
-          onAddGasto={(data, desc, valor) => addGasto(mes.id, data, desc, valor)}
-          onRemoveGasto={(index) => removeGasto(mes.id, index)}
+          onAddGasto={(data, desc, valor) => {
+            console.log('Função addGasto será implementada em breve');
+            // Temporariamente desabilitado - será implementado no próximo passo
+          }}
+          onRemoveGasto={(index) => {
+            console.log('Função removeGasto será implementada em breve');
+            // Temporariamente desabilitado - será implementado no próximo passo
+          }}
           gastosData={gastosData}
         />
       ))}
@@ -267,9 +300,18 @@ const {
         
         <DownloadSection
           gastosData={gastosData}
-          onExportData={exportData}
-          onImportData={importData}
-          onClearAllData={clearAllData}
+          onExportData={() => {
+            console.log('Função exportData será implementada em breve');
+            // Temporariamente desabilitado - será implementado no próximo passo
+          }}
+          onImportData={() => {
+            console.log('Função importData será implementada em breve');
+            // Temporariamente desabilitado - será implementado no próximo passo
+          }}
+          onClearAllData={() => {
+            console.log('Função clearAllData será implementada em breve');
+            // Temporariamente desabilitado - será implementado no próximo passo
+          }}
           currentMonth={currentTab}
         />
       </div>
