@@ -23,7 +23,6 @@ export const useUnifiedFirestore = () => {
 
   // Base paths
   const userFinancePath = userId ? `users/${userId}/financeiro/2025` : null;
-  const gastosFixosPath = userFinancePath ? `${userFinancePath}/gastosFixos` : null;
   const mesesPath = userFinancePath ? `${userFinancePath}/meses` : null;
 
   // Listen for auth state changes
@@ -39,27 +38,32 @@ export const useUnifiedFirestore = () => {
     return () => unsubscribe();
   }, []);
 
-  // Load gastos fixos
-  const loadGastosFixos = useCallback(async () => {
-    if (!gastosFixosPath) return;
+  // Load gastos fixos for a specific month
+  const loadGastosFixos = useCallback(async (mesId) => {
+    if (!mesesPath) return;
     try {
-      const gastosFixosSnapshot = await getDocs(collection(db, gastosFixosPath));
-      console.log('📊 Snapshot de gastos fixos:', gastosFixosSnapshot);
+      const gastosFixosRef = collection(db, `${mesesPath}/${mesId}/gastosFixos`);
+      const gastosFixosSnapshot = await getDocs(gastosFixosRef);
+      console.log(`📊 Snapshot de gastos fixos para ${mesId}:`, gastosFixosSnapshot);
       
       if (gastosFixosSnapshot.empty) {
-        console.warn('⚠️ Nenhum gasto fixo encontrado.');
-        return; // Retorna se não houver dados
+        console.warn(`⚠️ Nenhum gasto fixo encontrado para ${mesId}.`);
+        // Initialize with empty object for this month
+        setGastosFixos(prev => ({ ...prev, [mesId]: {} }));
+        return;
       }
 
       const data = {};
       gastosFixosSnapshot.forEach(doc => {
-        data[doc.id] = doc.data();
+        data[doc.id] = doc.data().valor; // Extract the valor field
       });
-      setGastosFixos(data);
+      
+      // Update gastosFixos state with data for this specific month
+      setGastosFixos(prev => ({ ...prev, [mesId]: data }));
     } catch (err) {
-      console.warn('⚠️ Erro ao carregar gastos fixos:', err);
+      console.warn(`⚠️ Erro ao carregar gastos fixos para ${mesId}:`, err);
     }
-  }, [gastosFixosPath]);
+  }, [mesesPath]);
 
   // Load data for a specific month
   const loadMonthData = useCallback(async (mesId) => {
@@ -130,10 +134,13 @@ export const useUnifiedFirestore = () => {
         setDividasData(prev => ({ ...prev, [mesId]: dividasArray }));
       }
 
+      // Load gastos fixos for this month
+      await loadGastosFixos(mesId);
+
     } catch (err) {
       console.warn(`⚠️ Erro ao carregar dados de ${mesId}:`, err);
     }
-  }, [mesesPath]);
+  }, [mesesPath, loadGastosFixos]);
 
   // Load all data when userId changes
   useEffect(() => {
@@ -150,10 +157,7 @@ export const useUnifiedFirestore = () => {
         setConnectionStatus('connecting');
         console.log('🔥 Carregando todos os dados do Firestore...');
 
-        // Load gastos fixos
-        await loadGastosFixos();
-        
-        // Load data for each month
+        // Load data for each month (this will also load gastos fixos for each month)
         const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
         
         for (const mes of meses) {
