@@ -12,6 +12,7 @@ const Dashboard = () => {
   // Hook do Firestore com recursos aprimorados
   const { 
     gastosData, 
+    gastosFixos,
     loading,
     error,
     connectionStatus,
@@ -78,6 +79,7 @@ const Dashboard = () => {
         {ActiveComponent && (
           <ActiveComponent
             gastosData={gastosData}
+            gastosFixos={gastosFixos}
             loading={loading}
             error={error}
             connectionStatus={connectionStatus}

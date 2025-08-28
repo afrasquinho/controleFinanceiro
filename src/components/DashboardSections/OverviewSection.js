@@ -2,7 +2,8 @@ import React from 'react';
 import QuickStats from '../QuickStats';
 import { formatCurrency } from '../../utils/calculations';
 
-const OverviewSection = ({ 
+const OverviewSection = ({
+  gastosFixos, 
   gastosData, 
   loading, 
   error, 

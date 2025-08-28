@@ -230,15 +230,15 @@ export const useUnifiedFirestore = () => {
     }
   }, [mesesPath]);
 
-  // Update gastos fixos
-  const updateGastosFixos = useCallback(async (novosGastosFixos) => {
-    if (!gastosFixosPath) return;
+  // Update gastos fixos for a specific month
+  const updateGastosFixos = useCallback(async (mesId, novosGastosFixos) => {
+    if (!mesesPath) return;
     try {
       console.log('💾 Atualizando gastos fixos no Firestore:', novosGastosFixos);
 
-      // Save each gasto fixo as individual document
+      // Save each gasto fixo as individual document under the specific month
       for (const [categoria, valor] of Object.entries(novosGastosFixos)) {
-        const gastoPath = `${gastosFixosPath}/${categoria}`;
+        const gastoPath = `${mesesPath}/${mesId}/gastosFixos/${categoria}`;
         await setDoc(doc(db, gastoPath), { valor });
       }
 
@@ -249,7 +249,7 @@ export const useUnifiedFirestore = () => {
       console.error('❌ Erro ao atualizar gastos fixos:', err);
       setError('Erro ao salvar gastos fixos: ' + err.message);
     }
-  }, [gastosFixosPath]);
+  }, [mesesPath]);
 
   // Update dias trabalhados
   const updateDiasTrabalhados = useCallback(async (mesId, novosDias) => {

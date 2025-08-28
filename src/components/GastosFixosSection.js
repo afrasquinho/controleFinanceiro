@@ -16,10 +16,14 @@ const GastosFixosSection = ({ mes }) => {
 
   // Carregar gastos do Firestore ao inicializar
   useEffect(() => {
-    if (firestoreGastosFixos && Object.keys(firestoreGastosFixos).length > 0) {
-      setGastosFixos(firestoreGastosFixos);
+    // Check if we have fixed expenses data for this specific month
+    if (firestoreGastosFixos && firestoreGastosFixos[mes.id] && Object.keys(firestoreGastosFixos[mes.id]).length > 0) {
+      setGastosFixos(firestoreGastosFixos[mes.id]);
+    } else {
+      // If no data for this month, use default values
+      setGastosFixos(gastosFixosDefault);
     }
-  }, [firestoreGastosFixos]);
+  }, [firestoreGastosFixos, mes.id]);
 
   // Função para editar um gasto
   const editarGasto = (categoria, novoValor) => {
@@ -32,7 +36,7 @@ const GastosFixosSection = ({ mes }) => {
   // Função para salvar no Firestore
   const salvarGastos = async () => {
     try {
-      await updateGastosFixos(gastosFixos);
+      await updateGastosFixos(mes.id, gastosFixos);
       setEditando(null);
       console.log('✅ Gastos fixos salvos no Firestore:', gastosFixos);
     } catch (error) {
