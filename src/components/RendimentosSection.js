@@ -2,8 +2,18 @@
 import React, { useState, useEffect } from 'react';
 import { formatCurrency } from '../utils/calculations';
 import { valoresDefault } from '../data/monthsData';
+import { useUnifiedFirestore } from '../hooks/useUnifiedFirestore';
 
 const RendimentosSection = ({ mes }) => {
+  // Hook do Firestore
+  const { 
+    diasTrabalhados: firestoreDiasTrabalhados, 
+    rendimentosData: firestoreRendimentosData,
+    updateDiasTrabalhados,
+    addRendimentoExtra,
+    removeRendimentoExtra
+  } = useUnifiedFirestore();
+
   const [rendimentosExtras, setRendimentosExtras] = useState([]);
   const [andreDias, setAndreDias] = useState(mes.dias);
   const [alineDias, setAlineDias] = useState(mes.dias);
@@ -14,67 +24,74 @@ const RendimentosSection = ({ mes }) => {
   });
   const [editandoDias, setEditandoDias] = useState(false);
   const [adicionandoRendimento, setAdicionandoRendimento] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Carregar dados salvos
+  // Carregar dados do Firestore
   useEffect(() => {
-    const rendimentosSalvos = localStorage.getItem(`rendimentosExtras_${mes.id}`);
-    if (rendimentosSalvos) {
-      setRendimentosExtras(JSON.parse(rendimentosSalvos));
-    }
-
-    // Carregar dias salvos
-    const diasSalvos = localStorage.getItem(`diasTrabalhados_${mes.id}`);
-    if (diasSalvos) {
-      const dias = JSON.parse(diasSalvos);
+    // Carregar dias trabalhados
+    if (firestoreDiasTrabalhados && firestoreDiasTrabalhados[mes.id]) {
+      const dias = firestoreDiasTrabalhados[mes.id];
       setAndreDias(dias.andre || mes.dias);
       setAlineDias(dias.aline || mes.dias);
     }
-  }, [mes.dias, mes.id]);
 
-  // Salvar dias trabalhados
-  const salvarDias = () => {
-    const dias = {
-      andre: parseInt(andreDias),
-      aline: parseInt(alineDias)
-    };
-    localStorage.setItem(`diasTrabalhados_${mes.id}`, JSON.stringify(dias));
-    alert('Dias trabalhados salvos!');
-    setEditandoDias(false); 
-  };
+    // Carregar rendimentos extras
+    if (firestoreRendimentosData && firestoreRendimentosData[mes.id]) {
+      setRendimentosExtras(firestoreRendimentosData[mes.id]);
+    }
 
-  // Salvar rendimentos extras
-  const salvarRendimentos = (novosRendimentos) => {
-    localStorage.setItem(`rendimentosExtras_${mes.id}`, JSON.stringify(novosRendimentos));
-    setRendimentosExtras(novosRendimentos);
-  };
+    setLoading(false);
+  }, [firestoreDiasTrabalhados, firestoreRendimentosData, mes.dias, mes.id]);
 
-  // Adicionar novo rendimento
-  const adicionarRendimento = () => {
-    if (novoRendimento.fonte && novoRendimento.valor) {
-      const rendimento = {
-        id: Date.now(),
-        fonte: novoRendimento.fonte,
-        valor: parseFloat(novoRendimento.valor),
-        descricao: novoRendimento.descricao,
-        timestamp: new Date().toISOString()
+  // Salvar dias trabalhados no Firestore
+  const salvarDias = async () => {
+    try {
+      const dias = {
+        andre: parseInt(andreDias),
+        aline: parseInt(alineDias)
       };
+      await updateDiasTrabalhados(mes.id, dias);
+      alert('✅ Dias trabalhados salvos no Firestore!');
+      setEditandoDias(false);
+    } catch (error) {
+      console.error('❌ Erro ao salvar dias trabalhados:', error);
+      alert('Erro ao salvar dias trabalhados. Verifique o console para mais detalhes.');
+    }
+  };
 
-      const novosRendimentos = [...rendimentosExtras, rendimento];
-      salvarRendimentos(novosRendimentos);
-      
-      // Limpar formulário
-      setNovoRendimento({ fonte: '', valor: '', descricao: '' });
-      setAdicionandoRendimento(false); // Fechar o formulário
+  // Adicionar novo rendimento no Firestore
+  const adicionarRendimento = async () => {
+    if (novoRendimento.fonte && novoRendimento.valor) {
+      try {
+        const rendimento = {
+          fonte: novoRendimento.fonte,
+          valor: parseFloat(novoRendimento.valor),
+          descricao: novoRendimento.descricao
+        };
+        
+        await addRendimentoExtra(mes.id, rendimento);
+        
+        // Limpar formulário
+        setNovoRendimento({ fonte: '', valor: '', descricao: '' });
+        setAdicionandoRendimento(false);
+      } catch (error) {
+        console.error('❌ Erro ao adicionar rendimento:', error);
+        alert('Erro ao adicionar rendimento. Verifique o console para mais detalhes.');
+      }
     } else {
       alert('Por favor, preencha pelo menos a fonte e o valor');
     }
   };
 
-  // Remover rendimento
-  const removerRendimento = (id) => {
+  // Remover rendimento do Firestore
+  const removerRendimento = async (rendimentoId) => {
     if (window.confirm('Tem certeza que deseja remover este rendimento?')) {
-      const novosRendimentos = rendimentosExtras.filter(r => r.id !== id);
-      salvarRendimentos(novosRendimentos);
+      try {
+        await removeRendimentoExtra(mes.id, rendimentoId);
+      } catch (error) {
+        console.error('❌ Erro ao remover rendimento:', error);
+        alert('Erro ao remover rendimento. Verifique o console para mais detalhes.');
+      }
     }
   };
 

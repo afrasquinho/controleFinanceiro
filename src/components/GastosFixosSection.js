@@ -2,21 +2,26 @@
 import React, { useState, useEffect } from 'react';
 import { gastosFixosDefault } from '../data/monthsData';
 import { formatCurrency } from '../utils/calculations';
+import { useUnifiedFirestore } from '../hooks/useUnifiedFirestore';
 
 const GastosFixosSection = ({ mes }) => {
+  // Hook do Firestore
+  const { gastosFixos: firestoreGastosFixos, updateGastosFixos } = useUnifiedFirestore();
+  
   // Estado para gastos fixos editáveis
   const [gastosFixos, setGastosFixos] = useState(gastosFixosDefault);
   
   // Estado para controlar qual campo está sendo editado
   const [editando, setEditando] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Carregar gastos salvos ao inicializar
+  // Carregar gastos do Firestore ao inicializar
   useEffect(() => {
-    const gastosSalvos = localStorage.getItem('gastosFixos');
-    if (gastosSalvos) {
-      setGastosFixos(JSON.parse(gastosSalvos));
+    if (firestoreGastosFixos && Object.keys(firestoreGastosFixos).length > 0) {
+      setGastosFixos(firestoreGastosFixos);
     }
-  }, []);
+    setLoading(false);
+  }, [firestoreGastosFixos]);
 
   // Função para editar um gasto
   const editarGasto = (categoria, novoValor) => {
@@ -26,11 +31,16 @@ const GastosFixosSection = ({ mes }) => {
     }));
   };
 
-  // Função para salvar no localStorage
-  const salvarGastos = () => {
-    localStorage.setItem('gastosFixos', JSON.stringify(gastosFixos));
-    setEditando(null);
-    console.log('Gastos fixos salvos:', gastosFixos);
+  // Função para salvar no Firestore
+  const salvarGastos = async () => {
+    try {
+      await updateGastosFixos(gastosFixos);
+      setEditando(null);
+      console.log('✅ Gastos fixos salvos no Firestore:', gastosFixos);
+    } catch (error) {
+      console.error('❌ Erro ao salvar gastos fixos:', error);
+      alert('Erro ao salvar gastos fixos. Verifique o console para mais detalhes.');
+    }
   };
 
   // Calcular total

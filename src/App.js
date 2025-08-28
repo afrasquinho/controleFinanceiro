@@ -1,7 +1,7 @@
 // src/App.js
 import React, { useState } from 'react';
 import { mesesInfo } from './data/monthsData';
-import { useFirestore } from './hooks/useFirestore';
+import { useUnifiedFirestore } from './hooks/useUnifiedFirestore';
 import MonthContent from './components/MonthContent';
 import AIDashboard from './components/AIDashboard';
 import QuickStats from './components/QuickStats';
@@ -22,7 +22,7 @@ function App() {
   const [currentTab, setCurrentTab] = useState('jan');
   const [showAI, setShowAI] = useState(false);
   
-// Hook do Firebase com recursos aprimorados
+// Hook do Firestore com recursos aprimorados
 const { 
   gastosData, 
   loading,
@@ -30,8 +30,10 @@ const {
   connectionStatus,
   totalTransactions,
   clearError,
-  reloadData
-} = useFirestore();
+  reloadData,
+  addGasto,
+  removeGasto
+} = useUnifiedFirestore();
 
 
   return (
@@ -273,14 +275,8 @@ const {
           mes={mes}
           isActive={currentTab === mes.id}
           gastos={gastosData[mes.id] || []}
-          onAddGasto={(data, desc, valor) => {
-            console.log('Função addGasto será implementada em breve');
-            // Temporariamente desabilitado - será implementado no próximo passo
-          }}
-          onRemoveGasto={(index) => {
-            console.log('Função removeGasto será implementada em breve');
-            // Temporariamente desabilitado - será implementado no próximo passo
-          }}
+          onAddGasto={addGasto}
+          onRemoveGasto={removeGasto}
           gastosData={gastosData}
         />
       ))}
