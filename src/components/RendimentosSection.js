@@ -24,8 +24,6 @@ const RendimentosSection = ({ mes }) => {
   });
   const [editandoDias, setEditandoDias] = useState(false);
   const [adicionandoRendimento, setAdicionandoRendimento] = useState(false);
-  const [loading, setLoading] = useState(true);
-
   // Carregar dados do Firestore
   useEffect(() => {
     // Carregar dias trabalhados
@@ -39,8 +37,6 @@ const RendimentosSection = ({ mes }) => {
     if (firestoreRendimentosData && firestoreRendimentosData[mes.id]) {
       setRendimentosExtras(firestoreRendimentosData[mes.id]);
     }
-
-    setLoading(false);
   }, [firestoreDiasTrabalhados, firestoreRendimentosData, mes.dias, mes.id]);
 
   // Salvar dias trabalhados no Firestore

@@ -76,7 +76,7 @@ export const useUnifiedFirestore = () => {
     };
 
     loadAllData();
-  }, [userId]);
+  }, [userId, loadGastosFixos, loadMonthData]);
 
   // Load gastos fixos
   const loadGastosFixos = async () => {
@@ -100,28 +100,6 @@ export const useUnifiedFirestore = () => {
     }
   };
 
-  // Load gastos variáveis
-  const loadGastosVariaveis = async () => {
-    if (!mesesPath) return;
-    try {
-      const gastosRef = collection(db, mesesPath, 'gastosVariaveis');
-      const gastosSnapshot = await getDocs(gastosRef);
-      
-      const gastosArray = [];
-      gastosSnapshot.forEach(doc => {
-        gastosArray.push({
-          id: doc.id,
-          ...doc.data()
-        });
-      });
-
-      if (gastosArray.length > 0) {
-        setGastosData(prev => ({ ...prev, gastosVariaveis: gastosArray }));
-      }
-    } catch (err) {
-      console.warn('⚠️ Erro ao carregar gastos variáveis:', err);
-    }
-  };
 
   // Load data for a specific month
   const loadMonthData = async (mesId) => {

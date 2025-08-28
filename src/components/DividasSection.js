@@ -6,10 +6,6 @@ import { useUnifiedFirestore } from '../hooks/useUnifiedFirestore';
 const DividasSection = ({ mes }) => {
   // Hook do Firestore
   const { 
-    dividasData: firestoreDividasData,
-    addDivida,
-    removeDivida,
-    updateDividaStatus
   } = useUnifiedFirestore();
   const [dividas, setDividas] = useState([]);
   const [editando, setEditando] = useState(false);

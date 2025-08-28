@@ -13,14 +13,12 @@ const GastosFixosSection = ({ mes }) => {
   
   // Estado para controlar qual campo está sendo editado
   const [editando, setEditando] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   // Carregar gastos do Firestore ao inicializar
   useEffect(() => {
     if (firestoreGastosFixos && Object.keys(firestoreGastosFixos).length > 0) {
       setGastosFixos(firestoreGastosFixos);
     }
-    setLoading(false);
   }, [firestoreGastosFixos]);
 
   // Função para editar um gasto

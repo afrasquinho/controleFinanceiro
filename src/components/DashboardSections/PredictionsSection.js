@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import AIDashboard from '../AIDashboard';
 import { analyzeWithAI } from '../../utils/aiAdvanced';
 import { formatCurrency } from '../../utils/calculations';
 
 const PredictionsSection = ({ gastosData }) => {
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('predictions');
 
   useEffect(() => {
     const performAnalysis = () => {
