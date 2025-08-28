@@ -19,6 +19,9 @@ const OverviewSection = ({
     let totalGastosFixos = 0;
     let totalRendimentos = 0;
     let mesesComDados = 0;
+    
+    // Dados detalhados por mês
+    const detalhesPorMes = {};
 
     console.log('gastosData:', gastosData); // Log the contents of gastosData
     console.log('gastosFixos:', gastosFixos); // Log the contents of gastosFixos
@@ -26,19 +29,36 @@ const OverviewSection = ({
     // Calculate variable expenses
     Object.values(gastosData).forEach((gastos, index) => {
       const mesId = Object.keys(gastosData)[index];
+      let totalGastosVariaveisMes = 0;
+      let totalGastosFixosMes = 0;
+      
       if (gastos && gastos.length > 0) {
         mesesComDados++;
         gastos.forEach(gasto => {
           // All entries in gastosData are variable expenses, so we sum them all
-          totalGastosVariaveis += gasto.valor;
+          totalGastosVariaveisMes += gasto.valor;
         });
       }
       
       // Add fixed expenses for this month
       if (gastosFixos && gastosFixos[mesId]) {
         const mesGastosFixos = gastosFixos[mesId];
-        totalGastosFixos += Object.values(mesGastosFixos).reduce((total, valor) => total + valor, 0);
+        totalGastosFixosMes += Object.values(mesGastosFixos).reduce((total, valor) => total + valor, 0);
       }
+      
+      // Calcular total de gastos do mês
+      const totalGastosMes = totalGastosVariaveisMes + totalGastosFixosMes;
+      
+      // Armazenar detalhes por mês
+      detalhesPorMes[mesId] = {
+        totalGastos: totalGastosMes,
+        totalGastosVariaveis: totalGastosVariaveisMes,
+        totalGastosFixos: totalGastosFixosMes
+      };
+      
+      // Adicionar aos totais gerais
+      totalGastosVariaveis += totalGastosVariaveisMes;
+      totalGastosFixos += totalGastosFixosMes;
     });
 
     // Total expenses is the sum of variable and fixed expenses
@@ -74,11 +94,28 @@ const OverviewSection = ({
       saldoTotal,
       mesesComDados,
       mediaMensalGastos: mesesComDados > 0 ? totalGastos / mesesComDados : 0,
-      mediaMensalRendimentos: mesesComDados > 0 ? totalRendimentos / mesesComDados : 0
+      mediaMensalRendimentos: mesesComDados > 0 ? totalRendimentos / mesesComDados : 0,
+      detalhesPorMes
     };
   };
 
   const stats = calculateOverviewStats();
+  
+  // Mapeamento de meses para nomes em português
+  const nomesMeses = {
+    'jan': 'Janeiro',
+    'fev': 'Fevereiro',
+    'mar': 'Março',
+    'abr': 'Abril',
+    'mai': 'Maio',
+    'jun': 'Junho',
+    'jul': 'Julho',
+    'ago': 'Agosto',
+    'set': 'Setembro',
+    'out': 'Outubro',
+    'nov': 'Novembro',
+    'dez': 'Dezembro'
+  };
 
   return (
     <div className="overview-section">
@@ -147,6 +184,34 @@ const OverviewSection = ({
               {totalTransactions} transações registradas
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Detalhes por mês */}
+      <div className="monthly-details">
+        <h3>📊 Detalhes por Mês</h3>
+        <div className="monthly-grid">
+          {Object.entries(stats.detalhesPorMes).map(([mesId, detalhes]) => (
+            <div key={mesId} className="monthly-card">
+              <div className="monthly-header">
+                <h4>{nomesMeses[mesId] || mesId}</h4>
+              </div>
+              <div className="monthly-content">
+                <div className="detail-item">
+                  <span className="detail-label">Total:</span>
+                  <span className="detail-value">{formatCurrency(detalhes.totalGastos)}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Variáveis:</span>
+                  <span className="detail-value">{formatCurrency(detalhes.totalGastosVariaveis)}</span>
+                </div>
+                <div className="detail-item">
+                  <span className="detail-label">Fixos:</span>
+                  <span className="detail-value">{formatCurrency(detalhes.totalGastosFixos)}</span>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 

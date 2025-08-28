@@ -1547,3 +1547,106 @@ th {
     gap: 5px;
   }
 }
+
+/* Estilos para detalhes mensais */
+.monthly-details {
+  margin-top: 30px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 10px;
+}
+
+.monthly-details h3 {
+  margin: 0 0 20px 0;
+  color: #2c3e50;
+  text-align: center;
+}
+
+.monthly-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.monthly-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.monthly-card:hover {
+  transform: translateY(-2px);
+}
+
+.monthly-header {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  padding: 12px 15px;
+  text-align: center;
+}
+
+.monthly-header h4 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.monthly-content {
+  padding: 15px;
+}
+
+.monthly-content .detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 5px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.monthly-content .detail-item:last-child {
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+.monthly-content .detail-label {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.monthly-content .detail-value {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+/* Responsividade para detalhes mensais */
+@media (max-width: 768px) {
+  .monthly-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  
+  .monthly-content {
+    padding: 10px;
+  }
+  
+  .monthly-content .detail-item {
+    margin-bottom: 5px;
+    padding: 3px 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .monthly-details {
+    padding: 15px;
+  }
+  
+  .monthly-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .monthly-header h4 {
+    font-size: 0.9rem;
+  }
+}

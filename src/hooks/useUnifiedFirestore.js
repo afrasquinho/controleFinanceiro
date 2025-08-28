@@ -11,7 +11,10 @@ import { db, auth } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
 export const useUnifiedFirestore = () => {
-  const [userId, setUserId] = useState(null);
+  const [userId, setUserId] = useState(null); // Log userId changes
+  useEffect(() => {
+    console.log('User ID:', userId);
+  }, [userId]);
   const [gastosData, setGastosData] = useState({});
   const [gastosFixos, setGastosFixos] = useState({});
   const [rendimentosData, setRendimentosData] = useState({});
@@ -29,6 +32,7 @@ export const useUnifiedFirestore = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       console.log('User authenticated:', user); // Log user authentication
+      console.log('User ID:', user ? user.uid : 'No user'); // Log user ID
       if (user) {
         setUserId(user.uid);
         console.log('User ID set:', user.uid); // Log para verificar se o userId está sendo definido

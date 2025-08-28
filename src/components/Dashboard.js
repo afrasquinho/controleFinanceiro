@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import OverviewSection from './DashboardSections/OverviewSection';
+import MonthsSection from './MonthsSection';
 import ExpensesSection from './DashboardSections/ExpensesSection';
 import PredictionsSection from './DashboardSections/PredictionsSection';
 import AnalyticsSection from './DashboardSections/AnalyticsSection';
@@ -76,6 +77,7 @@ const Dashboard = () => {
 
       {/* Main Content Area */}
       <div className="dashboard-content">
+        <MonthsSection gastosData={gastosData} />
         {ActiveComponent && (
           <ActiveComponent
             gastosData={gastosData}
