@@ -18,7 +18,8 @@ const Login = () => {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      console.log('✅ Login bem-sucedido');
+      const user = auth.currentUser; // Obter o usuário autenticado
+      console.log('✅ Login bem-sucedido', user); // Log do usuário autenticado
     } catch (err) {
       console.error('❌ Erro no login:', err);
       setError('Falha no login: ' + err.message);

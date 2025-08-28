@@ -124,6 +124,7 @@ function App() {
       ) : (
         <Login />
       )}
+      {/* Log para debug */}
 
       {/* Informações para novos usuários */}
       {Object.keys(gastosData).length === 0 && (

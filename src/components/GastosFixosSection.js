@@ -17,8 +17,14 @@ const GastosFixosSection = ({ mes }) => {
   // Carregar gastos do Firestore ao inicializar
   useEffect(() => {
     // Check if we have fixed expenses data for this specific month
-    if (firestoreGastosFixos && firestoreGastosFixos[mes.id] && Object.keys(firestoreGastosFixos[mes.id]).length > 0) {
-      setGastosFixos(firestoreGastosFixos[mes.id]);
+    if (firestoreGastosFixos && firestoreGastosFixos[mes.id]) {
+      // Check if the data is an object with keys (actual data) or an empty object
+      if (Object.keys(firestoreGastosFixos[mes.id]).length > 0) {
+        setGastosFixos(firestoreGastosFixos[mes.id]);
+      } else {
+        // If empty object, use default values
+        setGastosFixos(gastosFixosDefault);
+      }
     } else {
       // If no data for this month, use default values
       setGastosFixos(gastosFixosDefault);

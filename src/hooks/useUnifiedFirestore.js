@@ -31,6 +31,7 @@ export const useUnifiedFirestore = () => {
       console.log('User authenticated:', user); // Log user authentication
       if (user) {
         setUserId(user.uid);
+        console.log('User ID set:', user.uid); // Log para verificar se o userId está sendo definido
       } else {
         setUserId(null);
       }
