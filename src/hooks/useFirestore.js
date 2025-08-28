@@ -14,7 +14,7 @@ export const useFirestore = () => {
         setLoading(true);
         console.log('🔥 Carregando dados do Firestore...');
 
-        const gastosRef = collection(db, 'financeiro', 'gastos2025', 'gastos');
+        const gastosRef = collection(db, 'financeiro', 'gastos2025');
         const snapshot = await getDocs(gastosRef);
         
         const allData = {};
