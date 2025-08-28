@@ -1,4 +1,3 @@
-// src/hooks/useUnifiedFirestore.js
 import { useState, useEffect, useCallback } from 'react';
 import { 
   collection, 
@@ -7,16 +6,12 @@ import {
   setDoc, 
   deleteDoc,
   updateDoc,
-  query,
-  where,
-  orderBy
 } from 'firebase/firestore';
-import { db } from '../firebase';
-
-// Default user ID (can be extended for multi-user support)
-const USER_ID = 'default-user';
+import { db, auth } from '../firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 export const useUnifiedFirestore = () => {
+  const [userId, setUserId] = useState(null);
   const [gastosData, setGastosData] = useState({});
   const [gastosFixos, setGastosFixos] = useState({});
   const [rendimentosData, setRendimentosData] = useState({});
@@ -27,12 +22,31 @@ export const useUnifiedFirestore = () => {
   const [connectionStatus, setConnectionStatus] = useState('connecting');
 
   // Base paths
-  const userFinancePath = `users/${USER_ID}/financeiro/2025`;
-  const gastosFixosPath = `${userFinancePath}/gastosFixos`;
-  const mesesPath = `${userFinancePath}/meses`;
+  const userFinancePath = userId ? `users/${userId}/financeiro/2025` : null;
+  const gastosFixosPath = userFinancePath ? `${userFinancePath}/gastosFixos` : null;
+  const mesesPath = userFinancePath ? `${userFinancePath}/meses` : null;
 
-  // Load all data
+  // Listen for auth state changes
   useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserId(user.uid);
+      } else {
+        setUserId(null);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Load all data when userId changes
+  useEffect(() => {
+    if (!userId) {
+      setLoading(false);
+      setConnectionStatus('error');
+      setError('Usuário não autenticado');
+      return;
+    }
+
     const loadAllData = async () => {
       try {
         setLoading(true);
@@ -62,28 +76,56 @@ export const useUnifiedFirestore = () => {
     };
 
     loadAllData();
-  }, []);
+  }, [userId]);
 
   // Load gastos fixos
   const loadGastosFixos = async () => {
+    if (!gastosFixosPath) return;
     try {
-      const gastosFixosDoc = doc(db, gastosFixosPath);
       const gastosFixosSnapshot = await getDocs(collection(db, gastosFixosPath));
+      console.log('📊 Snapshot de gastos fixos:', gastosFixosSnapshot);
       
-      if (!gastosFixosSnapshot.empty) {
-        const data = {};
-        gastosFixosSnapshot.forEach(doc => {
-          data[doc.id] = doc.data();
-        });
-        setGastosFixos(data);
+      if (gastosFixosSnapshot.empty) {
+        console.warn('⚠️ Nenhum gasto fixo encontrado.');
+        return; // Retorna se não houver dados
       }
+
+      const data = {};
+      gastosFixosSnapshot.forEach(doc => {
+        data[doc.id] = doc.data();
+      });
+      setGastosFixos(data);
     } catch (err) {
       console.warn('⚠️ Erro ao carregar gastos fixos:', err);
     }
   };
 
+  // Load gastos variáveis
+  const loadGastosVariaveis = async () => {
+    if (!mesesPath) return;
+    try {
+      const gastosRef = collection(db, mesesPath, 'gastosVariaveis');
+      const gastosSnapshot = await getDocs(gastosRef);
+      
+      const gastosArray = [];
+      gastosSnapshot.forEach(doc => {
+        gastosArray.push({
+          id: doc.id,
+          ...doc.data()
+        });
+      });
+
+      if (gastosArray.length > 0) {
+        setGastosData(prev => ({ ...prev, gastosVariaveis: gastosArray }));
+      }
+    } catch (err) {
+      console.warn('⚠️ Erro ao carregar gastos variáveis:', err);
+    }
+  };
+
   // Load data for a specific month
   const loadMonthData = async (mesId) => {
+    if (!mesesPath) return;
     try {
       const mesPath = `${mesesPath}/${mesId}`;
       
@@ -121,7 +163,6 @@ export const useUnifiedFirestore = () => {
       }
 
       // Load dias trabalhados
-      const diasDoc = doc(db, mesPath, 'diasTrabalhados');
       try {
         const diasSnapshot = await getDocs(collection(db, mesPath, 'diasTrabalhados'));
         if (!diasSnapshot.empty) {
@@ -158,6 +199,7 @@ export const useUnifiedFirestore = () => {
 
   // Add gasto variável
   const addGasto = useCallback(async (mesId, data, desc, valor) => {
+    if (!mesesPath) return;
     try {
       const novoGasto = {
         data,
@@ -189,6 +231,7 @@ export const useUnifiedFirestore = () => {
 
   // Remove gasto variável
   const removeGasto = useCallback(async (mesId, gastoId) => {
+    if (!mesesPath) return;
     try {
       console.log('🗑️ Removendo gasto do Firestore:', gastoId);
 
@@ -211,6 +254,7 @@ export const useUnifiedFirestore = () => {
 
   // Update gastos fixos
   const updateGastosFixos = useCallback(async (novosGastosFixos) => {
+    if (!gastosFixosPath) return;
     try {
       console.log('💾 Atualizando gastos fixos no Firestore:', novosGastosFixos);
 
@@ -231,6 +275,7 @@ export const useUnifiedFirestore = () => {
 
   // Update dias trabalhados
   const updateDiasTrabalhados = useCallback(async (mesId, novosDias) => {
+    if (!mesesPath) return;
     try {
       console.log('💾 Atualizando dias trabalhados no Firestore:', novosDias);
 
@@ -248,6 +293,7 @@ export const useUnifiedFirestore = () => {
 
   // Add rendimento extra
   const addRendimentoExtra = useCallback(async (mesId, rendimento) => {
+    if (!mesesPath) return;
     try {
       console.log('➕ Adicionando rendimento extra ao Firestore:', rendimento);
 
@@ -275,6 +321,7 @@ export const useUnifiedFirestore = () => {
 
   // Remove rendimento extra
   const removeRendimentoExtra = useCallback(async (mesId, rendimentoId) => {
+    if (!mesesPath) return;
     try {
       console.log('🗑️ Removendo rendimento extra do Firestore:', rendimentoId);
 
@@ -297,6 +344,7 @@ export const useUnifiedFirestore = () => {
 
   // Add dívida
   const addDivida = useCallback(async (mesId, divida) => {
+    if (!mesesPath) return;
     try {
       console.log('➕ Adicionando dívida ao Firestore:', divida);
 
@@ -324,6 +372,7 @@ export const useUnifiedFirestore = () => {
 
   // Remove dívida
   const removeDivida = useCallback(async (mesId, dividaId) => {
+    if (!mesesPath) return;
     try {
       console.log('🗑️ Removendo dívida do Firestore:', dividaId);
 
@@ -346,6 +395,7 @@ export const useUnifiedFirestore = () => {
 
   // Update dívida status
   const updateDividaStatus = useCallback(async (mesId, dividaId, novoStatus) => {
+    if (!mesesPath) return;
     try {
       console.log('🔄 Atualizando status da dívida:', dividaId, novoStatus);
 

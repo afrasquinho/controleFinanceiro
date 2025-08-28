@@ -1,46 +1,36 @@
-# Financial AI System Improvements - TODO List
+# TODO - Nova Página Inicial e Dashboard
 
-## Phase 1: Enhanced Categorization System
-- [ ] Add machine learning-based categorization using user feedback
-- [ ] Implement dynamic keyword learning
-- [ ] Add confidence threshold adjustment
-- [ ] Create user correction tracking system
+## Tarefas para implementar:
 
-## Phase 2: Advanced Prediction Engine
-- [ ] Implement ARIMA/SARIMA models for time series forecasting
-- [ ] Add LSTM neural network for complex pattern recognition
-- [ ] Create ensemble weight optimization based on historical accuracy
-- [ ] Add external data integration (economic indicators, seasonality)
+### 1. Criar novo componente Dashboard
+- [ ] Criar `src/components/Dashboard.js` com estrutura de menus
+- [ ] Implementar navegação entre diferentes seções
+- [ ] Criar layout responsivo e intuitivo
 
-## Phase 3: Smart Anomaly Detection
-- [ ] Implement Isolation Forest algorithm
-- [ ] Add contextual anomaly detection
-- [ ] Create user-defined anomaly rules
-- [ ] Add anomaly explanation system
+### 2. Atualizar App.js
+- [ ] Substituir estrutura atual pelo novo dashboard
+- [ ] Manter funcionalidades existentes (carregamento, erros, etc.)
+- [ ] Integrar sistema de navegação
 
-## Phase 4: User Feedback Learning System
-- [ ] Create learningEngine.js for feedback tracking
-- [ ] Implement feedback collection system
-- [ ] Add model retraining pipeline
-- [ ] Create performance metrics tracking
-- [ ] Add A/B testing framework
+### 3. Criar componentes de seção
+- [ ] `src/components/DashboardSections/OverviewSection.js` - Visão geral
+- [ ] `src/components/DashboardSections/ExpensesSection.js` - Gastos detalhados
+- [ ] `src/components/DashboardSections/PredictionsSection.js` - Previsões
+- [ ] `src/components/DashboardSections/AnalyticsSection.js` - Análises
+- [ ] `src/components/DashboardSections/SettingsSection.js` - Configurações
 
-## Phase 5: Advanced Analytics Dashboard
-- [ ] Create AIInsightsDashboard.js component
-- [ ] Add interactive prediction visualizations
-- [ ] Implement anomaly timeline
-- [ ] Create category evolution charts
-- [ ] Add health score trends
+### 4. Atualizar estilos
+- [ ] Criar CSS para novo layout
+- [ ] Garantir consistência visual
 
-## Phase 6: Performance Optimization
-- [ ] Implement caching for expensive calculations
-- [ ] Add progressive loading for large datasets
-- [ ] Create background processing for heavy computations
-- [ ] Add data sampling for real-time analysis
+### 5. Testar funcionalidade
+- [ ] Verificar navegação entre seções
+- [ ] Testar responsividade
+- [ ] Validar exibição de dados
 
-## Dependencies & Setup
-- [ ] Update package.json with new ML dependencies
-- [ ] Update App.js to integrate new features
-- [ ] Update Dashboard.js to use new AI features
-- [ ] Create comprehensive test suite
-- [ ] Update documentation
+## Progresso:
+- [ ] Tarefa 1: Criar novo componente Dashboard
+- [ ] Tarefa 2: Atualizar App.js
+- [ ] Tarefa 3: Criar componentes de seção
+- [ ] Tarefa 4: Atualizar estilos
+- [ ] Tarefa 5: Testar funcionalidade

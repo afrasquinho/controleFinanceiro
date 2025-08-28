@@ -1,6 +1,7 @@
 
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 
 // Configuração do Firebase - pode ser movida para variáveis de ambiente em produção
 const firebaseConfig = {
@@ -16,11 +17,13 @@ const firebaseConfig = {
 // Inicialização do Firebase com tratamento de erro
 let app;
 let db;
+let auth;
 
 try {
   console.log('🔥 Inicializando Firebase...');
   app = initializeApp(firebaseConfig);
   db = getFirestore(app);
+  auth = getAuth(app);
   console.log('✅ Firebase inicializado com sucesso');
   console.log('📊 Projeto:', firebaseConfig.projectId);
 } catch (error) {
@@ -28,5 +31,5 @@ try {
   throw new Error(`Falha na inicialização do Firebase: ${error.message}`);
 }
 
-export { db };
+export { db, auth };
 export default app;
