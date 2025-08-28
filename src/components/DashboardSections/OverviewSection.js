@@ -15,19 +15,34 @@ const OverviewSection = ({
   // Calcular totais para visão geral
   const calculateOverviewStats = () => {
     let totalGastos = 0;
+    let totalGastosVariaveis = 0;
+    let totalGastosFixos = 0;
     let totalRendimentos = 0;
     let mesesComDados = 0;
 
     console.log('gastosData:', gastosData); // Log the contents of gastosData
-    Object.values(gastosData).forEach(gastos => {
+    console.log('gastosFixos:', gastosFixos); // Log the contents of gastosFixos
+    
+    // Calculate variable expenses
+    Object.values(gastosData).forEach((gastos, index) => {
+      const mesId = Object.keys(gastosData)[index];
       if (gastos && gastos.length > 0) {
         mesesComDados++;
         gastos.forEach(gasto => {
-          // All entries in gastosData are expenses, so we sum them all
-          totalGastos += gasto.valor;
+          // All entries in gastosData are variable expenses, so we sum them all
+          totalGastosVariaveis += gasto.valor;
         });
       }
+      
+      // Add fixed expenses for this month
+      if (gastosFixos && gastosFixos[mesId]) {
+        const mesGastosFixos = gastosFixos[mesId];
+        totalGastosFixos += Object.values(mesGastosFixos).reduce((total, valor) => total + valor, 0);
+      }
     });
+
+    // Total expenses is the sum of variable and fixed expenses
+    totalGastos = totalGastosVariaveis + totalGastosFixos;
 
     // Calculate rendimentos based on working days and extra rendimentos
     // This is a simplified calculation - in a real app, you'd get this from the Firestore hook
@@ -53,6 +68,8 @@ const OverviewSection = ({
 
     return {
       totalGastos,
+      totalGastosVariaveis,
+      totalGastosFixos,
       totalRendimentos,
       saldoTotal,
       mesesComDados,
@@ -94,6 +111,16 @@ const OverviewSection = ({
             <div className="card-value">{formatCurrency(stats.totalGastos)}</div>
             <div className="card-subtext">
               {stats.mesesComDados} meses • Média: {formatCurrency(stats.mediaMensalGastos)}
+            </div>
+            <div className="card-details">
+              <div className="detail-item">
+                <span className="detail-label">Variáveis:</span>
+                <span className="detail-value">{formatCurrency(stats.totalGastosVariaveis)}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Fixos:</span>
+                <span className="detail-value">{formatCurrency(stats.totalGastosFixos)}</span>
+              </div>
             </div>
           </div>
         </div>

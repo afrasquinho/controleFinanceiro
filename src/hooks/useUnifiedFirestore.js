@@ -247,7 +247,8 @@ export const useUnifiedFirestore = () => {
         await setDoc(doc(db, gastoPath), { valor });
       }
 
-      setGastosFixos(novosGastosFixos);
+      // Update gastosFixos state for this specific month
+      setGastosFixos(prev => ({ ...prev, [mesId]: novosGastosFixos }));
       console.log('✅ Gastos fixos atualizados com sucesso');
 
     } catch (err) {
