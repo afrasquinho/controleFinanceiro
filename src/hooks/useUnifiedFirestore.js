@@ -38,48 +38,8 @@ export const useUnifiedFirestore = () => {
     return () => unsubscribe();
   }, []);
 
-  // Load all data when userId changes
-  useEffect(() => {
-    if (!userId) {
-      setLoading(false);
-      setConnectionStatus('error');
-      setError('Usuário não autenticado');
-      return;
-    }
-
-    const loadAllData = async () => {
-      try {
-        setLoading(true);
-        setConnectionStatus('connecting');
-        console.log('🔥 Carregando todos os dados do Firestore...');
-
-        // Load gastos fixos
-        await loadGastosFixos();
-        
-        // Load data for each month
-        const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-        
-        for (const mes of meses) {
-          await loadMonthData(mes);
-        }
-
-        setConnectionStatus('connected');
-        console.log('✅ Todos os dados carregados do Firestore');
-
-      } catch (err) {
-        console.error('❌ Erro ao carregar dados:', err);
-        setError('Erro ao conectar com Firebase: ' + err.message);
-        setConnectionStatus('error');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadAllData();
-  }, [userId, loadGastosFixos, loadMonthData]);
-
   // Load gastos fixos
-  const loadGastosFixos = async () => {
+  const loadGastosFixos = useCallback(async () => {
     if (!gastosFixosPath) return;
     try {
       const gastosFixosSnapshot = await getDocs(collection(db, gastosFixosPath));
@@ -98,11 +58,10 @@ export const useUnifiedFirestore = () => {
     } catch (err) {
       console.warn('⚠️ Erro ao carregar gastos fixos:', err);
     }
-  };
-
+  }, [gastosFixosPath]);
 
   // Load data for a specific month
-  const loadMonthData = async (mesId) => {
+  const loadMonthData = useCallback(async (mesId) => {
     if (!mesesPath) return;
     try {
       const mesPath = `${mesesPath}/${mesId}`;
@@ -173,7 +132,48 @@ export const useUnifiedFirestore = () => {
     } catch (err) {
       console.warn(`⚠️ Erro ao carregar dados de ${mesId}:`, err);
     }
-  };
+  }, [mesesPath]);
+
+  // Load all data when userId changes
+  useEffect(() => {
+    if (!userId) {
+      setLoading(false);
+      setConnectionStatus('error');
+      setError('Usuário não autenticado');
+      return;
+    }
+
+    const loadAllData = async () => {
+      try {
+        setLoading(true);
+        setConnectionStatus('connecting');
+        console.log('🔥 Carregando todos os dados do Firestore...');
+
+        // Load gastos fixos
+        await loadGastosFixos();
+        
+        // Load data for each month
+        const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+        
+        for (const mes of meses) {
+          await loadMonthData(mes);
+        }
+
+        setConnectionStatus('connected');
+        console.log('✅ Todos os dados carregados do Firestore');
+
+      } catch (err) {
+        console.error('❌ Erro ao carregar dados:', err);
+        setError('Erro ao conectar com Firebase: ' + err.message);
+        setConnectionStatus('error');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAllData();
+  }, [userId, loadGastosFixos, loadMonthData]);
+
 
   // Add gasto variável
   const addGasto = useCallback(async (mesId, data, desc, valor) => {
