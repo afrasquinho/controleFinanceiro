@@ -29,6 +29,7 @@ export const useUnifiedFirestore = () => {
   // Listen for auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log('User authenticated:', user); // Log user authentication
       if (user) {
         setUserId(user.uid);
       } else {
@@ -189,9 +190,8 @@ export const useUnifiedFirestore = () => {
       console.log('➕ Adicionando gasto ao Firestore:', novoGasto);
 
       const gastoId = `gasto_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      const gastoPath = `${mesesPath}/${mesId}/gastosVariaveis/${gastoId}`;
-      
-      await setDoc(doc(db, gastoPath), novoGasto);
+      // Fix the path construction to ensure even number of segments
+      await setDoc(doc(db, `${mesesPath}/${mesId}/gastosVariaveis`, gastoId), novoGasto);
 
       // Update local state
       setGastosData(prev => ({
@@ -213,8 +213,8 @@ export const useUnifiedFirestore = () => {
     try {
       console.log('🗑️ Removendo gasto do Firestore:', gastoId);
 
-      const gastoPath = `${mesesPath}/${mesId}/gastosVariaveis/${gastoId}`;
-      await deleteDoc(doc(db, gastoPath));
+      // Fix the path construction to ensure even number of segments
+      await deleteDoc(doc(db, `${mesesPath}/${mesId}/gastosVariaveis`, gastoId));
 
       // Update local state
       setGastosData(prev => ({
@@ -257,8 +257,10 @@ export const useUnifiedFirestore = () => {
     try {
       console.log('💾 Atualizando dias trabalhados no Firestore:', novosDias);
 
-      const diasPath = `${mesesPath}/${mesId}/diasTrabalhados`;
-      await setDoc(doc(db, diasPath), novosDias);
+      // Create a document for diasTrabalhados within the month's collection
+      // Using collection and doc correctly to ensure even number of segments
+      const mesRef = doc(db, mesesPath, mesId);
+      await setDoc(doc(db, `${mesesPath}/${mesId}/diasTrabalhados`, 'data'), novosDias);
 
       setDiasTrabalhados(prev => ({ ...prev, [mesId]: novosDias }));
       console.log('✅ Dias trabalhados atualizados com sucesso');
@@ -276,9 +278,8 @@ export const useUnifiedFirestore = () => {
       console.log('➕ Adicionando rendimento extra ao Firestore:', rendimento);
 
       const rendimentoId = `rendimento_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      const rendimentoPath = `${mesesPath}/${mesId}/rendimentosExtras/${rendimentoId}`;
-      
-      await setDoc(doc(db, rendimentoPath), {
+      // Fix the path construction to ensure even number of segments
+      await setDoc(doc(db, `${mesesPath}/${mesId}/rendimentosExtras`, rendimentoId), {
         ...rendimento,
         timestamp: new Date().toISOString()
       });
@@ -303,8 +304,8 @@ export const useUnifiedFirestore = () => {
     try {
       console.log('🗑️ Removendo rendimento extra do Firestore:', rendimentoId);
 
-      const rendimentoPath = `${mesesPath}/${mesId}/rendimentosExtras/${rendimentoId}`;
-      await deleteDoc(doc(db, rendimentoPath));
+      // Fix the path construction to ensure even number of segments
+      await deleteDoc(doc(db, `${mesesPath}/${mesId}/rendimentosExtras`, rendimentoId));
 
       // Update local state
       setRendimentosData(prev => ({
@@ -327,9 +328,8 @@ export const useUnifiedFirestore = () => {
       console.log('➕ Adicionando dívida ao Firestore:', divida);
 
       const dividaId = `divida_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      const dividaPath = `${mesesPath}/${mesId}/dividas/${dividaId}`;
-      
-      await setDoc(doc(db, dividaPath), {
+      // Fix the path construction to ensure even number of segments
+      await setDoc(doc(db, `${mesesPath}/${mesId}/dividas`, dividaId), {
         ...divida,
         timestamp: new Date().toISOString()
       });
@@ -354,8 +354,8 @@ export const useUnifiedFirestore = () => {
     try {
       console.log('🗑️ Removendo dívida do Firestore:', dividaId);
 
-      const dividaPath = `${mesesPath}/${mesId}/dividas/${dividaId}`;
-      await deleteDoc(doc(db, dividaPath));
+      // Fix the path construction to ensure even number of segments
+      await deleteDoc(doc(db, `${mesesPath}/${mesId}/dividas`, dividaId));
 
       // Update local state
       setDividasData(prev => ({
@@ -377,8 +377,8 @@ export const useUnifiedFirestore = () => {
     try {
       console.log('🔄 Atualizando status da dívida:', dividaId, novoStatus);
 
-      const dividaPath = `${mesesPath}/${mesId}/dividas/${dividaId}`;
-      await updateDoc(doc(db, dividaPath), { status: novoStatus });
+      // Fix the path construction to ensure even number of segments
+      await updateDoc(doc(db, `${mesesPath}/${mesId}/dividas`, dividaId), { status: novoStatus });
 
       // Update local state
       setDividasData(prev => ({
@@ -433,6 +433,7 @@ export const useUnifiedFirestore = () => {
     error,
     connectionStatus,
     totalTransactions,
+    userId, // Expose userId for authentication checks
     
     // Actions
     addGasto,

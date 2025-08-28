@@ -2,6 +2,7 @@
 import React from 'react';
 import { useUnifiedFirestore } from './hooks/useUnifiedFirestore';
 import Dashboard from './components/Dashboard';
+import Login from './components/Login'; 
 import './App.css';
 
 // Importar IA
@@ -25,7 +26,8 @@ function App() {
     clearError,
     reloadData,
     addGasto,
-    removeGasto
+    removeGasto,
+    userId // Add userId to check authentication
   } = useUnifiedFirestore();
 
   return (
@@ -106,18 +108,22 @@ function App() {
         </div>
       </header>
 
-      {/* Novo Dashboard */}
-      <Dashboard 
-        gastosData={gastosData}
-        loading={loading}
-        error={error}
-        connectionStatus={connectionStatus}
-        totalTransactions={totalTransactions}
-        clearError={clearError}
-        reloadData={reloadData}
-        addGasto={addGasto}
-        removeGasto={removeGasto}
-      />
+      {/* Render Login or Dashboard based on authentication */}
+      {userId ? (
+        <Dashboard 
+          gastosData={gastosData}
+          loading={loading}
+          error={error}
+          connectionStatus={connectionStatus}
+          totalTransactions={totalTransactions}
+          clearError={clearError}
+          reloadData={reloadData}
+          addGasto={addGasto}
+          removeGasto={removeGasto}
+        />
+      ) : (
+        <Login />
+      )}
 
       {/* Informações para novos usuários */}
       {Object.keys(gastosData).length === 0 && (

@@ -31,5 +31,5 @@ try {
   throw new Error(`Falha na inicialização do Firebase: ${error.message}`);
 }
 
-export { db, auth };
+export { db, auth, app }; // Export the app variable
 export default app;
