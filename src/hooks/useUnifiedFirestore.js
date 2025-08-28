@@ -259,7 +259,6 @@ export const useUnifiedFirestore = () => {
 
       // Create a document for diasTrabalhados within the month's collection
       // Using collection and doc correctly to ensure even number of segments
-      const mesRef = doc(db, mesesPath, mesId);
       await setDoc(doc(db, `${mesesPath}/${mesId}/diasTrabalhados`, 'data'), novosDias);
 
       setDiasTrabalhados(prev => ({ ...prev, [mesId]: novosDias }));
