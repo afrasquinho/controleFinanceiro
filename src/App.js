@@ -359,46 +359,12 @@ const {
           borderRadius: '5px',
           boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
           fontSize: '11px',
-          zIndex: 1000,
-          maxWidth: '200px'
+          zIndex: 1000
         }}>
-          <div><strong>🔧 Debug</strong></div>
-          <div>Meses: {Object.keys(gastosData).length}</div>
-          <div>Gastos: {Object.values(gastosData).flat().length}</div>
-          <button 
-            onClick={() => console.log('gastosData:', gastosData)}
-            style={{ fontSize: '10px', padding: '2px 5px', margin: '2px' }}
-          >
-            📊 Log Dados
-          </button>
-          <button 
-            onClick={() => {
-              const result = analyzeWithAI(gastosData);
-              console.log('IA Result:', result);
-            }}
-            style={{ fontSize: '10px', padding: '2px 5px', margin: '2px' }}
-          >
-            🤖 Test IA
-          </button>
+          <div>Debug: {Object.keys(gastosData).length} meses</div>
+          <div>Status: {connectionStatus}</div>
         </div>
       )}
-
-      {/* Footer */}
-      <footer style={{
-        textAlign: 'center',
-        padding: '40px 20px',
-        color: '#6c757d',
-        fontSize: '12px',
-        borderTop: '1px solid #dee2e6',
-        marginTop: '60px'
-      }}>
-        <div style={{ marginBottom: '10px' }}>
-          <strong>💰 Controle Financeiro 2025</strong> - Powered by IA JavaScript Avançada
-        </div>
-        <div style={{ opacity: 0.8 }}>
-          🧠 Algoritmos: Categorização Inteligente • Análise Estatística • Insights Personalizados
-        </div>
-      </footer>
     </div>
   );
 }
