@@ -30,17 +30,23 @@ export const useUnifiedFirestore = () => {
 
   // Listen for auth state changes
   useEffect(() => {
+    console.log('Auth state listener initialized');
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log('User authenticated:', user); // Log user authentication
+      console.log('Auth state changed:', user); // Log user authentication
       console.log('User ID:', user ? user.uid : 'No user'); // Log user ID
       if (user) {
         setUserId(user.uid);
-        console.log('User ID set:', user.uid); // Log para verificar se o userId está sendo definido
+      console.log('User ID set:', user.uid); // Log to verify if userId is being set
+      console.log('Current User:', auth.currentUser); // Log the current user object
       } else {
         setUserId(null);
+        console.log('User ID set to null - user not authenticated');
       }
     });
-    return () => unsubscribe();
+    return () => {
+      console.log('Auth state listener unsubscribed');
+      unsubscribe();
+    };
   }, []);
 
   // Load gastos fixos for a specific month
@@ -149,10 +155,16 @@ export const useUnifiedFirestore = () => {
 
   // Load all data when userId changes
   useEffect(() => {
-    if (!userId) {
+    if (userId === null) {
+      // User explicitly logged out or not authenticated
       setLoading(false);
       setConnectionStatus('error');
       setError('Usuário não autenticado');
+      return;
+    }
+
+    if (userId === undefined) {
+      // Still initializing auth state, don't show error yet
       return;
     }
 

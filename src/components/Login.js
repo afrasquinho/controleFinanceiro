@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { app } from '../firebase';
+import { app, db } from '../firebase'; // Import db along with app
+import { doc, setDoc } from 'firebase/firestore'; // Import doc and setDoc
 import './Login.css';
 
 const Login = () => {
@@ -17,11 +18,20 @@ const Login = () => {
     setError('');
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      const user = auth.currentUser; // Obter o usuário autenticado
+      const loginResult = await signInWithEmailAndPassword(auth, email, password);
+      console.log('Login result:', loginResult); // Log the result of the login attempt
+      const user = auth.currentUser; // Get the authenticated user
+      // Create user document in Firestore
+      const userDocRef = doc(db, `users/${user.uid}/financeiro/2025`);
+      await setDoc(userDocRef, { createdAt: new Date() }, { merge: true });
+      console.log('Attempting to create user document at:', userDocRef.path); // Log the document path
+      console.log('User document created or updated:', user.uid);
       console.log('✅ Login bem-sucedido', user); // Log do usuário autenticado
     } catch (err) {
       console.error('❌ Erro no login:', err);
+      console.log('Login attempt with email:', email); // Log the email used for login
+      console.log('Error details:', err); // Log the error details
+      console.log('Error message:', err.message); // Log the error message
       setError('Falha no login: ' + err.message);
     } finally {
       setLoading(false);
@@ -35,6 +45,13 @@ const Login = () => {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
+      const user = auth.currentUser; // Get the authenticated user
+      console.log('User logged in with Google:', user); // Log the user object
+      // Create user document in Firestore
+      const userDocRef = doc(db, `users/${user.uid}/financeiro/2025`);
+      await setDoc(userDocRef, { createdAt: new Date() }, { merge: true });
+      console.log('Attempting to create user document at:', userDocRef.path); // Log the document path
+      console.log('User document created or updated:', user.uid);
       console.log('✅ Login com Google bem-sucedido');
     } catch (err) {
       console.error('❌ Erro no login com Google:', err);
