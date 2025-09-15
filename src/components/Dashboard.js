@@ -33,6 +33,32 @@ const Dashboard = () => {
     { id: 'settings', label: 'Configurações', icon: '⚙️', component: SettingsSection }
   ];
 
+  // Keyboard navigation handler
+  const handleKeyDown = (e, itemId) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setActiveSection(itemId);
+    }
+  };
+
+  // Navigate with arrow keys
+  const handleSidebarKeyDown = (e) => {
+    const currentIndex = menuItems.findIndex(item => item.id === activeSection);
+    let newIndex = currentIndex;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      newIndex = Math.min(currentIndex + 1, menuItems.length - 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      newIndex = Math.max(currentIndex - 1, 0);
+    }
+
+    if (newIndex !== currentIndex) {
+      setActiveSection(menuItems[newIndex].id);
+    }
+  };
+
   const ActiveComponent = menuItems.find(item => item.id === activeSection)?.component;
 
   return (
@@ -50,14 +76,19 @@ const Dashboard = () => {
           </div>
         </div>
         
-        <nav className="sidebar-nav">
-          {menuItems.map(item => (
+        <nav className="sidebar-nav" onKeyDown={handleSidebarKeyDown} role="navigation" aria-label="Navegação principal">
+          {menuItems.map((item, index) => (
             <button
               key={item.id}
               className={`nav-item ${activeSection === item.id ? 'active' : ''}`}
               onClick={() => setActiveSection(item.id)}
+              onKeyDown={(e) => handleKeyDown(e, item.id)}
+              tabIndex={activeSection === item.id ? 0 : -1}
+              role="tab"
+              aria-selected={activeSection === item.id}
+              aria-controls={`panel-${item.id}`}
             >
-              <span className="nav-icon">{item.icon}</span>
+              <span className="nav-icon" aria-hidden="true">{item.icon}</span>
               <span className="nav-label">{item.label}</span>
             </button>
           ))}

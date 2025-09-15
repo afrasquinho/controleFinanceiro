@@ -92,6 +92,21 @@ const OverviewSection = ({
     };
   }, [gastosData, gastosFixos]);
 
+  if (loading) {
+    return (
+      <div className="overview-section">
+        <div className="section-header">
+          <h1>📊 Visão Geral Financeira</h1>
+          <p>Carregando dados...</p>
+        </div>
+        <div className="loading-spinner">
+          <div className="spinner"></div>
+          <p>Carregando informações financeiras...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="overview-section">
       {/* Header */}

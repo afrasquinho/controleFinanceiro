@@ -93,12 +93,18 @@ const Login = () => {
         <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>🔐 Login</h2>
         
         {error && (
-          <div className="error-message" style={{ marginBottom: '20px' }}>
+          <div
+            className="error-message"
+            style={{ marginBottom: '20px' }}
+            role="alert"
+            aria-live="polite"
+            id="login-error"
+          >
             {error}
           </div>
         )}
 
-        <form onSubmit={handleEmailLogin}>
+        <form onSubmit={handleEmailLogin} role="form" aria-labelledby="login-form-title">
           <div className="form-group">
             <label htmlFor="email">Email:</label>
             <input
@@ -108,6 +114,8 @@ const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={loading}
+              aria-describedby={error ? "login-error" : undefined}
+              autoComplete="email"
             />
           </div>
 
@@ -120,14 +128,17 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={loading}
+              aria-describedby={error ? "login-error" : undefined}
+              autoComplete="current-password"
             />
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="login-btn"
             disabled={loading}
             style={{ width: '100%', marginBottom: '15px' }}
+            aria-describedby={loading ? "loading-status" : undefined}
           >
             {loading ? 'Entrando...' : 'Entrar com Email'}
           </button>
