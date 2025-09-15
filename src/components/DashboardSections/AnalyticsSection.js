@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { analyzeWithAI } from '../../utils/aiAdvanced';
 import { formatCurrency } from '../../utils/calculations';
 
-const AnalyticsSection = ({ gastosData }) => {
+const AnalyticsSection = ({ gastosData, rendimentosData }) => {
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('categories');
@@ -10,9 +10,9 @@ const AnalyticsSection = ({ gastosData }) => {
   useEffect(() => {
     const performAnalysis = () => {
       setLoading(true);
-      
+
       setTimeout(() => {
-        const result = analyzeWithAI(gastosData, {});
+        const result = analyzeWithAI(gastosData, rendimentosData);
         setAnalysis(result);
         setLoading(false);
       }, 1000);
@@ -23,7 +23,7 @@ const AnalyticsSection = ({ gastosData }) => {
     } else {
       setLoading(false);
     }
-  }, [gastosData]);
+  }, [gastosData, rendimentosData]);
 
   if (loading) {
     return (

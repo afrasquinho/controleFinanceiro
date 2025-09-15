@@ -1,13 +1,16 @@
 import React, { useMemo } from 'react';
 import QuickStats from '../QuickStats';
 import { formatCurrency } from '../../utils/calculations';
-import { RENDIMENTOS_CONFIG, MESES_LIST, MESES_NOMES } from '../../config/constants';
+import { RENDIMENTOS_CONFIG, MESES_NOMES } from '../../config/constants';
+
+import { mesesInfo } from '../../data/monthsData';
 
 const OverviewSection = ({
-  gastosFixos, 
-  gastosData, 
-  loading, 
-  error, 
+  gastosFixos,
+  gastosData,
+  rendimentosData,
+  loading,
+  error,
   connectionStatus,
   totalTransactions,
   clearError,
@@ -19,7 +22,7 @@ const OverviewSection = ({
     let totalGastosFixos = 0;
     let totalRendimentos = 0;
     let mesesComDados = 0;
-    
+
     // Dados detalhados por mês
     const detalhesPorMes = {};
 
@@ -27,30 +30,30 @@ const OverviewSection = ({
     Object.entries(gastosData).forEach(([mesId, gastos]) => {
       let totalGastosVariaveisMes = 0;
       let totalGastosFixosMes = 0;
-      
+
       if (gastos && gastos.length > 0) {
         mesesComDados++;
         gastos.forEach(gasto => {
           totalGastosVariaveisMes += gasto.valor;
         });
       }
-      
+
       // Add fixed expenses for this month
       if (gastosFixos && gastosFixos[mesId]) {
         const mesGastosFixos = gastosFixos[mesId];
         totalGastosFixosMes += Object.values(mesGastosFixos).reduce((total, valor) => total + valor, 0);
       }
-      
+
       // Calcular total de gastos do mês
       const totalGastosMes = totalGastosVariaveisMes + totalGastosFixosMes;
-      
+
       // Armazenar detalhes por mês
       detalhesPorMes[mesId] = {
         totalGastos: totalGastosMes,
         totalGastosVariaveis: totalGastosVariaveisMes,
         totalGastosFixos: totalGastosFixosMes
       };
-      
+
       // Adicionar aos totais gerais
       totalGastosVariaveis += totalGastosVariaveisMes;
       totalGastosFixos += totalGastosFixosMes;
@@ -60,22 +63,31 @@ const OverviewSection = ({
     const totalGastos = totalGastosVariaveis + totalGastosFixos;
 
     // Calculate rendimentos based on working days and extra rendimentos
-    MESES_LIST.forEach(mesId => {
-      // Get working days for this month (simplified - in real app, get from Firestore)
-      const diasTrabalhados = RENDIMENTOS_CONFIG.DIAS_TRABALHADOS_DEFAULT;
-      
+    mesesInfo.forEach(mes => {
+      const mesId = mes.id;
+      const diasTrabalhados = mes.dias; // Use actual working days from mesesInfo
+
       // Calculate base rendimentos
-      const rendimentoAndre = RENDIMENTOS_CONFIG.SALARIO_ANDRE * diasTrabalhados.andre;
+      const rendimentoAndre = RENDIMENTOS_CONFIG.SALARIO_ANDRE * diasTrabalhados;
       const ivaAndre = rendimentoAndre * RENDIMENTOS_CONFIG.IVA_RATE;
       const totalAndre = rendimentoAndre + ivaAndre;
-      
-      const rendimentoAline = RENDIMENTOS_CONFIG.SALARIO_ALINE * diasTrabalhados.aline;
+
+      const rendimentoAline = RENDIMENTOS_CONFIG.SALARIO_ALINE * diasTrabalhados;
       const ivaAline = rendimentoAline * RENDIMENTOS_CONFIG.IVA_RATE;
       const totalAline = rendimentoAline + ivaAline;
-      
+
       // Add to total rendimentos
       totalRendimentos += totalAndre + totalAline;
+
+      // Add extra rendimentos from rendimentosData if available
+      if (rendimentosData && rendimentosData[mesId]) {
+        const extraRendimentosMes = rendimentosData[mesId];
+        const totalExtrasMes = extraRendimentosMes.reduce((sum, r) => sum + (r.valor || 0), 0);
+        totalRendimentos += totalExtrasMes;
+      }
     });
+
+
 
     const saldoTotal = totalRendimentos - totalGastos;
 
@@ -90,7 +102,7 @@ const OverviewSection = ({
       mediaMensalRendimentos: mesesComDados > 0 ? totalRendimentos / mesesComDados : 0,
       detalhesPorMes
     };
-  }, [gastosData, gastosFixos]);
+  }, [gastosData, gastosFixos, rendimentosData]);
 
   if (loading) {
     return (
@@ -128,6 +140,7 @@ const OverviewSection = ({
             <div className="card-subtext">
               {stats.mesesComDados} meses • Média: {formatCurrency(stats.mediaMensalRendimentos)}
             </div>
+
           </div>
         </div>
 

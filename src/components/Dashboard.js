@@ -12,9 +12,10 @@ const Dashboard = () => {
   const [activeSection, setActiveSection] = useState('overview');
   
   // Hook do Firestore com recursos aprimorados
-  const { 
-    gastosData, 
+  const {
+    gastosData,
     gastosFixos,
+    rendimentosData,
     loading,
     error,
     connectionStatus,
@@ -110,11 +111,24 @@ const Dashboard = () => {
       {/* Main Content Area */}
       <div className="dashboard-content">
         <MonthsSection gastosData={gastosData} />
-        {activeSection === 'overview' && <TestRendimentos />}
+        {activeSection === 'overview' && (
+          <OverviewSection
+            gastosData={gastosData}
+            gastosFixos={gastosFixos}
+            rendimentosData={rendimentosData}
+            loading={loading}
+            error={error}
+            connectionStatus={connectionStatus}
+            totalTransactions={totalTransactions}
+            clearError={clearError}
+            reloadData={reloadData}
+          />
+        )}
         {ActiveComponent && activeSection !== 'overview' && (
           <ActiveComponent
             gastosData={gastosData}
             gastosFixos={gastosFixos}
+            rendimentosData={rendimentosData}
             loading={loading}
             error={error}
             connectionStatus={connectionStatus}
