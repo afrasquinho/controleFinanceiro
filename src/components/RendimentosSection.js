@@ -29,8 +29,12 @@ const RendimentosSection = ({ mes }) => {
     // Carregar dias trabalhados
     if (firestoreDiasTrabalhados && firestoreDiasTrabalhados[mes.id]) {
       const dias = firestoreDiasTrabalhados[mes.id];
-      setAndreDias(dias.andre || mes.dias);
-      setAlineDias(dias.aline || mes.dias);
+      setAndreDias(dias.andre !== undefined ? dias.andre : mes.dias);
+      setAlineDias(dias.aline !== undefined ? dias.aline : mes.dias);
+    } else {
+      // Reset to default if no data in Firestore
+      setAndreDias(mes.dias);
+      setAlineDias(mes.dias);
     }
 
     // Carregar rendimentos extras

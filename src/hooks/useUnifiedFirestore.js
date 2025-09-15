@@ -28,25 +28,10 @@ export const useUnifiedFirestore = () => {
   const userFinancePath = userId ? `users/${userId}/financeiro/2025` : null;
   const mesesPath = userFinancePath ? `${userFinancePath}/meses` : null;
 
-  // Listen for auth state changes
+  // Bypass authentication for testing
   useEffect(() => {
-    console.log('Auth state listener initialized');
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log('Auth state changed:', user); // Log user authentication
-      console.log('User ID:', user ? user.uid : 'No user'); // Log user ID
-      if (user) {
-        setUserId(user.uid);
-      console.log('User ID set:', user.uid); // Log to verify if userId is being set
-      console.log('Current User:', auth.currentUser); // Log the current user object
-      } else {
-        setUserId(null);
-        console.log('User ID set to null - user not authenticated');
-      }
-    });
-    return () => {
-      console.log('Auth state listener unsubscribed');
-      unsubscribe();
-    };
+    setUserId('testUserId'); // Set a test user ID
+    console.log('Bypassing authentication for testing');
   }, []);
 
   // Load gastos fixos for a specific month
@@ -289,6 +274,7 @@ export const useUnifiedFirestore = () => {
     } catch (err) {
       console.error('❌ Erro ao atualizar dias trabalhados:', err);
       setError('Erro ao salvar dias trabalhados: ' + err.message);
+      throw err; // Re-throw the error so the calling component can handle it
     }
   }, [mesesPath]);
 

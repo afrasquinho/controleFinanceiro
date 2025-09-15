@@ -5,6 +5,7 @@ import ExpensesSection from './DashboardSections/ExpensesSection';
 import PredictionsSection from './DashboardSections/PredictionsSection';
 import AnalyticsSection from './DashboardSections/AnalyticsSection';
 import SettingsSection from './DashboardSections/SettingsSection';
+import TestRendimentos from './TestRendimentos'; // Import the test component
 import { useUnifiedFirestore } from '../hooks/useUnifiedFirestore';
 
 const Dashboard = () => {
@@ -78,7 +79,8 @@ const Dashboard = () => {
       {/* Main Content Area */}
       <div className="dashboard-content">
         <MonthsSection gastosData={gastosData} />
-        {ActiveComponent && (
+        {activeSection === 'overview' && <TestRendimentos />}
+        {ActiveComponent && activeSection !== 'overview' && (
           <ActiveComponent
             gastosData={gastosData}
             gastosFixos={gastosFixos}
