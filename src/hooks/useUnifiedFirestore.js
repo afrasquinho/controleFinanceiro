@@ -11,10 +11,7 @@ import { db, auth } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 
 export const useUnifiedFirestore = () => {
-  const [userId, setUserId] = useState(null); // Log userId changes
-  useEffect(() => {
-    console.log('User ID:', userId);
-  }, [userId]);
+  const [userId, setUserId] = useState(null);
   const [gastosData, setGastosData] = useState({});
   const [gastosFixos, setGastosFixos] = useState({});
   const [rendimentosData, setRendimentosData] = useState({});
@@ -28,11 +25,17 @@ export const useUnifiedFirestore = () => {
   const userFinancePath = userId ? `users/${userId}/financeiro/2025` : null;
   const mesesPath = userFinancePath ? `${userFinancePath}/meses` : null;
 
-  // Bypass authentication for testing
+  // Use real authentication state
   useEffect(() => {
-    setUserId('testUserId'); // Set a test user ID
-    console.log('Bypassing authentication for testing');
-  }, []);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserId(user.uid);
+      } else {
+        setUserId(null);
+      }
+    });
+    return () => unsubscribe();
+  }, [auth]);
 
   // Load gastos fixos for a specific month
   const loadGastosFixos = useCallback(async (mesId) => {
@@ -40,10 +43,8 @@ export const useUnifiedFirestore = () => {
     try {
       const gastosFixosRef = collection(db, `${mesesPath}/${mesId}/gastosFixos`);
       const gastosFixosSnapshot = await getDocs(gastosFixosRef);
-      console.log(`📊 Snapshot de gastos fixos para ${mesId}:`, gastosFixosSnapshot);
-      
+
       if (gastosFixosSnapshot.empty) {
-        console.warn(`⚠️ Nenhum gasto fixo encontrado para ${mesId}.`);
         // Initialize with empty object for this month
         setGastosFixos(prev => ({ ...prev, [mesId]: {} }));
         return;
@@ -157,29 +158,22 @@ export const useUnifiedFirestore = () => {
       try {
         setLoading(true);
         setConnectionStatus('connecting');
-        console.log('🔥 Carregando todos os dados do Firestore...');
-
-        // Load data for each month (this will also load gastos fixos for each month)
-        const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-        
-        for (const mes of meses) {
-          await loadMonthData(mes);
-        }
-
-        setConnectionStatus('connected');
-        console.log('✅ Todos os dados carregados do Firestore');
-
-      } catch (err) {
-        console.error('❌ Erro ao carregar dados:', err);
-        setError('Erro ao conectar com Firebase: ' + err.message);
-        setConnectionStatus('error');
-      } finally {
-        setLoading(false);
+      // Load data for each month (this will also load gastos fixos for each month)
+      for (const mes of MESES_LIST) {
+        await loadMonthData(mes);
       }
-    };
 
-    loadAllData();
-  }, [userId, loadGastosFixos, loadMonthData]);
+      setConnectionStatus('connected');
+    } catch (err) {
+      setError('Erro ao conectar com Firebase: ' + err.message);
+      setConnectionStatus('error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  loadAllData();
+}, [userId, loadGastosFixos, loadMonthData]);
 
 
   // Add gasto variável
@@ -193,8 +187,6 @@ export const useUnifiedFirestore = () => {
         timestamp: new Date().toISOString()
       };
 
-      console.log('➕ Adicionando gasto ao Firestore:', novoGasto);
-
       const gastoId = `gasto_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       // Fix the path construction to ensure even number of segments
       await setDoc(doc(db, `${mesesPath}/${mesId}/gastosVariaveis`, gastoId), novoGasto);
@@ -204,8 +196,6 @@ export const useUnifiedFirestore = () => {
         ...prev,
         [mesId]: [...(prev[mesId] || []), { id: gastoId, ...novoGasto }]
       }));
-
-      console.log('✅ Gasto adicionado com sucesso');
 
     } catch (err) {
       console.error('❌ Erro ao adicionar gasto:', err);
@@ -217,8 +207,6 @@ export const useUnifiedFirestore = () => {
   const removeGasto = useCallback(async (mesId, gastoId) => {
     if (!mesesPath) return;
     try {
-      console.log('🗑️ Removendo gasto do Firestore:', gastoId);
-
       // Fix the path construction to ensure even number of segments
       await deleteDoc(doc(db, `${mesesPath}/${mesId}/gastosVariaveis`, gastoId));
 
@@ -227,8 +215,6 @@ export const useUnifiedFirestore = () => {
         ...prev,
         [mesId]: (prev[mesId] || []).filter(gasto => gasto.id !== gastoId)
       }));
-
-      console.log('✅ Gasto removido com sucesso');
 
     } catch (err) {
       console.error('❌ Erro ao remover gasto:', err);
@@ -240,8 +226,6 @@ export const useUnifiedFirestore = () => {
   const updateGastosFixos = useCallback(async (mesId, novosGastosFixos) => {
     if (!mesesPath) return;
     try {
-      console.log('💾 Atualizando gastos fixos no Firestore:', novosGastosFixos);
-
       // Save each gasto fixo as individual document under the specific month
       for (const [categoria, valor] of Object.entries(novosGastosFixos)) {
         const gastoPath = `${mesesPath}/${mesId}/gastosFixos/${categoria}`;
@@ -250,7 +234,6 @@ export const useUnifiedFirestore = () => {
 
       // Update gastosFixos state for this specific month
       setGastosFixos(prev => ({ ...prev, [mesId]: novosGastosFixos }));
-      console.log('✅ Gastos fixos atualizados com sucesso');
 
     } catch (err) {
       console.error('❌ Erro ao atualizar gastos fixos:', err);
@@ -262,14 +245,11 @@ export const useUnifiedFirestore = () => {
   const updateDiasTrabalhados = useCallback(async (mesId, novosDias) => {
     if (!mesesPath) return;
     try {
-      console.log('💾 Atualizando dias trabalhados no Firestore:', novosDias);
-
       // Create a document for diasTrabalhados within the month's collection
       // Using collection and doc correctly to ensure even number of segments
       await setDoc(doc(db, `${mesesPath}/${mesId}/diasTrabalhados`, 'data'), novosDias);
 
       setDiasTrabalhados(prev => ({ ...prev, [mesId]: novosDias }));
-      console.log('✅ Dias trabalhados atualizados com sucesso');
 
     } catch (err) {
       console.error('❌ Erro ao atualizar dias trabalhados:', err);
@@ -282,8 +262,6 @@ export const useUnifiedFirestore = () => {
   const addRendimentoExtra = useCallback(async (mesId, rendimento) => {
     if (!mesesPath) return;
     try {
-      console.log('➕ Adicionando rendimento extra ao Firestore:', rendimento);
-
       const rendimentoId = `rendimento_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       // Fix the path construction to ensure even number of segments
       await setDoc(doc(db, `${mesesPath}/${mesId}/rendimentosExtras`, rendimentoId), {
@@ -297,8 +275,6 @@ export const useUnifiedFirestore = () => {
         [mesId]: [...(prev[mesId] || []), { id: rendimentoId, ...rendimento }]
       }));
 
-      console.log('✅ Rendimento extra adicionado com sucesso');
-
     } catch (err) {
       console.error('❌ Erro ao adicionar rendimento extra:', err);
       setError('Erro ao salvar rendimento extra: ' + err.message);
@@ -309,8 +285,6 @@ export const useUnifiedFirestore = () => {
   const removeRendimentoExtra = useCallback(async (mesId, rendimentoId) => {
     if (!mesesPath) return;
     try {
-      console.log('🗑️ Removendo rendimento extra do Firestore:', rendimentoId);
-
       // Fix the path construction to ensure even number of segments
       await deleteDoc(doc(db, `${mesesPath}/${mesId}/rendimentosExtras`, rendimentoId));
 
@@ -319,8 +293,6 @@ export const useUnifiedFirestore = () => {
         ...prev,
         [mesId]: (prev[mesId] || []).filter(rendimento => rendimento.id !== rendimentoId)
       }));
-
-      console.log('✅ Rendimento extra removido com sucesso');
 
     } catch (err) {
       console.error('❌ Erro ao remover rendimento extra:', err);
@@ -332,8 +304,6 @@ export const useUnifiedFirestore = () => {
   const addDivida = useCallback(async (mesId, divida) => {
     if (!mesesPath) return;
     try {
-      console.log('➕ Adicionando dívida ao Firestore:', divida);
-
       const dividaId = `divida_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       // Fix the path construction to ensure even number of segments
       await setDoc(doc(db, `${mesesPath}/${mesId}/dividas`, dividaId), {
@@ -347,8 +317,6 @@ export const useUnifiedFirestore = () => {
         [mesId]: [...(prev[mesId] || []), { id: dividaId, ...divida }]
       }));
 
-      console.log('✅ Dívida adicionada com sucesso');
-
     } catch (err) {
       console.error('❌ Erro ao adicionar dívida:', err);
       setError('Erro ao salvar dívida: ' + err.message);
@@ -359,8 +327,6 @@ export const useUnifiedFirestore = () => {
   const removeDivida = useCallback(async (mesId, dividaId) => {
     if (!mesesPath) return;
     try {
-      console.log('🗑️ Removendo dívida do Firestore:', dividaId);
-
       // Fix the path construction to ensure even number of segments
       await deleteDoc(doc(db, `${mesesPath}/${mesId}/dividas`, dividaId));
 
@@ -369,8 +335,6 @@ export const useUnifiedFirestore = () => {
         ...prev,
         [mesId]: (prev[mesId] || []).filter(divida => divida.id !== dividaId)
       }));
-
-      console.log('✅ Dívida removida com sucesso');
 
     } catch (err) {
       console.error('❌ Erro ao remover dívida:', err);
@@ -382,20 +346,16 @@ export const useUnifiedFirestore = () => {
   const updateDividaStatus = useCallback(async (mesId, dividaId, novoStatus) => {
     if (!mesesPath) return;
     try {
-      console.log('🔄 Atualizando status da dívida:', dividaId, novoStatus);
-
       // Fix the path construction to ensure even number of segments
       await updateDoc(doc(db, `${mesesPath}/${mesId}/dividas`, dividaId), { status: novoStatus });
 
       // Update local state
       setDividasData(prev => ({
         ...prev,
-        [mesId]: (prev[mesId] || []).map(divida => 
+        [mesId]: (prev[mesId] || []).map(divida =>
           divida.id === dividaId ? { ...divida, status: novoStatus } : divida
         )
       }));
-
-      console.log('✅ Status da dívida atualizado com sucesso');
 
     } catch (err) {
       console.error('❌ Erro ao atualizar status da dívida:', err);

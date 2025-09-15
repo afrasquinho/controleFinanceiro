@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import QuickStats from '../QuickStats';
 import { formatCurrency } from '../../utils/calculations';
+import { RENDIMENTOS_CONFIG, MESES_LIST, MESES_NOMES } from '../../config/constants';
 
 const OverviewSection = ({
   gastosFixos, 
@@ -13,8 +14,7 @@ const OverviewSection = ({
   reloadData
 }) => {
   // Calcular totais para visão geral
-  const calculateOverviewStats = () => {
-    let totalGastos = 0;
+  const stats = useMemo(() => {
     let totalGastosVariaveis = 0;
     let totalGastosFixos = 0;
     let totalRendimentos = 0;
@@ -23,19 +23,14 @@ const OverviewSection = ({
     // Dados detalhados por mês
     const detalhesPorMes = {};
 
-    console.log('gastosData:', gastosData); // Log the contents of gastosData
-    console.log('gastosFixos:', gastosFixos); // Log the contents of gastosFixos
-    
     // Calculate variable expenses
-    Object.values(gastosData).forEach((gastos, index) => {
-      const mesId = Object.keys(gastosData)[index];
+    Object.entries(gastosData).forEach(([mesId, gastos]) => {
       let totalGastosVariaveisMes = 0;
       let totalGastosFixosMes = 0;
       
       if (gastos && gastos.length > 0) {
         mesesComDados++;
         gastos.forEach(gasto => {
-          // All entries in gastosData are variable expenses, so we sum them all
           totalGastosVariaveisMes += gasto.valor;
         });
       }
@@ -62,22 +57,20 @@ const OverviewSection = ({
     });
 
     // Total expenses is the sum of variable and fixed expenses
-    totalGastos = totalGastosVariaveis + totalGastosFixos;
+    const totalGastos = totalGastosVariaveis + totalGastosFixos;
 
     // Calculate rendimentos based on working days and extra rendimentos
-    // This is a simplified calculation - in a real app, you'd get this from the Firestore hook
-    const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-    meses.forEach(mesId => {
+    MESES_LIST.forEach(mesId => {
       // Get working days for this month (simplified - in real app, get from Firestore)
-      const diasTrabalhados = { andre: 22, aline: 22 }; // Default values
+      const diasTrabalhados = RENDIMENTOS_CONFIG.DIAS_TRABALHADOS_DEFAULT;
       
       // Calculate base rendimentos
-      const rendimentoAndre = 144 * diasTrabalhados.andre;
-      const ivaAndre = rendimentoAndre * 0.23;
+      const rendimentoAndre = RENDIMENTOS_CONFIG.SALARIO_ANDRE * diasTrabalhados.andre;
+      const ivaAndre = rendimentoAndre * RENDIMENTOS_CONFIG.IVA_RATE;
       const totalAndre = rendimentoAndre + ivaAndre;
       
-      const rendimentoAline = 160 * diasTrabalhados.aline;
-      const ivaAline = rendimentoAline * 0.23;
+      const rendimentoAline = RENDIMENTOS_CONFIG.SALARIO_ALINE * diasTrabalhados.aline;
+      const ivaAline = rendimentoAline * RENDIMENTOS_CONFIG.IVA_RATE;
       const totalAline = rendimentoAline + ivaAline;
       
       // Add to total rendimentos
@@ -97,25 +90,7 @@ const OverviewSection = ({
       mediaMensalRendimentos: mesesComDados > 0 ? totalRendimentos / mesesComDados : 0,
       detalhesPorMes
     };
-  };
-
-  const stats = calculateOverviewStats();
-  
-  // Mapeamento de meses para nomes em português
-  const nomesMeses = {
-    'jan': 'Janeiro',
-    'fev': 'Fevereiro',
-    'mar': 'Março',
-    'abr': 'Abril',
-    'mai': 'Maio',
-    'jun': 'Junho',
-    'jul': 'Julho',
-    'ago': 'Agosto',
-    'set': 'Setembro',
-    'out': 'Outubro',
-    'nov': 'Novembro',
-    'dez': 'Dezembro'
-  };
+  }, [gastosData, gastosFixos]);
 
   return (
     <div className="overview-section">
@@ -194,7 +169,7 @@ const OverviewSection = ({
           {Object.entries(stats.detalhesPorMes).map(([mesId, detalhes]) => (
             <div key={mesId} className="monthly-card">
               <div className="monthly-header">
-                <h4>{nomesMeses[mesId] || mesId}</h4>
+                <h4>{MESES_NOMES[mesId] || mesId}</h4>
               </div>
               <div className="monthly-content">
                 <div className="detail-item">

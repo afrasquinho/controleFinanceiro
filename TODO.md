@@ -1,36 +1,28 @@
-# TODO - Nova Página Inicial e Dashboard
+# Comprehensive Project Improvement Plan - Remaining Tasks
 
-## Tarefas para implementar:
+## Phase 3: User Experience Enhancements
+- [ ] Enhance MonthsSection with better visualization (charts, stats, not just list)
+- [ ] Add input validation and sanitization in forms (Login.js, expense forms)
+- [ ] Improve error handling and user feedback across components
+- [ ] Add loading states for better UX in data loading
 
-### 1. Criar novo componente Dashboard
-- [ ] Criar `src/components/Dashboard.js` com estrutura de menus
-- [ ] Implementar navegação entre diferentes seções
-- [ ] Criar layout responsivo e intuitivo
+## Phase 4: Security & Best Practices
+- [ ] Add environment-based configuration (.env files for Firebase config)
+- [ ] Add input validation and sanitization
+- [ ] Implement proper error handling and logging (without console.log)
 
-### 2. Atualizar App.js
-- [ ] Substituir estrutura atual pelo novo dashboard
-- [ ] Manter funcionalidades existentes (carregamento, erros, etc.)
-- [ ] Integrar sistema de navegação
+## Phase 5: Testing & Documentation
+- [ ] Add unit tests for utilities (calculations.js, aiAdvanced.js)
+- [ ] Add integration tests for components (OverviewSection, Login)
+- [ ] Add README documentation
+- [ ] Add component documentation (JSDoc comments)
 
-### 3. Criar componentes de seção
-- [ ] `src/components/DashboardSections/OverviewSection.js` - Visão geral
-- [ ] `src/components/DashboardSections/ExpensesSection.js` - Gastos detalhados
-- [ ] `src/components/DashboardSections/PredictionsSection.js` - Previsões
-- [ ] `src/components/DashboardSections/AnalyticsSection.js` - Análises
-- [ ] `src/components/DashboardSections/SettingsSection.js` - Configurações
+## Phase 6: Accessibility Improvements
+- [ ] Implement keyboard navigation support
+- [ ] Add focus management
+- [ ] Improve color contrast and screen reader support
 
-### 4. Atualizar estilos
-- [ ] Criar CSS para novo layout
-- [ ] Garantir consistência visual
-
-### 5. Testar funcionalidade
-- [ ] Verificar navegação entre seções
-- [ ] Testar responsividade
-- [ ] Validar exibição de dados
-
-## Progresso:
-- [ ] Tarefa 1: Criar novo componente Dashboard
-- [ ] Tarefa 2: Atualizar App.js
-- [ ] Tarefa 3: Criar componentes de seção
-- [ ] Tarefa 4: Atualizar estilos
-- [ ] Tarefa 5: Testar funcionalidade
+## Additional Tasks
+- [ ] Add .env.example file for environment configuration
+- [ ] Update package.json with test scripts if needed
+- [ ] Add error boundaries for better error recovery
