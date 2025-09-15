@@ -4,6 +4,15 @@ import { app, db } from '../firebase'; // Import db along with app
 import { doc, setDoc } from 'firebase/firestore'; // Import doc and setDoc
 import './Login.css';
 
+/**
+ * Login component for user authentication
+ *
+ * Provides email/password login and Google OAuth authentication.
+ * Includes input validation and sanitization for security.
+ * Creates user document in Firestore upon successful authentication.
+ *
+ * @returns {JSX.Element} Login form with authentication options
+ */
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -12,19 +21,47 @@ const Login = () => {
 
   const auth = getAuth(app);
 
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePassword = (password) => {
+    return password.length >= 6;
+  };
+
+  const sanitizeInput = (input) => {
+    return input.trim().replace(/[<>]/g, '');
+  };
+
   const handleEmailLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
+    const sanitizedEmail = sanitizeInput(email);
+    const sanitizedPassword = sanitizeInput(password);
+
+    // Validation
+    if (!validateEmail(sanitizedEmail)) {
+      setError('Por favor, insira um email válido.');
+      setLoading(false);
+      return;
+    }
+
+    if (!validatePassword(sanitizedPassword)) {
+      setError('A senha deve ter pelo menos 6 caracteres.');
+      setLoading(false);
+      return;
+    }
+
     try {
-      const loginResult = await signInWithEmailAndPassword(auth, email, password);
+      const loginResult = await signInWithEmailAndPassword(auth, sanitizedEmail, sanitizedPassword);
       const user = auth.currentUser; // Get the authenticated user
       // Create user document in Firestore
       const userDocRef = doc(db, `users/${user.uid}/financeiro/2025`);
       await setDoc(userDocRef, { createdAt: new Date() }, { merge: true });
     } catch (err) {
-      console.error('❌ Erro no login:', err);
       setError('Falha no login: ' + err.message);
     } finally {
       setLoading(false);

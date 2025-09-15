@@ -20,14 +20,10 @@ let db;
 let auth;
 
 try {
-  console.log('🔥 Inicializando Firebase...');
   app = initializeApp(firebaseConfig);
   db = getFirestore(app);
   auth = getAuth(app);
-  console.log('✅ Firebase inicializado com sucesso');
-  console.log('📊 Projeto:', firebaseConfig.projectId);
 } catch (error) {
-  console.error('❌ Erro ao inicializar Firebase:', error);
   throw new Error(`Falha na inicialização do Firebase: ${error.message}`);
 }
 

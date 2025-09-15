@@ -8,15 +8,56 @@ const GastosVariaveisSection = ({ mes, gastos, onAddGasto, onRemoveGasto }) => {
     desc: '',
     valor: ''
   });
+  const [formErrors, setFormErrors] = useState({});
+
+  const validateDescription = (desc) => {
+    const sanitized = desc.trim();
+    return sanitized.length >= 2 && sanitized.length <= 100;
+  };
+
+  const validateValue = (valor) => {
+    const numValue = parseFloat(valor);
+    return !isNaN(numValue) && numValue > 0 && numValue <= 1000000;
+  };
+
+  const validateDate = (date) => {
+    const selectedDate = new Date(date);
+    const currentYear = new Date().getFullYear();
+    return selectedDate.getFullYear() >= currentYear - 1 && selectedDate.getFullYear() <= currentYear + 1;
+  };
+
+  const sanitizeInput = (input) => {
+    return input.trim().replace(/[<>]/g, '');
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (formData.desc && formData.valor) {
-      onAddGasto(mes.id, formData.data, formData.desc, formData.valor);
-      setFormData({ ...formData, desc: '', valor: '' });
-    } else {
-      alert('Por favor, preencha todos os campos');
+    setFormErrors({});
+
+    const sanitizedDesc = sanitizeInput(formData.desc);
+    const sanitizedValor = formData.valor;
+
+    let errors = {};
+
+    if (!validateDescription(sanitizedDesc)) {
+      errors.desc = 'Descrição deve ter entre 2 e 100 caracteres.';
     }
+
+    if (!validateValue(sanitizedValor)) {
+      errors.valor = 'Valor deve ser um número positivo menor que R$ 1.000.000.';
+    }
+
+    if (!validateDate(formData.data)) {
+      errors.data = 'Data deve estar dentro de um ano do ano atual.';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+
+    onAddGasto(mes.id, formData.data, sanitizedDesc, sanitizedValor);
+    setFormData({ ...formData, desc: '', valor: '' });
   };
 
   const totalGastosVariaveis = calculateGastosVariaveis(gastos);
@@ -68,28 +109,37 @@ const GastosVariaveisSection = ({ mes, gastos, onAddGasto, onRemoveGasto }) => {
         </table>
         
         <form onSubmit={handleSubmit} className="input-row">
-          <input 
-            type="date" 
-            value={formData.data}
-            onChange={(e) => setFormData({...formData, data: e.target.value})}
-            required
-          />
-          <input 
-            type="text" 
-            placeholder="Descrição do gasto"
-            value={formData.desc}
-            onChange={(e) => setFormData({...formData, desc: e.target.value})}
-            required
-          />
-          <input 
-            type="number" 
-            placeholder="Valor" 
-            step="0.01"
-            min="0"
-            value={formData.valor}
-            onChange={(e) => setFormData({...formData, valor: e.target.value})}
-            required
-          />
+          <div className="form-group">
+            <input
+              type="date"
+              value={formData.data}
+              onChange={(e) => setFormData({...formData, data: e.target.value})}
+              required
+            />
+            {formErrors.data && <div className="error-message">{formErrors.data}</div>}
+          </div>
+          <div className="form-group">
+            <input
+              type="text"
+              placeholder="Descrição do gasto"
+              value={formData.desc}
+              onChange={(e) => setFormData({...formData, desc: e.target.value})}
+              required
+            />
+            {formErrors.desc && <div className="error-message">{formErrors.desc}</div>}
+          </div>
+          <div className="form-group">
+            <input
+              type="number"
+              placeholder="Valor"
+              step="0.01"
+              min="0"
+              value={formData.valor}
+              onChange={(e) => setFormData({...formData, valor: e.target.value})}
+              required
+            />
+            {formErrors.valor && <div className="error-message">{formErrors.valor}</div>}
+          </div>
           <button type="submit" className="btn">
             Adicionar Gasto
           </button>

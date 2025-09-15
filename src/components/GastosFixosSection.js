@@ -14,6 +14,27 @@ const GastosFixosSection = ({ mes }) => {
   // Estado para controlar qual campo está sendo editado
   const [editando, setEditando] = useState(null);
 
+  // Função para mostrar notificações
+  const showNotification = (message, type = 'info') => {
+    const notification = document.createElement('div');
+    notification.textContent = message;
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: ${type === 'success' ? '#27ae60' : type === 'error' ? '#e74c3c' : '#3498db'};
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      z-index: 1000;
+      animation: fadeIn 0.3s ease-in;
+      max-width: 300px;
+      word-wrap: break-word;
+    `;
+    document.body.appendChild(notification);
+    setTimeout(() => document.body.removeChild(notification), type === 'error' ? 5000 : 3000);
+  };
+
   // Carregar gastos do Firestore ao inicializar
   useEffect(() => {
     // Check if we have fixed expenses data for this specific month
@@ -31,12 +52,21 @@ const GastosFixosSection = ({ mes }) => {
     }
   }, [firestoreGastosFixos, mes.id]);
 
-  // Função para editar um gasto
+  // Função para editar um gasto com validação
   const editarGasto = (categoria, novoValor) => {
-    setGastosFixos(prev => ({
-      ...prev,
-      [categoria]: parseFloat(novoValor) || 0
-    }));
+    const numValue = parseFloat(novoValor);
+    if (!isNaN(numValue) && numValue >= 0 && numValue <= 100000) {
+      setGastosFixos(prev => ({
+        ...prev,
+        [categoria]: numValue
+      }));
+    } else if (novoValor === '' || novoValor === '0') {
+      setGastosFixos(prev => ({
+        ...prev,
+        [categoria]: 0
+      }));
+    }
+    // If invalid, don't update the state
   };
 
   // Função para salvar no Firestore
@@ -44,10 +74,9 @@ const GastosFixosSection = ({ mes }) => {
     try {
       await updateGastosFixos(mes.id, gastosFixos);
       setEditando(null);
-      console.log('✅ Gastos fixos salvos no Firestore:', gastosFixos);
+      showNotification('✅ Gastos fixos salvos com sucesso!', 'success');
     } catch (error) {
-      console.error('❌ Erro ao salvar gastos fixos:', error);
-      alert('Erro ao salvar gastos fixos. Verifique o console para mais detalhes.');
+      showNotification('❌ Erro ao salvar gastos fixos. Tente novamente.', 'error');
     }
   };
 

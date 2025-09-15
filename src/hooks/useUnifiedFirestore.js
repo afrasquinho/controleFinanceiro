@@ -1,15 +1,45 @@
 import { useState, useEffect, useCallback } from 'react';
-import { 
-  collection, 
-  doc, 
-  getDocs, 
-  setDoc, 
+import {
+  collection,
+  doc,
+  getDocs,
+  setDoc,
   deleteDoc,
   updateDoc,
 } from 'firebase/firestore';
 import { db, auth } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { mesesInfo } from '../data/monthsData';
 
+/**
+ * Custom hook for managing financial data with Firestore
+ *
+ * Provides comprehensive CRUD operations for expenses, fixed costs, income,
+ * working days, and debts. Handles authentication state and data synchronization.
+ *
+ * @returns {Object} Hook state and methods
+ * @property {Object} gastosData - Variable expenses data by month
+ * @property {Object} gastosFixos - Fixed expenses data by month
+ * @property {Object} rendimentosData - Income data by month
+ * @property {Object} diasTrabalhados - Working days data by month
+ * @property {Object} dividasData - Debts data by month
+ * @property {boolean} loading - Loading state
+ * @property {string|null} error - Error message
+ * @property {string} connectionStatus - Connection status ('connecting'|'connected'|'error')
+ * @property {number} totalTransactions - Total number of transactions
+ * @property {string|null} userId - Current authenticated user ID
+ * @property {Function} addGasto - Add variable expense
+ * @property {Function} removeGasto - Remove variable expense
+ * @property {Function} updateGastosFixos - Update fixed expenses
+ * @property {Function} updateDiasTrabalhados - Update working days
+ * @property {Function} addRendimentoExtra - Add extra income
+ * @property {Function} removeRendimentoExtra - Remove extra income
+ * @property {Function} addDivida - Add debt
+ * @property {Function} removeDivida - Remove debt
+ * @property {Function} updateDividaStatus - Update debt status
+ * @property {Function} clearError - Clear error state
+ * @property {Function} reloadData - Reload all data
+ */
 export const useUnifiedFirestore = () => {
   const [userId, setUserId] = useState(null);
   const [gastosData, setGastosData] = useState({});
@@ -159,8 +189,8 @@ export const useUnifiedFirestore = () => {
         setLoading(true);
         setConnectionStatus('connecting');
       // Load data for each month (this will also load gastos fixos for each month)
-      for (const mes of MESES_LIST) {
-        await loadMonthData(mes);
+      for (const mes of mesesInfo) {
+        await loadMonthData(mes.id);
       }
 
       setConnectionStatus('connected');

@@ -18,6 +18,27 @@ const DividasSection = ({ mes }) => {
     status: 'pendente'
   });
 
+  // Função para mostrar notificações
+  const showNotification = (message, type = 'info') => {
+    const notification = document.createElement('div');
+    notification.textContent = message;
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: ${type === 'success' ? '#27ae60' : type === 'error' ? '#e74c3c' : '#3498db'};
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      z-index: 1000;
+      animation: fadeIn 0.3s ease-in;
+      max-width: 300px;
+      word-wrap: break-word;
+    `;
+    document.body.appendChild(notification);
+    setTimeout(() => document.body.removeChild(notification), type === 'error' ? 5000 : 3000);
+  };
+
   // Carregar dívidas salvas
   useEffect(() => {
     const dividasSalvas = localStorage.getItem(`dividas_${mes.id}`);
@@ -32,34 +53,61 @@ const DividasSection = ({ mes }) => {
     setDividas(novasDividas);
   };
 
-  // Adicionar nova dívida
+  // Adicionar nova dívida com validação
   const adicionarDivida = () => {
-    if (novaDivida.credor && novaDivida.valor) {
-      const divida = {
-        id: Date.now(),
-        credor: novaDivida.credor,
-        valor: parseFloat(novaDivida.valor),
-        descricao: novaDivida.descricao,
-        dataVencimento: novaDivida.dataVencimento,
-        status: novaDivida.status,
-        timestamp: new Date().toISOString()
-      };
-
-      const novasDividas = [...dividas, divida];
-      salvarDividas(novasDividas);
-      
-      // Limpar formulário
-      setNovaDivida({
-        credor: '',
-        valor: '',
-        descricao: '',
-        dataVencimento: '',
-        status: 'pendente'
-      });
-      setEditando(false);
-    } else {
-      alert('Por favor, preencha pelo menos o credor e o valor');
+    // Sanitizar e validar credor
+    const credorSanitized = novaDivida.credor.trim();
+    if (!credorSanitized || credorSanitized.length < 2 || credorSanitized.length > 50) {
+      showNotification('❌ Credor deve ter entre 2 e 50 caracteres', 'error');
+      return;
     }
+
+    // Validar valor
+    const valorNum = parseFloat(novaDivida.valor);
+    if (!novaDivida.valor || isNaN(valorNum) || valorNum <= 0 || valorNum > 1000000) {
+      showNotification('❌ Valor deve ser um número positivo menor que 1.000.000', 'error');
+      return;
+    }
+
+    // Validar data de vencimento (opcional)
+    if (novaDivida.dataVencimento) {
+      const dataVencimento = new Date(novaDivida.dataVencimento);
+      if (isNaN(dataVencimento.getTime())) {
+        showNotification('❌ Data de vencimento inválida', 'error');
+        return;
+      }
+    }
+
+    // Sanitizar descrição (opcional)
+    const descricaoSanitized = novaDivida.descricao.trim();
+    if (descricaoSanitized.length > 200) {
+      showNotification('❌ Descrição deve ter no máximo 200 caracteres', 'error');
+      return;
+    }
+
+    const divida = {
+      id: Date.now(),
+      credor: credorSanitized,
+      valor: valorNum,
+      descricao: descricaoSanitized,
+      dataVencimento: novaDivida.dataVencimento,
+      status: novaDivida.status,
+      timestamp: new Date().toISOString()
+    };
+
+    const novasDividas = [...dividas, divida];
+    salvarDividas(novasDividas);
+
+    // Limpar formulário
+    setNovaDivida({
+      credor: '',
+      valor: '',
+      descricao: '',
+      dataVencimento: '',
+      status: 'pendente'
+    });
+    setEditando(false);
+    showNotification('✅ Dívida adicionada com sucesso!', 'success');
   };
 
   // Remover dívida
@@ -67,6 +115,7 @@ const DividasSection = ({ mes }) => {
     if (window.confirm('Tem certeza que deseja remover esta dívida?')) {
       const novasDividas = dividas.filter(d => d.id !== id);
       salvarDividas(novasDividas);
+      showNotification('✅ Dívida removida com sucesso!', 'success');
     }
   };
 

@@ -24,6 +24,28 @@ const RendimentosSection = ({ mes }) => {
   });
   const [editandoDias, setEditandoDias] = useState(false);
   const [adicionandoRendimento, setAdicionandoRendimento] = useState(false);
+
+  // Função para mostrar notificações
+  const showNotification = (message, type = 'info') => {
+    const notification = document.createElement('div');
+    notification.textContent = message;
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: ${type === 'success' ? '#27ae60' : type === 'error' ? '#e74c3c' : '#3498db'};
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      z-index: 1000;
+      animation: fadeIn 0.3s ease-in;
+      max-width: 300px;
+      word-wrap: break-word;
+    `;
+    document.body.appendChild(notification);
+    setTimeout(() => document.body.removeChild(notification), type === 'error' ? 5000 : 3000);
+  };
+
   // Carregar dados do Firestore
   useEffect(() => {
     // Carregar dias trabalhados
@@ -43,43 +65,72 @@ const RendimentosSection = ({ mes }) => {
     }
   }, [firestoreDiasTrabalhados, firestoreRendimentosData, mes.dias, mes.id]);
 
-  // Salvar dias trabalhados no Firestore
+  // Salvar dias trabalhados no Firestore com validação
   const salvarDias = async () => {
+    const andreNum = parseInt(andreDias);
+    const alineNum = parseInt(alineDias);
+
+    if (isNaN(andreNum) || andreNum < 0 || andreNum > 31) {
+      showNotification('❌ Dias de André devem estar entre 0 e 31', 'error');
+      return;
+    }
+
+    if (isNaN(alineNum) || alineNum < 0 || alineNum > 31) {
+      showNotification('❌ Dias de Aline devem estar entre 0 e 31', 'error');
+      return;
+    }
+
     try {
       const dias = {
-        andre: parseInt(andreDias),
-        aline: parseInt(alineDias)
+        andre: andreNum,
+        aline: alineNum
       };
       await updateDiasTrabalhados(mes.id, dias);
-      alert('✅ Dias trabalhados salvos no Firestore!');
+      showNotification('✅ Dias trabalhados salvos com sucesso!', 'success');
       setEditandoDias(false);
     } catch (error) {
-      console.error('❌ Erro ao salvar dias trabalhados:', error);
-      alert('Erro ao salvar dias trabalhados. Verifique o console para mais detalhes.');
+      showNotification('❌ Erro ao salvar dias trabalhados. Tente novamente.', 'error');
     }
   };
 
-  // Adicionar novo rendimento no Firestore
+  // Adicionar novo rendimento no Firestore com validação
   const adicionarRendimento = async () => {
-    if (novoRendimento.fonte && novoRendimento.valor) {
-      try {
-        const rendimento = {
-          fonte: novoRendimento.fonte,
-          valor: parseFloat(novoRendimento.valor),
-          descricao: novoRendimento.descricao
-        };
-        
-        await addRendimentoExtra(mes.id, rendimento);
-        
-        // Limpar formulário
-        setNovoRendimento({ fonte: '', valor: '', descricao: '' });
-        setAdicionandoRendimento(false);
-      } catch (error) {
-        console.error('❌ Erro ao adicionar rendimento:', error);
-        alert('Erro ao adicionar rendimento. Verifique o console para mais detalhes.');
-      }
-    } else {
-      alert('Por favor, preencha pelo menos a fonte e o valor');
+    // Sanitizar e validar fonte
+    const fonteSanitized = novoRendimento.fonte.trim();
+    if (!fonteSanitized || fonteSanitized.length < 2 || fonteSanitized.length > 50) {
+      showNotification('❌ Fonte deve ter entre 2 e 50 caracteres', 'error');
+      return;
+    }
+
+    // Validar valor
+    const valorNum = parseFloat(novoRendimento.valor);
+    if (!novoRendimento.valor || isNaN(valorNum) || valorNum <= 0 || valorNum > 1000000) {
+      showNotification('❌ Valor deve ser um número positivo menor que 1.000.000', 'error');
+      return;
+    }
+
+    // Sanitizar descrição (opcional)
+    const descricaoSanitized = novoRendimento.descricao.trim();
+    if (descricaoSanitized.length > 200) {
+      showNotification('❌ Descrição deve ter no máximo 200 caracteres', 'error');
+      return;
+    }
+
+    try {
+      const rendimento = {
+        fonte: fonteSanitized,
+        valor: valorNum,
+        descricao: descricaoSanitized
+      };
+
+      await addRendimentoExtra(mes.id, rendimento);
+
+      // Limpar formulário
+      setNovoRendimento({ fonte: '', valor: '', descricao: '' });
+      setAdicionandoRendimento(false);
+      showNotification('✅ Rendimento adicionado com sucesso!', 'success');
+    } catch (error) {
+      showNotification('❌ Erro ao adicionar rendimento. Tente novamente.', 'error');
     }
   };
 
@@ -88,9 +139,9 @@ const RendimentosSection = ({ mes }) => {
     if (window.confirm('Tem certeza que deseja remover este rendimento?')) {
       try {
         await removeRendimentoExtra(mes.id, rendimentoId);
+        showNotification('✅ Rendimento removido com sucesso!', 'success');
       } catch (error) {
-        console.error('❌ Erro ao remover rendimento:', error);
-        alert('Erro ao remover rendimento. Verifique o console para mais detalhes.');
+        showNotification('❌ Erro ao remover rendimento. Tente novamente.', 'error');
       }
     }
   };

@@ -12,7 +12,6 @@ import { analyzeWithAI, getQuickStats } from './utils/aiAdvanced';
 if (typeof window !== 'undefined') {
   window.analyzeWithAI = analyzeWithAI;
   window.getQuickStats = getQuickStats;
-  console.log('🔧 IA exposta globalmente via App.js');
 }
 
 function App() {
