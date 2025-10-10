@@ -1,6 +1,6 @@
 // src/components/DownloadSection.js
 import React, { useRef } from 'react';
-import { generateExcel, generateMonthReport } from '../utils/excelGenerator';
+import { generateExcel, generateMonthReport } from '../utils/excelGenerator.js';
 
 const DownloadSection = ({ 
   gastosData, 

@@ -1,7 +1,7 @@
 // src/hooks/useFirestore.js
 import { useState, useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../firebase'; // Certifique-se de que o caminho está correto
+import { db } from '../firebase.js'; // Certifique-se de que o caminho está correto
 
 export const useFirestore = () => {
   const [gastosData, setGastosData] = useState({});

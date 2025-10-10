@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
-import QuickStats from '../QuickStats';
-import { formatCurrency } from '../../utils/calculations';
-import { RENDIMENTOS_CONFIG, MESES_NOMES } from '../../config/constants';
+import QuickStats from '../QuickStats.js';
+import { formatCurrency } from '../../utils/calculations.js';
+import { RENDIMENTOS_CONFIG, MESES_NOMES } from '../../config/constants.js';
 
-import { mesesInfo } from '../../data/monthsData';
+import { mesesInfo } from '../../data/monthsData.js';
 
 const OverviewSection = ({
   gastosFixos,
@@ -70,11 +70,11 @@ const OverviewSection = ({
       // Calculate base rendimentos
       const rendimentoAndre = RENDIMENTOS_CONFIG.SALARIO_ANDRE * diasTrabalhados;
       const ivaAndre = rendimentoAndre * RENDIMENTOS_CONFIG.IVA_RATE;
-      const totalAndre = rendimentoAndre + ivaAndre;
+      const totalAndre = rendimentoAndre - ivaAndre;
 
       const rendimentoAline = RENDIMENTOS_CONFIG.SALARIO_ALINE * diasTrabalhados;
       const ivaAline = rendimentoAline * RENDIMENTOS_CONFIG.IVA_RATE;
-      const totalAline = rendimentoAline + ivaAline;
+      const totalAline = rendimentoAline - ivaAline;
 
       // Add to total rendimentos
       totalRendimentos += totalAndre + totalAline;
@@ -120,10 +120,10 @@ const OverviewSection = ({
   }
 
   return (
-    <div className="overview-section">
+    <div className="overview-section" role="region" aria-labelledby="overview-title">
       {/* Header */}
       <div className="section-header">
-        <h1>📊 Visão Geral Financeira</h1>
+        <h1 id="overview-title">📊 Visão Geral Financeira</h1>
         <p>Análise completa do seu controle financeiro</p>
       </div>
 
@@ -131,7 +131,7 @@ const OverviewSection = ({
       <QuickStats gastosData={gastosData} />
 
       {/* Overview Cards */}
-      <div className="overview-grid">
+      <div className="overview-grid" aria-live="polite" aria-label="Estatísticas financeiras atualizadas">
         <div className="overview-card income-card">
           <div className="card-icon">💰</div>
           <div className="card-content">
@@ -240,14 +240,14 @@ const OverviewSection = ({
 
       {/* Connection Status */}
       {connectionStatus !== 'connected' && (
-        <div className="connection-banner">
+        <div className="connection-banner" role="status" aria-live="polite">
           <div className="banner-content">
-            <span className="banner-icon">🔗</span>
+            <span className="banner-icon" aria-hidden="true">🔗</span>
             <span className="banner-text">
               {connectionStatus === 'connecting' ? 'Conectando ao Firebase...' : 'Erro de conexão'}
             </span>
             {connectionStatus === 'error' && (
-              <button onClick={reloadData} className="retry-btn">
+              <button onClick={reloadData} className="retry-btn" aria-label="Tentar reconectar ao Firebase">
                 Tentar Novamente
               </button>
             )}

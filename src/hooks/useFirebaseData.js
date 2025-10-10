@@ -8,7 +8,7 @@ import {
   deleteDoc, 
   
 } from 'firebase/firestore';
-import { db } from '../firebase';
+import { db } from '../firebase.js';
 
 export const useFirebaseData = () => {
   const [gastosData, setGastosData] = useState({});
@@ -77,7 +77,7 @@ export const useFirebaseData = () => {
       console.log('➕ Adicionando gasto ao Firebase:', novoGasto);
 
       // Gerar ID único
-      const gastoId = `gasto_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const gastoId = `gasto_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
       
       // Salvar no Firebase
       await setDoc(doc(db, 'gastos', '2025', mesId, gastoId), novoGasto);
@@ -160,7 +160,7 @@ export const useFirebaseData = () => {
         for (const [mes, gastos] of Object.entries(dataToImport)) {
           if (Array.isArray(gastos)) {
             for (const gasto of gastos) {
-              const gastoId = gasto.id || `imported_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+              const gastoId = gasto.id || `imported_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
               const gastoData = {
                 data: gasto.data,
                 desc: gasto.desc,

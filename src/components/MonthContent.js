@@ -1,10 +1,10 @@
 // src/components/MonthContent.js
 import React from 'react';
-import RendimentosSection from './RendimentosSection';
-import DividasSection from './DividasSection';
-import GastosFixosSection from './GastosFixosSection';
-import GastosVariaveisSection from './GastosVariaveisSection';
-import SummarySection from './SummarySection';
+import RendimentosSection from './RendimentosSection.js';
+import DividasSection from './DividasSection.js';
+import GastosFixosSection from './GastosFixosSection.js';
+import GastosVariaveisSection from './GastosVariaveisSection.js';
+import SummarySection from './SummarySection.js';
 
 const MonthContent = ({ 
   mes, 

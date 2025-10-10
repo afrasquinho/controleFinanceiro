@@ -1,6 +1,6 @@
 import React from 'react';
-import DownloadSection from '../DownloadSection';
-import { mesesInfo } from '../../data/monthsData';
+import DownloadSection from '../DownloadSection.js';
+import { mesesInfo } from '../../data/monthsData.js';
 
 const SettingsSection = ({ 
   gastosData, 

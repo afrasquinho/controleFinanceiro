@@ -1,6 +1,6 @@
 // src/hooks/useFinanceData.js
 import { useState, useEffect, useCallback } from 'react';
-import { analyzeWithAI } from '../utils/aiAdvanced';
+import { analyzeWithAI } from '../utils/aiAdvanced.js';
 
 export const useFinanceData = () => {
   const [gastosData, setGastosData] = useState({});

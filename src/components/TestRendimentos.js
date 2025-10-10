@@ -1,6 +1,6 @@
 import React from 'react';
-import RendimentosSection from './RendimentosSection';
-import { mesesInfo } from '../data/monthsData';
+import RendimentosSection from './RendimentosSection.js';
+import { mesesInfo } from '../data/monthsData.js';
 
 const TestRendimentos = () => {
   // Use the first month for testing

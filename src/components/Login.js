@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { app, db } from '../firebase'; // Import db along with app
+import { app, db } from '../firebase.js'; // Import db along with app
 import { doc, setDoc } from 'firebase/firestore'; // Import doc and setDoc
 import './Login.css';
 
@@ -56,7 +56,7 @@ const Login = () => {
     }
 
     try {
-      const loginResult = await signInWithEmailAndPassword(auth, sanitizedEmail, sanitizedPassword);
+      await signInWithEmailAndPassword(auth, sanitizedEmail, sanitizedPassword);
       const user = auth.currentUser; // Get the authenticated user
       // Create user document in Firestore
       const userDocRef = doc(db, `users/${user.uid}/financeiro/2025`);
@@ -90,7 +90,7 @@ const Login = () => {
   return (
     <div className="login-container">
       <div className="login-card">
-        <h2 style={{ textAlign: 'center', marginBottom: '30px' }}>🔐 Login</h2>
+        <h2 id="login-form-title" style={{ textAlign: 'center', marginBottom: '30px' }}>🔐 Login</h2>
         
         {error && (
           <div
@@ -104,7 +104,7 @@ const Login = () => {
           </div>
         )}
 
-        <form onSubmit={handleEmailLogin} role="form" aria-labelledby="login-form-title">
+        <form onSubmit={handleEmailLogin} aria-labelledby="login-form-title">
           <div className="form-group">
             <label htmlFor="email">Email:</label>
             <input

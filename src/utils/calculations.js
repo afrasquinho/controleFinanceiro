@@ -1,8 +1,8 @@
 // src/utils/calculations.js
-import { mesesInfo, gastosFixosDefault, valoresDefault } from '../data/monthsData';
+import { mesesInfo, gastosFixosDefault, valoresDefault } from '../data/monthsData.js';
 
 // Importar a IA avançada
-import { analyzeWithAI, getQuickStats, testAI } from './aiAdvanced';
+import { analyzeWithAI, getQuickStats, testAI } from './aiAdvanced.js';
 
 export const calculateRendimentos = (mesId) => {
   const mes = mesesInfo.find(m => m.id === mesId);
@@ -300,7 +300,7 @@ export {
   predictNextMonth,
   getFinancialHealth,
   detectExpenseAnomalies
-} from './aiAdvanced';
+} from './aiAdvanced.js';
 
 // Função de teste para verificar se a IA está funcionando
 export const testAIIntegration = () => {

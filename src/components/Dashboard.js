@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import OverviewSection from './DashboardSections/OverviewSection';
-import MonthsSection from './MonthsSection';
-import ExpensesSection from './DashboardSections/ExpensesSection';
-import PredictionsSection from './DashboardSections/PredictionsSection';
-import AnalyticsSection from './DashboardSections/AnalyticsSection';
-import SettingsSection from './DashboardSections/SettingsSection';
-import TestRendimentos from './TestRendimentos'; // Import the test component
-import { useUnifiedFirestore } from '../hooks/useUnifiedFirestore';
+import OverviewSection from './DashboardSections/OverviewSection.js';
+import MonthsSection from './MonthsSection.js';
+import ExpensesSection from './DashboardSections/ExpensesSection.js';
+import PredictionsSection from './DashboardSections/PredictionsSection.js';
+import AnalyticsSection from './DashboardSections/AnalyticsSection.js';
+import SettingsSection from './DashboardSections/SettingsSection.js';
+import { useUnifiedFirestore } from '../hooks/useUnifiedFirestore.js';
 
 const Dashboard = () => {
   const [activeSection, setActiveSection] = useState('overview');

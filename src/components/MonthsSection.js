@@ -1,13 +1,17 @@
 import React, { useMemo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
-import { MESES_NOMES, MESES_LIST } from '../config/constants';
-import { formatCurrency, calculateGastosVariaveis } from '../utils/calculations';
-import { useUnifiedFirestore } from '../hooks/useUnifiedFirestore';
+import { MESES_NOMES, MESES_LIST } from '../config/constants.js';
+import { valoresDefault, mesesInfo } from '../data/monthsData.js';
+import { formatCurrency, calculateGastosVariaveis } from '../utils/calculations.js';
+import { useUnifiedFirestore } from '../hooks/useUnifiedFirestore.js';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
 const MonthsSection = ({ gastosData }) => {
-  const { gastosFixos, rendimentosData } = useUnifiedFirestore();
+  const { gastosFixos, rendimentosData, diasTrabalhados } = useUnifiedFirestore();
+
+  console.log('diasTrabalhados:', diasTrabalhados);
+  console.log('rendimentosData:', rendimentosData);
 
   // Calculate comprehensive monthly statistics
   const monthlyStats = useMemo(() => {
@@ -23,10 +27,37 @@ const MonthsSection = ({ gastosData }) => {
 
       // Add income data
       const rendimentosMes = rendimentosData[mesId] || [];
-      const totalRendimentos = Array.isArray(rendimentosMes)
+      const totalRendimentosExtras = Array.isArray(rendimentosMes)
         ? rendimentosMes.reduce((sum, r) => sum + (r.valor || 0), 0)
         : 0;
 
+      // If no gastos and no rendimentos extras, and no diasTrabalhados for this month, consider base rendimentos as 0
+      const hasGastos = gastos.length > 0;
+      const hasRendimentosExtras = totalRendimentosExtras > 0;
+      const hasDiasTrabalhados = diasTrabalhados && diasTrabalhados[mesId];
+      const baseRendimentos = (hasGastos || hasRendimentosExtras || hasDiasTrabalhados)
+        ? (() => {
+            const mesInfo = mesesInfo.find(m => m.id === mesId);
+            let dias = diasTrabalhados && diasTrabalhados[mesId] ? diasTrabalhados[mesId] : { andre: mesInfo.dias, aline: mesInfo.dias };
+            // Parse dias.andre and dias.aline as numbers, fallback to mesInfo.dias if invalid
+            const diasAndre = Number(dias.andre);
+            const diasAline = Number(dias.aline);
+            dias = {
+              andre: isNaN(diasAndre) ? mesInfo.dias : diasAndre,
+              aline: isNaN(diasAline) ? mesInfo.dias : diasAline
+            };
+            const rendimentoBaseAndre = valoresDefault.valorAndre * dias.andre;
+            // Removed IVA from rendimentoBaseAndre
+            const totalAndre = rendimentoBaseAndre;
+            const rendimentoBaseAline = valoresDefault.valorAline * dias.aline;
+            // Removed IVA from rendimentoBaseAline
+            const totalAline = rendimentoBaseAline;
+            console.log(`Month: ${mesId}, baseRendimentos: ${totalAndre + totalAline}, totalRendimentosExtras: ${totalRendimentosExtras}`);
+            return totalAndre + totalAline;
+          })()
+        : 0;
+
+      const totalRendimentos = baseRendimentos + totalRendimentosExtras;
       const totalGastos = totalGastosVariaveis + totalGastosFixos;
       const saldo = totalRendimentos - totalGastos;
       const numTransacoes = gastos.length;
@@ -43,7 +74,7 @@ const MonthsSection = ({ gastosData }) => {
         ativo: numTransacoes > 0 || totalGastosFixos > 0 || totalRendimentos > 0
       };
     }).filter(stat => stat.ativo);
-  }, [gastosData, gastosFixos, rendimentosData]);
+  }, [gastosData, gastosFixos, rendimentosData, diasTrabalhados]);
 
   // Prepare data for bar chart
   const barChartData = useMemo(() => {

@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
-import ErrorBoundary from './components/ErrorBoundary';
-import reportWebVitals from './reportWebVitals';
+import App from './App.js';
+import ErrorBoundary from './components/ErrorBoundary.js';
+import reportWebVitals from './reportWebVitals.js';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

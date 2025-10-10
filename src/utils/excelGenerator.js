@@ -1,7 +1,7 @@
 
 import * as XLSX from 'xlsx';
-import { mesesInfo, gastosFixosDefault, valoresDefault } from '../data/monthsData';
-import { calculateRendimentos, calculateSaldo } from './calculations';
+import { mesesInfo, gastosFixosDefault, valoresDefault } from '../data/monthsData.js';
+import { calculateRendimentos, calculateSaldo } from './calculations.js';
 
 export const generateExcel = (gastosData) => {
   const wb = XLSX.utils.book_new();

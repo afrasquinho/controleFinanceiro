@@ -1,8 +1,8 @@
 // src/components/GastosFixosSection.js
 import React, { useState, useEffect } from 'react';
-import { gastosFixosDefault } from '../data/monthsData';
-import { formatCurrency } from '../utils/calculations';
-import { useUnifiedFirestore } from '../hooks/useUnifiedFirestore';
+import { gastosFixosDefault } from '../data/monthsData.js';
+import { formatCurrency } from '../utils/calculations.js';
+import { useUnifiedFirestore } from '../hooks/useUnifiedFirestore.js';
 
 const GastosFixosSection = ({ mes }) => {
   // Hook do Firestore

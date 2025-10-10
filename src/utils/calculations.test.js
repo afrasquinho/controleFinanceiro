@@ -8,7 +8,7 @@ import {
   compareMonths,
   detectAnomalousExpenses,
   getDominantCategory
-} from './calculations';
+} from './calculations.js';
 
 // Mock localStorage
 const localStorageMock = {

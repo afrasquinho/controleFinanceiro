@@ -1,12 +1,12 @@
 // src/App.js
-import React from 'react';
-import { useUnifiedFirestore } from './hooks/useUnifiedFirestore';
-import Dashboard from './components/Dashboard';
-import Login from './components/Login'; 
+import React, { useState } from 'react';
+import { useUnifiedFirestore } from './hooks/useUnifiedFirestore.js';
+import Dashboard from './components/Dashboard.js';
+import Login from './components/Login.js';
 import './App.css';
 
 // Importar IA
-import { analyzeWithAI, getQuickStats } from './utils/aiAdvanced';
+import { analyzeWithAI, getQuickStats } from './utils/aiAdvanced.js';
 
 // Expor IA globalmente para debug
 if (typeof window !== 'undefined') {
@@ -16,8 +16,8 @@ if (typeof window !== 'undefined') {
 
 function App() {
   // Hook do Firestore com recursos aprimorados
-  const { 
-    gastosData, 
+  const {
+    gastosData,
     loading,
     error,
     connectionStatus,
@@ -29,8 +29,14 @@ function App() {
     userId // Add userId to check authentication
   } = useUnifiedFirestore();
 
+  // Estado para controlar o painel de debug
+  const [debugVisible, setDebugVisible] = useState(false);
+
   return (
     <div className="container">
+      {/* Skip Link for Accessibility */}
+      <a href="#main-content" className="skip-link">Pular para conteúdo principal</a>
+
       {/* Loading Overlay */}
       {loading && (
         <div className="loading-overlay">
@@ -78,27 +84,11 @@ function App() {
       </div>
 
       {/* Header */}
-      <header style={{ textAlign: 'center', marginBottom: '30px' }}>
-        <h1 style={{ 
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
-          fontSize: '2.5rem',
-          fontWeight: 'bold',
-          margin: '0 0 10px 0'
-        }}>
+      <header className="app-header">
+        <h1 className="app-title">
           💰 Controle Financeiro 2025
         </h1>
-        <div style={{ 
-          fontSize: '14px', 
-          color: '#6c757d',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          gap: '15px',
-          flexWrap: 'wrap'
-        }}>
+        <div className="app-subtitle">
           <span>🤖 Powered by IA Avançada</span>
           <span>•</span>
           <span>📅 {Object.keys(gastosData).length} meses ativos</span>
@@ -107,72 +97,61 @@ function App() {
         </div>
       </header>
 
-      {/* Render Login or Dashboard based on authentication */}
-      {userId ? (
-        <Dashboard 
-          gastosData={gastosData}
-          loading={loading}
-          error={error}
-          connectionStatus={connectionStatus}
-          totalTransactions={totalTransactions}
-          clearError={clearError}
-          reloadData={reloadData}
-          addGasto={addGasto}
-          removeGasto={removeGasto}
-        />
-      ) : (
-        <Login />
-      )}
-      {/* Log para debug */}
+      {/* Main Content */}
+      <main id="main-content">
+        {/* Render Login or Dashboard based on authentication */}
+        {userId ? (
+          <>
+            <Dashboard
+              gastosData={gastosData}
+              loading={loading}
+              error={error}
+              connectionStatus={connectionStatus}
+              totalTransactions={totalTransactions}
+              clearError={clearError}
+              reloadData={reloadData}
+              addGasto={addGasto}
+              removeGasto={removeGasto}
+            />
 
-      {/* Informações para novos usuários */}
-      {Object.keys(gastosData).length === 0 && (
-        <div style={{
-          textAlign: 'center',
-          padding: '60px 20px',
-          backgroundColor: '#f8f9fa',
-          borderRadius: '10px',
-          margin: '40px 0'
-        }}>
-          <div style={{ fontSize: '64px', marginBottom: '20px' }}>🚀</div>
-          <h3 style={{ color: '#495057', marginBottom: '15px' }}>
-            Bem-vindo ao Controle Financeiro 2025!
-          </h3>
-          <p style={{ color: '#6c757d', marginBottom: '20px', maxWidth: '500px', margin: '0 auto 20px' }}>
-            Comece adicionando seus primeiros gastos em qualquer mês. 
-            Nossa IA irá analisar automaticamente seus padrões financeiros e fornecer insights personalizados.
-          </p>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            gap: '20px',
-            flexWrap: 'wrap',
-            fontSize: '14px',
-            color: '#6c757d'
-          }}>
-            <div>🤖 IA Avançada</div>
-            <div>📊 Análise de Padrões</div>
-            <div>🔮 Previsões Inteligentes</div>
-            <div>💡 Insights Personalizados</div>
-          </div>
-        </div>
-      )}
+            {/* Informações para novos usuários */}
+            {Object.keys(gastosData).length === 0 && (
+              <div className="welcome-section">
+                <div className="welcome-emoji">🚀</div>
+                <h3 className="welcome-title">
+                  Bem-vindo ao Controle Financeiro 2025!
+                </h3>
+                <p className="welcome-text">
+                  Comece adicionando seus primeiros gastos em qualquer mês.
+                  Nossa IA irá analisar automaticamente seus padrões financeiros e fornecer insights personalizados.
+                </p>
+                <div className="welcome-features">
+                  <div>🤖 IA Avançada</div>
+                  <div>📊 Análise de Padrões</div>
+                  <div>🔮 Previsões Inteligentes</div>
+                  <div>💡 Insights Personalizados</div>
+                </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <Login />
+        )}
+      </main>
 
       {/* Debug panel (apenas em desenvolvimento) */}
       {process.env.NODE_ENV === 'development' && (
-        <div style={{
-          position: 'fixed',
-          top: '10px',
-          left: '10px',
-          background: 'white',
-          padding: '10px',
-          borderRadius: '5px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-          fontSize: '11px',
-          zIndex: 1000
-        }}>
-          <div>Debug: {Object.keys(gastosData).length} meses</div>
-          <div>Status: {connectionStatus}</div>
+        <div className="debug-panel">
+          <button
+            className="debug-toggle"
+            onClick={() => setDebugVisible(!debugVisible)}
+          >
+            Debug
+          </button>
+          <div className={`debug-content ${debugVisible ? 'show' : ''}`}>
+            <div>Debug: {Object.keys(gastosData).length} meses</div>
+            <div>Status: {connectionStatus}</div>
+          </div>
         </div>
       )}
     </div>

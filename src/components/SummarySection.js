@@ -1,6 +1,6 @@
 // src/components/SummarySection.js
 import React from 'react';
-import { calculateSaldo, formatCurrency } from '../utils/calculations';
+import { calculateSaldo, formatCurrency } from '../utils/calculations.js';
 
 const SummarySection = ({ mes, gastos }) => {
   const saldoInfo = calculateSaldo(mes.id, gastos);

@@ -6,7 +6,7 @@ import {
   getFinancialHealth,
   detectExpenseAnomalies,
   getQuickStats
-} from './aiAdvanced';
+} from './aiAdvanced.js';
 
 // Mock console methods
 const originalConsoleLog = console.log;

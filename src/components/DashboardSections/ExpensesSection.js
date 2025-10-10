@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import MonthContent from '../MonthContent';
-import { mesesInfo } from '../../data/monthsData';
-import { formatCurrency } from '../../utils/calculations';
+import MonthContent from '../MonthContent.js';
+import { mesesInfo } from '../../data/monthsData.js';
+import { formatCurrency } from '../../utils/calculations.js';
 
 const ExpensesSection = ({ 
   gastosData, 

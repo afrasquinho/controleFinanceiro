@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { analyzeWithAI } from '../../utils/aiAdvanced';
-import { formatCurrency } from '../../utils/calculations';
+import { analyzeWithAI } from '../../utils/aiAdvanced.js';
+import { formatCurrency } from '../../utils/calculations.js';
 
 const PredictionsSection = ({ gastosData }) => {
   const [analysis, setAnalysis] = useState(null);

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { calculateGastosVariaveis, formatCurrency } from '../utils/calculations';
+import { calculateGastosVariaveis, formatCurrency } from '../utils/calculations.js';
 
 const GastosVariaveisSection = ({ mes, gastos, onAddGasto, onRemoveGasto }) => {
   const [formData, setFormData] = useState({

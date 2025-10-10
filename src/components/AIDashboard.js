@@ -1,7 +1,7 @@
 // src/components/AIDashboard.js
 import React, { useState, useEffect } from 'react';
-import { analyzeWithAI } from '../utils/aiAdvanced';
-import { formatCurrency } from '../utils/calculations';
+import { analyzeWithAI } from '../utils/aiAdvanced.js';
+import { formatCurrency } from '../utils/calculations.js';
 
 const AIDashboard = ({ gastosData, rendimentosData, currentMonth }) => {
   const [analysis, setAnalysis] = useState(null);

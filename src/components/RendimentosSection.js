@@ -1,8 +1,8 @@
 // src/components/RendimentosSection.js
 import React, { useState, useEffect } from 'react';
-import { formatCurrency } from '../utils/calculations';
-import { valoresDefault } from '../data/monthsData';
-import { useUnifiedFirestore } from '../hooks/useUnifiedFirestore';
+import { formatCurrency } from '../utils/calculations.js';
+import { valoresDefault } from '../data/monthsData.js';
+import { useUnifiedFirestore } from '../hooks/useUnifiedFirestore.js';
 
 const RendimentosSection = ({ mes }) => {
   // Hook do Firestore

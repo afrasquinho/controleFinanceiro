@@ -7,9 +7,9 @@ import {
   deleteDoc,
   updateDoc,
 } from 'firebase/firestore';
-import { db, auth } from '../firebase';
+import { db, auth } from '../firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
-import { mesesInfo } from '../data/monthsData';
+import { mesesInfo } from '../data/monthsData.js';
 
 /**
  * Custom hook for managing financial data with Firestore
@@ -41,7 +41,8 @@ import { mesesInfo } from '../data/monthsData';
  * @property {Function} reloadData - Reload all data
  */
 export const useUnifiedFirestore = () => {
-  const [userId, setUserId] = useState(null);
+  // undefined represents "initializing auth"; null represents "logged out"; string is the authenticated user id
+  const [userId, setUserId] = useState(undefined);
   const [gastosData, setGastosData] = useState({});
   const [gastosFixos, setGastosFixos] = useState({});
   const [rendimentosData, setRendimentosData] = useState({});
@@ -65,7 +66,7 @@ export const useUnifiedFirestore = () => {
       }
     });
     return () => unsubscribe();
-  }, [auth]);
+  }, []);
 
   // Load gastos fixos for a specific month
   const loadGastosFixos = useCallback(async (mesId) => {
@@ -156,7 +157,6 @@ export const useUnifiedFirestore = () => {
           ...doc.data()
         });
       });
-
       if (dividasArray.length > 0) {
         setDividasData(prev => ({ ...prev, [mesId]: dividasArray }));
       }
@@ -202,7 +202,8 @@ export const useUnifiedFirestore = () => {
     }
   };
 
-  loadAllData();
+  // Intentionally ignore the returned promise; effect is fire-and-forget
+  void loadAllData();
 }, [userId, loadGastosFixos, loadMonthData]);
 
 
@@ -217,7 +218,7 @@ export const useUnifiedFirestore = () => {
         timestamp: new Date().toISOString()
       };
 
-      const gastoId = `gasto_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const gastoId = `gasto_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
       // Fix the path construction to ensure even number of segments
       await setDoc(doc(db, `${mesesPath}/${mesId}/gastosVariaveis`, gastoId), novoGasto);
 
@@ -257,9 +258,9 @@ export const useUnifiedFirestore = () => {
     if (!mesesPath) return;
     try {
       // Save each gasto fixo as individual document under the specific month
+      const gastosFixosCol = collection(db, `${mesesPath}/${mesId}/gastosFixos`);
       for (const [categoria, valor] of Object.entries(novosGastosFixos)) {
-        const gastoPath = `${mesesPath}/${mesId}/gastosFixos/${categoria}`;
-        await setDoc(doc(db, gastoPath), { valor });
+        await setDoc(doc(gastosFixosCol, categoria), { valor });
       }
 
       // Update gastosFixos state for this specific month
@@ -292,7 +293,7 @@ export const useUnifiedFirestore = () => {
   const addRendimentoExtra = useCallback(async (mesId, rendimento) => {
     if (!mesesPath) return;
     try {
-      const rendimentoId = `rendimento_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const rendimentoId = `rendimento_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
       // Fix the path construction to ensure even number of segments
       await setDoc(doc(db, `${mesesPath}/${mesId}/rendimentosExtras`, rendimentoId), {
         ...rendimento,
@@ -334,7 +335,7 @@ export const useUnifiedFirestore = () => {
   const addDivida = useCallback(async (mesId, divida) => {
     if (!mesesPath) return;
     try {
-      const dividaId = `divida_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const dividaId = `divida_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
       // Fix the path construction to ensure even number of segments
       await setDoc(doc(db, `${mesesPath}/${mesId}/dividas`, dividaId), {
         ...divida,

@@ -1,7 +1,7 @@
 // src/components/DividasSection.js
 import React, { useState, useEffect } from 'react';
-import { formatCurrency } from '../utils/calculations';
-import { useUnifiedFirestore } from '../hooks/useUnifiedFirestore';
+import { formatCurrency } from '../utils/calculations.js';
+import { useUnifiedFirestore } from '../hooks/useUnifiedFirestore.js';
 
 const DividasSection = ({ mes }) => {
   // Hook do Firestore
