@@ -1,12 +1,26 @@
+/**
+ * @fileoverview Componente principal da aplicação Controle Financeiro 2025
+ * @author Controle Financeiro Team
+ * @version 2.0.0
+ * @since 1.0.0
+ */
+
 // src/App.js
 import React, { useState } from 'react';
 import { useUnifiedFirestore } from './hooks/useUnifiedFirestore.js';
 import Dashboard from './components/Dashboard.js';
 import Login from './components/Login.js';
 import './App.css';
+import './styles/themes.css';
+import './styles/animations.css';
+import './styles/modern-layout.css';
+import './styles/elegant-design.css';
 
 // Importar IA
 import { analyzeWithAI, getQuickStats } from './utils/aiAdvanced.js';
+
+// Importar métricas de performance
+import { recordMetric } from './utils/performanceMetrics.js';
 
 // Expor IA globalmente para debug
 if (typeof window !== 'undefined') {
@@ -14,7 +28,34 @@ if (typeof window !== 'undefined') {
   window.getQuickStats = getQuickStats;
 }
 
+/**
+ * Componente principal da aplicação
+ * 
+ * Gerencia o estado global da aplicação, autenticação e renderização condicional
+ * entre Login e Dashboard baseado no estado de autenticação do usuário.
+ * 
+ * @component
+ * @example
+ * ```jsx
+ * <App />
+ * ```
+ * 
+ * @returns {JSX.Element} Componente principal da aplicação
+ * 
+ * @features
+ * - Autenticação Firebase
+ * - Loading states
+ * - Error handling
+ * - Acessibilidade
+ * - PWA support
+ * - Theme support
+ */
 function App() {
+  // Medir tempo de inicialização do App
+  React.useEffect(() => {
+    recordMetric('app_initialization', Date.now() - window.performance.timing.navigationStart);
+  }, []);
+
   // Hook do Firestore com recursos aprimorados
   const {
     gastosData,
@@ -83,19 +124,6 @@ function App() {
         {connectionStatus === 'error' && 'Erro de Conexão'}
       </div>
 
-      {/* Header */}
-      <header className="app-header">
-        <h1 className="app-title">
-          💰 Controle Financeiro 2025
-        </h1>
-        <div className="app-subtitle">
-          <span>🤖 Powered by IA Avançada</span>
-          <span>•</span>
-          <span>📅 {Object.keys(gastosData).length} meses ativos</span>
-          <span>•</span>
-          <span>📝 {totalTransactions} transações</span>
-        </div>
-      </header>
 
       {/* Main Content */}
       <main id="main-content">

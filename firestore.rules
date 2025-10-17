@@ -2,8 +2,34 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Regras para dados financeiros do usuário
     match /users/{userId}/financeiro/2025/{document=**} {
-      allow read, write: if true;
+      // Permitir leitura e escrita apenas para usuários autenticados
+      // e apenas para seus próprios dados
+      allow read, write: if request.auth != null 
+        && request.auth.uid == userId
+        && request.auth.token.email_verified == true;
+    }
+    
+    // Regras para subcoleções específicas
+    match /users/{userId}/financeiro/2025/meses/{mesId}/{collection=**} {
+      allow read, write: if request.auth != null 
+        && request.auth.uid == userId
+        && request.auth.token.email_verified == true
+        && mesId in ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+    }
+    
+    // Regras para documentos individuais com validação de dados
+    match /users/{userId}/financeiro/2025/meses/{mesId}/gastosVariaveis/{gastoId} {
+      allow read, write: if request.auth != null 
+        && request.auth.uid == userId
+        && request.auth.token.email_verified == true
+        && mesId in ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+        && request.resource.data.keys().hasAll(['data', 'desc', 'valor', 'timestamp'])
+        && request.resource.data.desc is string
+        && request.resource.data.valor is number
+        && request.resource.data.valor > 0
+        && request.resource.data.valor < 1000000; // Limite máximo de R$ 1.000.000
     }
   }
 }

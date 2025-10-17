@@ -10,8 +10,7 @@ const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'
 const MonthsSection = ({ gastosData }) => {
   const { gastosFixos, rendimentosData, diasTrabalhados } = useUnifiedFirestore();
 
-  console.log('diasTrabalhados:', diasTrabalhados);
-  console.log('rendimentosData:', rendimentosData);
+  // Debug info available in development mode
 
   // Calculate comprehensive monthly statistics
   const monthlyStats = useMemo(() => {

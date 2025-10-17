@@ -1,0 +1,234 @@
+/* Variáveis CSS para temas Light e Dark */
+
+:root {
+  /* Light Theme (padrão) */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-tertiary: #e9ecef;
+  --bg-card: #ffffff;
+  --bg-hover: #f1f3f4;
+  
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --text-muted: #adb5bd;
+  --text-inverse: #ffffff;
+  
+  --border-primary: #dee2e6;
+  --border-secondary: #e9ecef;
+  --border-focus: #007bff;
+  
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+  
+  --success: #28a745;
+  --warning: #ffc107;
+  --danger: #dc3545;
+  --info: #17a2b8;
+  --primary: #007bff;
+  --secondary: #6c757d;
+  
+  --gradient-primary: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  --gradient-success: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+  --gradient-warning: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+  --gradient-danger: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+
+/* Dark Theme */
+.dark-theme {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2d2d2d;
+  --bg-tertiary: #404040;
+  --bg-card: #2d2d2d;
+  --bg-hover: #404040;
+  
+  --text-primary: #ffffff;
+  --text-secondary: #b3b3b3;
+  --text-muted: #808080;
+  --text-inverse: #1a1a1a;
+  
+  --border-primary: #404040;
+  --border-secondary: #2d2d2d;
+  --border-focus: #4dabf7;
+  
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.3);
+  
+  --success: #51cf66;
+  --warning: #ffd43b;
+  --danger: #ff6b6b;
+  --info: #74c0fc;
+  --primary: #4dabf7;
+  --secondary: #868e96;
+  
+  --gradient-primary: linear-gradient(135deg, #4dabf7 0%, #339af0 100%);
+  --gradient-success: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+  --gradient-warning: linear-gradient(135deg, #ffd43b 0%, #ffc947 100%);
+  --gradient-danger: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+}
+
+/* Aplicar variáveis aos elementos */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.container {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Cards */
+.section, .card, .modal {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  box-shadow: var(--shadow-md);
+}
+
+/* Botões */
+button {
+  background-color: var(--primary);
+  color: var(--text-inverse);
+  border: 1px solid var(--primary);
+}
+
+button:hover {
+  background-color: var(--bg-hover);
+  border-color: var(--border-focus);
+}
+
+button.secondary {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+}
+
+button.secondary:hover {
+  background-color: var(--bg-hover);
+}
+
+/* Inputs */
+input, textarea, select {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 2px rgba(77, 171, 247, 0.2);
+}
+
+/* Headers */
+.app-header, .section-header {
+  background: var(--gradient-primary);
+  color: var(--text-inverse);
+}
+
+/* Status indicators */
+.connection-status.connected {
+  color: var(--success);
+}
+
+.connection-status.error {
+  color: var(--danger);
+}
+
+.connection-status.connecting {
+  color: var(--warning);
+}
+
+/* Loading states */
+.loading-spinner {
+  border-color: var(--border-primary);
+  border-top-color: var(--primary);
+}
+
+/* Error states */
+.error-banner {
+  background-color: var(--danger);
+  color: var(--text-inverse);
+}
+
+/* Success states */
+.success-message {
+  background-color: var(--success);
+  color: var(--text-inverse);
+}
+
+/* Navigation */
+.sidebar, .nav {
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--border-primary);
+}
+
+.nav-item:hover, .nav-item.active {
+  background-color: var(--bg-hover);
+}
+
+/* Tables */
+table {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-primary);
+}
+
+th {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+td {
+  border-bottom: 1px solid var(--border-secondary);
+}
+
+tr:hover {
+  background-color: var(--bg-hover);
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Animações para transições de tema */
+@keyframes themeTransition {
+  from {
+    opacity: 0.8;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.theme-transition {
+  animation: themeTransition 0.3s ease-in-out;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .dark-theme {
+    --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.3);
+  }
+}

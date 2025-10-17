@@ -1,28 +1,13 @@
 // src/components/AIDashboard.js
-import React, { useState, useEffect } from 'react';
-import { analyzeWithAI } from '../utils/aiAdvanced.js';
+import React, { useState } from 'react';
+import { useAIAnalysis } from '../hooks/useAIAnalysis.js';
 import { formatCurrency } from '../utils/calculations.js';
 
 const AIDashboard = ({ gastosData, rendimentosData, currentMonth }) => {
-  const [analysis, setAnalysis] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('insights');
 
-  useEffect(() => {
-    const performAnalysis = () => {
-      setLoading(true);
-      
-      // Simular processamento
-      setTimeout(() => {
-        const result = analyzeWithAI(gastosData, rendimentosData);
-        console.log('Análise IA:', result); // Para debug
-        setAnalysis(result);
-        setLoading(false);
-      }, 1000);
-    };
-
-    performAnalysis();
-  }, [gastosData, rendimentosData]);
+  // Usar hook otimizado para análise IA
+  const { analysis, loading, error, hasData, refreshAnalysis } = useAIAnalysis(gastosData, rendimentosData, 500);
 
   if (loading) {
     return (
@@ -41,7 +26,35 @@ const AIDashboard = ({ gastosData, rendimentosData, currentMonth }) => {
     );
   }
 
-  if (!analysis) {
+  if (error) {
+    return (
+      <div className="section">
+        <div className="section-header">🤖 ASSISTENTE FINANCEIRO IA</div>
+        <div className="section-content">
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <div style={{ fontSize: '24px', marginBottom: '10px' }}>⚠️</div>
+            <div>Erro na análise: {error}</div>
+            <button 
+              onClick={refreshAnalysis}
+              style={{
+                marginTop: '20px',
+                padding: '10px 20px',
+                backgroundColor: '#007bff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              Tentar Novamente
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasData || !analysis) {
     return (
       <div className="section">
         <div className="section-header">🤖 ASSISTENTE FINANCEIRO IA</div>

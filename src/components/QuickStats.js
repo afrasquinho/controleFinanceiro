@@ -1,72 +1,92 @@
 // src/components/QuickStats.js
-import React, { useState, useEffect } from 'react';
-import { analyzeWithAI } from '../utils/aiAdvanced.js';
+import React, { useMemo } from 'react';
+import { useAIAnalysis } from '../hooks/useAIAnalysis.js';
 import { formatCurrency } from '../utils/calculations.js';
 
 const QuickStats = ({ gastosData, onOpenAI }) => {
-  const [stats, setStats] = useState(null);
-  const [aiWorking, setAiWorking] = useState(false);
-  const [error, setError] = useState(null);
+  // Usar hook otimizado para análise IA
+  const { analysis, loading, error, hasData } = useAIAnalysis(gastosData, {}, 300);
 
-  useEffect(() => {
-    const testAI = () => {
-      console.log('🧪 QuickStats testando IA...');
-      console.log('📊 Dados recebidos:', gastosData);
-      
-      try {
-        // Verificar se há dados
-        const totalTransactions = Object.values(gastosData).flat().length;
-        console.log('📝 Total de transações:', totalTransactions);
-        
-        if (totalTransactions === 0) {
-          setStats({
-            totalExpenses: 0,
-            totalTransactions: 0,
-            averageTransaction: 0,
-            topCategory: null,
-            healthScore: 0
-          });
-          return;
-        }
+  // Memoizar estatísticas calculadas
+  const stats = useMemo(() => {
+    if (!hasData) {
+      return {
+        totalExpenses: 0,
+        totalTransactions: 0,
+        averageTransaction: 0,
+        topCategory: null,
+        healthScore: 0
+      };
+    }
 
-        // Testar IA
-        console.log('🤖 Chamando analyzeWithAI...');
-        const result = analyzeWithAI(gastosData);
-        console.log('✅ Resultado da IA:', result);
-        
-        if (result && result.processedData) {
-          setStats({
-            totalExpenses: result.processedData.totalExpenses || 0,
-            totalTransactions: result.processedData.totalTransactions || 0,
-            averageTransaction: result.processedData.averageTransaction || 0,
-            topCategory: result.patterns?.topCategories?.[0] || null,
-            healthScore: result.healthScore?.score || 0
-          });
-          setAiWorking(true);
-        } else {
-          throw new Error('IA retornou dados inválidos');
-        }
-        
-      } catch (err) {
-        console.error('❌ Erro na IA:', err);
-        setError(err.message);
-        
-        // Fallback: calcular estatísticas básicas
-        const allExpenses = Object.values(gastosData).flat();
-        const total = allExpenses.reduce((sum, expense) => sum + (expense.valor || 0), 0);
-        
-        setStats({
-          totalExpenses: total,
-          totalTransactions: allExpenses.length,
-          averageTransaction: allExpenses.length > 0 ? total / allExpenses.length : 0,
-          topCategory: null,
-          healthScore: 50
-        });
-      }
+    if (analysis && analysis.processedData) {
+      return {
+        totalExpenses: analysis.processedData.totalExpenses || 0,
+        totalTransactions: analysis.processedData.totalTransactions || 0,
+        averageTransaction: analysis.processedData.averageTransaction || 0,
+        topCategory: analysis.patterns?.topCategories?.[0] || null,
+        healthScore: analysis.healthScore?.score || 0
+      };
+    }
+
+    // Fallback: calcular estatísticas básicas
+    const allExpenses = Object.values(gastosData).flat();
+    const total = allExpenses.reduce((sum, expense) => sum + (expense.valor || 0), 0);
+    
+    return {
+      totalExpenses: total,
+      totalTransactions: allExpenses.length,
+      averageTransaction: allExpenses.length > 0 ? total / allExpenses.length : 0,
+      topCategory: null,
+      healthScore: 50
     };
+  }, [analysis, hasData, gastosData]);
 
-    testAI();
-  }, [gastosData]);
+  const aiWorking = analysis && analysis.processedData;
+
+  if (loading) {
+    return (
+      <div style={{
+        padding: '20px',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '8px',
+        marginBottom: '20px',
+        textAlign: 'center'
+      }}>
+        <div style={{ fontSize: '24px', marginBottom: '10px' }}>⏳</div>
+        <div>Analisando com IA...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{
+        padding: '20px',
+        backgroundColor: '#f8d7da',
+        borderRadius: '8px',
+        marginBottom: '20px',
+        textAlign: 'center'
+      }}>
+        <div style={{ fontSize: '24px', marginBottom: '10px' }}>⚠️</div>
+        <div>Erro na análise: {error}</div>
+        <button 
+          onClick={() => window.location.reload()} 
+          style={{
+            marginTop: '10px',
+            padding: '8px 16px',
+            backgroundColor: '#dc3545',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Tentar Novamente
+        </button>
+      </div>
+    );
+  }
 
   if (!stats) {
     return (
@@ -77,195 +97,152 @@ const QuickStats = ({ gastosData, onOpenAI }) => {
         marginBottom: '20px',
         textAlign: 'center'
       }}>
-        <div style={{ fontSize: '24px', marginBottom: '10px' }}>⏳</div>
+        <div style={{ fontSize: '24px', marginBottom: '10px' }}>📊</div>
         <div>Carregando estatísticas...</div>
       </div>
     );
   }
 
-  if (stats.totalTransactions === 0) {
-    return (
-      <div style={{
-        padding: '20px',
-        backgroundColor: '#f8f9fa',
-        borderRadius: '8px',
-        marginBottom: '20px',
-        textAlign: 'center',
-        border: '2px dashed #dee2e6'
-      }}>
-        <div style={{ fontSize: '48px', marginBottom: '10px' }}>📊</div>
-        <div style={{ fontSize: '16px', color: '#495057', marginBottom: '5px' }}>
-          Nenhum dado para análise
-        </div>
-        <div style={{ fontSize: '14px', color: '#6c757d' }}>
-          Adicione alguns gastos para ver estatísticas inteligentes
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div style={{ marginBottom: '25px' }}>
-      {/* Header com status da IA */}
+    <div style={{
+      padding: '20px',
+      backgroundColor: '#ffffff',
+      borderRadius: '12px',
+      marginBottom: '20px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      border: '1px solid #e9ecef'
+    }}>
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: '15px'
+        marginBottom: '20px'
       }}>
-        <h3 style={{ margin: 0, color: '#495057' }}>
-          📊 Resumo {aiWorking ? '🤖 IA' : '📱 Básico'}
-        </h3>
-        <div style={{ fontSize: '12px' }}>
-          {aiWorking ? (
-            <span style={{ color: '#27ae60' }}>✅ IA Funcionando</span>
-          ) : (
-            <span style={{ color: '#e74c3c' }}>⚠️ IA com Problemas</span>
-          )}
-        </div>
+        <h3 style={{ margin: 0, color: '#495057' }}>📊 Estatísticas Rápidas</h3>
+        {aiWorking && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '12px',
+            color: '#28a745'
+          }}>
+            <span>🤖</span>
+            <span>IA Ativa</span>
+          </div>
+        )}
       </div>
 
-      {/* Mostrar erro se houver */}
-      {error && (
-        <div style={{
-          padding: '10px',
-          backgroundColor: '#fff3cd',
-          border: '1px solid #ffeaa7',
-          borderRadius: '5px',
-          marginBottom: '15px',
-          fontSize: '12px',
-          color: '#856404'
-        }}>
-          <strong>⚠️ Problema na IA:</strong> {error}
-        </div>
-      )}
-
-      {/* Grid de estatísticas */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-        gap: '15px'
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: '16px'
       }}>
-        
         {/* Total de Gastos */}
-        <div className="summary-card" style={{ 
-          padding: '15px', 
+        <div style={{
+          padding: '16px',
+          backgroundColor: '#fff3cd',
+          borderRadius: '8px',
           textAlign: 'center',
-          background: 'linear-gradient(135deg, #ff6b6b, #ee5a52)',
-          color: 'white',
-          borderRadius: '10px'
+          border: '1px solid #ffeaa7'
         }}>
-          <div style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '5px' }}>
+          <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#856404' }}>
             {formatCurrency(stats.totalExpenses)}
           </div>
-          <div style={{ fontSize: '12px', opacity: 0.9 }}>Total de Gastos</div>
+          <div style={{ fontSize: '14px', color: '#856404' }}>Total Gasto</div>
         </div>
 
         {/* Total de Transações */}
-        <div className="summary-card" style={{ 
-          padding: '15px', 
+        <div style={{
+          padding: '16px',
+          backgroundColor: '#d1ecf1',
+          borderRadius: '8px',
           textAlign: 'center',
-          background: 'linear-gradient(135deg, #4ecdc4, #44a08d)',
-          color: 'white',
-          borderRadius: '10px'
+          border: '1px solid #bee5eb'
         }}>
-          <div style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '5px' }}>
+          <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#0c5460' }}>
             {stats.totalTransactions}
           </div>
-          <div style={{ fontSize: '12px', opacity: 0.9 }}>Transações</div>
+          <div style={{ fontSize: '14px', color: '#0c5460' }}>Transações</div>
         </div>
 
         {/* Média por Transação */}
-        <div className="summary-card" style={{ 
-          padding: '15px', 
+        <div style={{
+          padding: '16px',
+          backgroundColor: '#d4edda',
+          borderRadius: '8px',
           textAlign: 'center',
-          background: 'linear-gradient(135deg, #ffeaa7, #fdcb6e)',
-          color: '#2d3436',
-          borderRadius: '10px'
+          border: '1px solid #c3e6cb'
         }}>
-          <div style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '5px' }}>
+          <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#155724' }}>
             {formatCurrency(stats.averageTransaction)}
           </div>
-          <div style={{ fontSize: '12px', opacity: 0.8 }}>Média por Gasto</div>
+          <div style={{ fontSize: '14px', color: '#155724' }}>Média/Transação</div>
         </div>
 
-        {/* Categoria Principal */}
+        {/* Categoria Top */}
         {stats.topCategory && (
-          <div className="summary-card" style={{ 
-            padding: '15px', 
+          <div style={{
+            padding: '16px',
+            backgroundColor: '#f8d7da',
+            borderRadius: '8px',
             textAlign: 'center',
-            background: 'linear-gradient(135deg, #a29bfe, #6c5ce7)',
-            color: 'white',
-            borderRadius: '10px'
+            border: '1px solid #f5c6cb'
           }}>
-            <div style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '5px' }}>
-              {stats.topCategory.name}
+            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#721c24' }}>
+              {stats.topCategory.percentage}%
             </div>
-            <div style={{ fontSize: '12px', opacity: 0.9 }}>Categoria Principal</div>
-            <div style={{ fontSize: '10px', opacity: 0.7, marginTop: '3px' }}>
-              {formatCurrency(stats.topCategory.total)}
+            <div style={{ fontSize: '14px', color: '#721c24' }}>
+              {stats.topCategory.category}
             </div>
           </div>
         )}
 
-        {/* Score de Saúde */}
-        <div className="summary-card" style={{ 
-          padding: '15px', 
+        {/* Score de Saúde Financeira */}
+        <div style={{
+          padding: '16px',
+          backgroundColor: stats.healthScore >= 70 ? '#d4edda' : stats.healthScore >= 40 ? '#fff3cd' : '#f8d7da',
+          borderRadius: '8px',
           textAlign: 'center',
-          background: stats.healthScore > 70 ? 
-            'linear-gradient(135deg, #00b894, #00a085)' : 
-            stats.healthScore > 40 ? 
-            'linear-gradient(135deg, #fdcb6e, #e17055)' : 
-            'linear-gradient(135deg, #e17055, #d63031)',
-          color: 'white',
-          borderRadius: '10px'
+          border: `1px solid ${stats.healthScore >= 70 ? '#c3e6cb' : stats.healthScore >= 40 ? '#ffeaa7' : '#f5c6cb'}`
         }}>
-          <div style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '5px' }}>
+          <div style={{ 
+            fontSize: '24px', 
+            fontWeight: 'bold', 
+            color: stats.healthScore >= 70 ? '#155724' : stats.healthScore >= 40 ? '#856404' : '#721c24'
+          }}>
             {stats.healthScore}/100
           </div>
-          <div style={{ fontSize: '12px', opacity: 0.9 }}>
-            Saúde {aiWorking ? 'IA' : 'Básica'}
-          </div>
-        </div>
-
-        {/* Botão IA */}
-        <div 
-          className="summary-card" 
-          style={{ 
-            padding: '15px', 
-            textAlign: 'center', 
-            cursor: 'pointer',
-            background: aiWorking ? 
-              'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' :
-              'linear-gradient(135deg, #95a5a6, #7f8c8d)',
-            color: 'white',
-            borderRadius: '10px'
-          }}
-          onClick={onOpenAI}
-        >
-          <div style={{ fontSize: '24px', marginBottom: '5px' }}>
-            {aiWorking ? '🤖' : '🔧'}
-          </div>
-          <div style={{ fontSize: '12px', opacity: 0.9, fontWeight: 'bold' }}>
-            {aiWorking ? 'IA Completa' : 'Debug IA'}
+          <div style={{ 
+            fontSize: '14px', 
+            color: stats.healthScore >= 70 ? '#155724' : stats.healthScore >= 40 ? '#856404' : '#721c24'
+          }}>
+            Score Financeiro
           </div>
         </div>
       </div>
 
-      {/* Debug info */}
-      {process.env.NODE_ENV === 'development' && (
-        <div style={{
-          marginTop: '15px',
-          padding: '10px',
-          backgroundColor: '#e9ecef',
-          borderRadius: '5px',
-          fontSize: '11px',
-          color: '#495057'
-        }}>
-          <strong>🔧 Debug:</strong> IA {aiWorking ? 'OK' : 'ERRO'} | 
-          Dados: {Object.keys(gastosData).join(', ')} | 
-          Total: {stats.totalTransactions} transações
-          {error && ` | Erro: ${error}`}
+      {/* Botão para abrir IA Dashboard */}
+      {onOpenAI && (
+        <div style={{ textAlign: 'center', marginTop: '20px' }}>
+          <button
+            onClick={onOpenAI}
+            style={{
+              padding: '12px 24px',
+              backgroundColor: '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '16px',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            <span>🤖</span>
+            <span>Análise Completa com IA</span>
+          </button>
         </div>
       )}
     </div>

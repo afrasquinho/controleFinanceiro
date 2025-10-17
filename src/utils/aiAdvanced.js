@@ -84,19 +84,14 @@ export class AdvancedFinancialAI {
   
     // Análise principal
     analyze(gastosData, rendimentosData = {}) {
-      console.log('🤖 Iniciando análise IA avançada...');
-      console.log('Dados recebidos:', { gastosData, rendimentosData });
-  
       const startTime = performance.now();
       
       try {
         // 1. Processar e limpar dados
         const processedData = this.processData(gastosData);
-        console.log('Dados processados:', processedData);
   
         // 2. Categorização inteligente
         const categorizedData = this.categorizeExpenses(processedData);
-        console.log('Dados categorizados:', categorizedData);
   
         // 3. Análise de padrões
         const patterns = this.analyzePatterns(categorizedData);

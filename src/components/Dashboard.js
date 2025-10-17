@@ -5,6 +5,8 @@ import ExpensesSection from './DashboardSections/ExpensesSection.js';
 import PredictionsSection from './DashboardSections/PredictionsSection.js';
 import AnalyticsSection from './DashboardSections/AnalyticsSection.js';
 import SettingsSection from './DashboardSections/SettingsSection.js';
+import QuickStats from './QuickStats.js';
+import ThemeToggle from './ThemeToggle.js';
 import { useUnifiedFirestore } from '../hooks/useUnifiedFirestore.js';
 
 const Dashboard = () => {
@@ -62,19 +64,32 @@ const Dashboard = () => {
   const ActiveComponent = menuItems.find(item => item.id === activeSection)?.component;
 
   return (
-    <div className="dashboard-container">
-      {/* Sidebar Navigation */}
-      <div className="dashboard-sidebar">
-        <div className="sidebar-header">
-          <h2>💰 Controle Financeiro</h2>
-          <div className="connection-status-indicator">
-            <div className={`status-dot ${connectionStatus}`}></div>
-            <span className="status-text">
-              {connectionStatus === 'connected' ? 'Conectado' : 
-               connectionStatus === 'connecting' ? 'Conectando...' : 'Desconectado'}
-            </span>
-          </div>
+    <div className="container">
+      <header className="app-header">
+        <h1 className="app-title">💰 Controle Financeiro 2025</h1>
+        <div className="app-subtitle">
+          <span>🤖 Powered by IA Avançada</span>
+          <span>📅 {Object.keys(gastosData).length} meses ativos</span>
+          <span>📝 {totalTransactions} transações</span>
+          <ThemeToggle size="small" />
         </div>
+      </header>
+      
+      <div className="dashboard-container">
+        {/* Sidebar Navigation */}
+        <div className="dashboard-sidebar">
+          <div className="sidebar-header">
+            <h2>Dashboard</h2>
+            <div className="header-controls">
+              <div className="connection-status-indicator">
+                <div className={`status-dot ${connectionStatus}`}></div>
+                <span className="status-text">
+                  {connectionStatus === 'connected' ? 'Conectado' : 
+                   connectionStatus === 'connecting' ? 'Conectando...' : 'Desconectado'}
+                </span>
+              </div>
+            </div>
+          </div>
         
         <nav className="sidebar-nav" onKeyDown={handleSidebarKeyDown} role="navigation" aria-label="Navegação principal">
           {menuItems.map((item, index) => (
@@ -109,19 +124,22 @@ const Dashboard = () => {
 
       {/* Main Content Area */}
       <div className="dashboard-content">
-        <MonthsSection gastosData={gastosData} />
         {activeSection === 'overview' && (
-          <OverviewSection
-            gastosData={gastosData}
-            gastosFixos={gastosFixos}
-            rendimentosData={rendimentosData}
-            loading={loading}
-            error={error}
-            connectionStatus={connectionStatus}
-            totalTransactions={totalTransactions}
-            clearError={clearError}
-            reloadData={reloadData}
-          />
+          <>
+            <QuickStats gastosData={gastosData} />
+            <MonthsSection gastosData={gastosData} />
+            <OverviewSection
+              gastosData={gastosData}
+              gastosFixos={gastosFixos}
+              rendimentosData={rendimentosData}
+              loading={loading}
+              error={error}
+              connectionStatus={connectionStatus}
+              totalTransactions={totalTransactions}
+              clearError={clearError}
+              reloadData={reloadData}
+            />
+          </>
         )}
         {ActiveComponent && activeSection !== 'overview' && (
           <ActiveComponent
@@ -138,6 +156,7 @@ const Dashboard = () => {
             removeGasto={removeGasto}
           />
         )}
+      </div>
       </div>
     </div>
   );

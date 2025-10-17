@@ -89,7 +89,10 @@ export const useUnifiedFirestore = () => {
       // Update gastosFixos state with data for this specific month
       setGastosFixos(prev => ({ ...prev, [mesId]: data }));
     } catch (err) {
-      console.warn(`⚠️ Erro ao carregar gastos fixos para ${mesId}:`, err);
+      // Log error silently in production
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`⚠️ Erro ao carregar gastos fixos para ${mesId}:`, err);
+      }
     }
   }, [mesesPath]);
 
@@ -143,7 +146,10 @@ export const useUnifiedFirestore = () => {
           setDiasTrabalhados(prev => ({ ...prev, [mesId]: diasData }));
         }
       } catch (err) {
-        console.warn(`⚠️ Dias trabalhados não encontrados para ${mesId}:`, err);
+        // Log error silently in production
+        if (process.env.NODE_ENV === 'development') {
+          console.warn(`⚠️ Dias trabalhados não encontrados para ${mesId}:`, err);
+        }
       }
 
       // Load dívidas
@@ -165,7 +171,10 @@ export const useUnifiedFirestore = () => {
       await loadGastosFixos(mesId);
 
     } catch (err) {
-      console.warn(`⚠️ Erro ao carregar dados de ${mesId}:`, err);
+      // Log error silently in production
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`⚠️ Erro ao carregar dados de ${mesId}:`, err);
+      }
     }
   }, [mesesPath, loadGastosFixos]);
 
@@ -229,7 +238,10 @@ export const useUnifiedFirestore = () => {
       }));
 
     } catch (err) {
-      console.error('❌ Erro ao adicionar gasto:', err);
+      // Log error silently in production
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ Erro ao adicionar gasto:', err);
+      }
       setError('Erro ao salvar gasto: ' + err.message);
     }
   }, [mesesPath]);
