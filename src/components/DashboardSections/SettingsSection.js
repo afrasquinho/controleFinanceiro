@@ -50,7 +50,7 @@ const SettingsSection = ({
           <div className="setting-item">
             <label>Última Atualização</label>
             <div className="setting-value">
-              {new Date().toLocaleString('pt-BR')}
+              {new Date().toLocaleString('pt-PT')}
             </div>
           </div>
 

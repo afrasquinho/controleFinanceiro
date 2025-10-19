@@ -2,9 +2,15 @@ import React, { useState } from 'react';
 import OverviewSection from './DashboardSections/OverviewSection.js';
 import MonthsSection from './MonthsSection.js';
 import ExpensesSection from './DashboardSections/ExpensesSection.js';
+import ExpensesComparisonSection from './DashboardSections/ExpensesComparisonSection.js';
+import AIInsightsSection from './DashboardSections/AIInsightsSection.js';
+import ExportSection from './DashboardSections/ExportSection.js';
 import PredictionsSection from './DashboardSections/PredictionsSection.js';
 import AnalyticsSection from './DashboardSections/AnalyticsSection.js';
+import SavingsSection from './DashboardSections/SavingsSection.js';
+import CurrencyResearchSection from './DashboardSections/CurrencyResearchSection.js';
 import SettingsSection from './DashboardSections/SettingsSection.js';
+import SmartNotifications from './SmartNotifications.js';
 import QuickStats from './QuickStats.js';
 import ThemeToggle from './ThemeToggle.js';
 import { useUnifiedFirestore } from '../hooks/useUnifiedFirestore.js';
@@ -30,6 +36,11 @@ const Dashboard = () => {
   const menuItems = [
     { id: 'overview', label: 'Visão Geral', icon: '📊', component: OverviewSection },
     { id: 'expenses', label: 'Gastos', icon: '💰', component: ExpensesSection },
+    { id: 'expenses-comparison', label: 'Comparação de Gastos', icon: '📊', component: ExpensesComparisonSection },
+    { id: 'ai-insights', label: 'Insights de IA', icon: '🤖', component: AIInsightsSection },
+    { id: 'export', label: 'Exportação', icon: '📤', component: ExportSection },
+    { id: 'savings', label: 'Poupança & Investimentos', icon: '🏠', component: SavingsSection },
+    { id: 'currency', label: 'Pesquisa de Moedas', icon: '🔍', component: CurrencyResearchSection },
     { id: 'predictions', label: 'Previsões', icon: '🔮', component: PredictionsSection },
     { id: 'analytics', label: 'Análises', icon: '📈', component: AnalyticsSection },
     { id: 'settings', label: 'Configurações', icon: '⚙️', component: SettingsSection }
@@ -65,6 +76,12 @@ const Dashboard = () => {
 
   return (
     <div className="container">
+      {/* Notificações Inteligentes */}
+      <SmartNotifications 
+        gastosData={gastosData}
+        rendimentosData={rendimentosData}
+      />
+      
       <header className="app-header">
         <h1 className="app-title">💰 Controle Financeiro 2025</h1>
         <div className="app-subtitle">

@@ -3,7 +3,7 @@ import React from 'react';
 import RendimentosSection from './RendimentosSection.js';
 import DividasSection from './DividasSection.js';
 import GastosFixosSection from './GastosFixosSection.js';
-import GastosVariaveisSection from './GastosVariaveisSection.js';
+import GastosVariaveisEnhanced from './GastosVariaveisEnhanced.js';
 import SummarySection from './SummarySection.js';
 
 const MonthContent = ({ 
@@ -20,7 +20,7 @@ const MonthContent = ({
       <RendimentosSection mes={mes} />
       <DividasSection mes={mes} />
       <GastosFixosSection mes={mes} />
-      <GastosVariaveisSection 
+      <GastosVariaveisEnhanced 
         mes={mes}
         gastos={gastos}
         onAddGasto={onAddGasto}
