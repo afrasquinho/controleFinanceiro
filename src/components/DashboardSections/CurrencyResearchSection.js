@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 
 const CurrencyResearchSection = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -7,7 +7,7 @@ const CurrencyResearchSection = () => {
   const [loading, setLoading] = useState(false);
 
   // Dados das moedas (simulados - em produção viria de uma API)
-  const cryptoCurrencies = [
+  const cryptoCurrencies = useMemo(() => [
     {
       symbol: 'BTC',
       name: 'Bitcoin',
@@ -86,9 +86,9 @@ const CurrencyResearchSection = () => {
       pros: ['Interoperabilidade', 'Parachains', 'Governança avançada'],
       cons: ['Complexidade', 'Adoção lenta', 'Concorrência']
     }
-  ];
+  ], []);
 
-  const fiatCurrencies = [
+  const fiatCurrencies = useMemo(() => [
     {
       symbol: 'USD',
       name: 'Dólar Americano',
@@ -167,9 +167,9 @@ const CurrencyResearchSection = () => {
       pros: ['Recursos naturais', 'Estabilidade política', 'Proximidade com EUA'],
       cons: ['Dependência de commodities', 'Exposição ao petróleo', 'Economia menor']
     }
-  ];
+  ], []);
 
-  const preciousMetals = [
+  const preciousMetals = useMemo(() => [
     {
       symbol: 'XAU',
       name: 'Ouro',
@@ -196,7 +196,7 @@ const CurrencyResearchSection = () => {
       pros: ['Uso industrial', 'Preço acessível', 'Potencial de crescimento'],
       cons: ['Maior volatilidade', 'Dependência industrial', 'Armazenamento']
     }
-  ];
+  ], []);
 
   useEffect(() => {
     setLoading(true);

@@ -6,7 +6,7 @@ const ExpensesComparisonSection = ({ gastosData, gastosFixos }) => {
   const [selectedCategory, setSelectedCategory] = useState('todas');
 
   // Categorias para análise
-  const categorias = {
+  const categorias = useMemo(() => ({
     'alimentacao': { nome: '🍽️ Alimentação', cor: '#ff6b6b' },
     'transporte': { nome: '🚗 Transporte', cor: '#4ecdc4' },
     'saude': { nome: '🏥 Saúde', cor: '#45b7d1' },
@@ -15,13 +15,13 @@ const ExpensesComparisonSection = ({ gastosData, gastosFixos }) => {
     'casa': { nome: '🏠 Casa', cor: '#ff9ff3' },
     'vestuario': { nome: '👕 Vestuário', cor: '#54a0ff' },
     'outros': { nome: '📦 Outros', cor: '#5f27cd' }
-  };
+  }), []);
 
-  const mesesNomes = {
+  const mesesNomes = useMemo(() => ({
     '01': 'Janeiro', '02': 'Fevereiro', '03': 'Março', '04': 'Abril',
     '05': 'Maio', '06': 'Junho', '07': 'Julho', '08': 'Agosto',
     '09': 'Setembro', '10': 'Outubro', '11': 'Novembro', '12': 'Dezembro'
-  };
+  }), []);
 
   // Analisar gastos por mês e categoria
   const analiseMensal = useMemo(() => {
