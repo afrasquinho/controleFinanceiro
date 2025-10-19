@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { formatCurrency } from '../../utils/calculations.js';
 
 const CurrencyResearchSection = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -220,7 +219,7 @@ const CurrencyResearchSection = () => {
       setCurrencies(data);
       setLoading(false);
     }, 500);
-  }, [selectedCategory]);
+  }, [selectedCategory, cryptoCurrencies, fiatCurrencies, preciousMetals]);
 
   const filteredCurrencies = currencies.filter(currency =>
     currency.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

@@ -109,7 +109,7 @@ const SmartNotifications = ({ gastosData, rendimentosData }) => {
     }
 
     return newNotifications;
-  }, [gastosData, rendimentosData]);
+  }, [gastosData]);
 
   // Gerar notificações quando os dados mudarem
   useEffect(() => {

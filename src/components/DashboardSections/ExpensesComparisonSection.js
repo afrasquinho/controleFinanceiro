@@ -59,7 +59,7 @@ const ExpensesComparisonSection = ({ gastosData, gastosFixos }) => {
     });
     
     return analise;
-  }, [gastosData, gastosFixos]);
+  }, [gastosData, gastosFixos, mesesNomes]);
 
   // Calcular comparação entre meses
   const comparacao = useMemo(() => {
@@ -99,7 +99,7 @@ const ExpensesComparisonSection = ({ gastosData, gastosFixos }) => {
       percentualVariacao,
       comparacaoCategorias
     };
-  }, [selectedMonths, analiseMensal]);
+  }, [selectedMonths, analiseMensal, categorias]);
 
   // Filtrar dados por categoria selecionada
   const dadosFiltrados = useMemo(() => {

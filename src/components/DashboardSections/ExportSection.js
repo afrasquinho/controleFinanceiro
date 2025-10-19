@@ -3,7 +3,6 @@ import { formatCurrency } from '../../utils/calculations.js';
 
 const ExportSection = ({ gastosData, rendimentosData, gastosFixos }) => {
   const [exportFormat, setExportFormat] = useState('excel');
-  const [exportPeriod, setExportPeriod] = useState('all');
   const [includeCharts, setIncludeCharts] = useState(true);
   const [includeAnalysis, setIncludeAnalysis] = useState(true);
 
@@ -93,7 +92,7 @@ const ExportSection = ({ gastosData, rendimentosData, gastosFixos }) => {
     };
 
     return dados;
-  }, [gastosData, rendimentosData, gastosFixos]);
+  }, [gastosData, rendimentosData]);
 
   // Gerar Excel (CSV)
   const generateExcel = () => {
