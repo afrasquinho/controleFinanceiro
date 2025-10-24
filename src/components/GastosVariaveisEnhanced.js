@@ -132,7 +132,8 @@ const GastosVariaveisEnhanced = ({ mes, gastos, onAddGasto, onRemoveGasto }) => 
 
   // Filtrar e ordenar gastos
   const gastosFiltrados = useMemo(() => {
-    let filtrados = gastos.filter(gasto => {
+    const lista = Array.isArray(gastos) ? gastos : [];
+    let filtrados = lista.filter(gasto => {
       const matchCategory = filterCategory === 'todas' || gasto.categoria === filterCategory;
       const matchSearch = searchTerm === '' || 
         gasto.desc.toLowerCase().includes(searchTerm.toLowerCase()) ||

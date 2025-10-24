@@ -27,7 +27,7 @@ describe('calculations', () => {
     it('should calculate rendimentos correctly', () => {
       localStorageMock.getItem.mockReturnValue(null); // No saved data
 
-      const result = calculateRendimentos('01');
+      const result = calculateRendimentos('jan');
 
       expect(result).toHaveProperty('andre');
       expect(result).toHaveProperty('aline');
@@ -39,11 +39,11 @@ describe('calculations', () => {
     it('should use saved dias trabalhados', () => {
       const savedDias = JSON.stringify({ andre: 20, aline: 18 });
       localStorageMock.getItem.mockImplementation((key) => {
-        if (key === 'diasTrabalhados_01') return savedDias;
+        if (key === 'diasTrabalhados_jan') return savedDias;
         return null;
       });
 
-      const result = calculateRendimentos('01');
+      const result = calculateRendimentos('jan');
 
       expect(result.andre.dias).toBe(20);
       expect(result.aline.dias).toBe(18);
@@ -100,7 +100,7 @@ describe('calculations', () => {
       localStorageMock.getItem.mockReturnValue(null);
 
       const gastosVariaveis = [{ valor: 100 }, { valor: 50 }];
-      const result = calculateSaldo('01', gastosVariaveis);
+      const result = calculateSaldo('jan', gastosVariaveis);
 
       expect(result).toHaveProperty('rendimentos');
       expect(result).toHaveProperty('gastosFixos');
@@ -160,11 +160,11 @@ describe('calculations', () => {
   describe('compareMonths', () => {
     it('should compare two months correctly', () => {
       const gastosData = {
-        '01': [{ valor: 100 }, { valor: 50 }],
-        '02': [{ valor: 200 }, { valor: 75 }]
+        'jan': [{ valor: 100 }, { valor: 50 }],
+        'fev': [{ valor: 200 }, { valor: 75 }]
       };
 
-      const result = compareMonths(gastosData, '01', '02');
+      const result = compareMonths(gastosData, 'jan', 'fev');
 
       expect(result.month1.total).toBe(150);
       expect(result.month2.total).toBe(275);
@@ -176,7 +176,7 @@ describe('calculations', () => {
   describe('detectAnomalousExpenses', () => {
     it('should detect anomalous expenses', () => {
       const gastosData = {
-        '01': [
+        'jan': [
           { valor: 10 },
           { valor: 15 },
           { valor: 12 },
@@ -193,7 +193,7 @@ describe('calculations', () => {
 
     it('should return empty array for insufficient data', () => {
       const gastosData = {
-        '01': [{ valor: 10 }, { valor: 15 }]
+        'jan': [{ valor: 10 }, { valor: 15 }]
       };
 
       const result = detectAnomalousExpenses(gastosData);
@@ -205,7 +205,7 @@ describe('calculations', () => {
   describe('getDominantCategory', () => {
     it('should identify dominant category', () => {
       const gastosData = {
-        '01': [
+        'jan': [
           { desc: 'Supermercado Continente', valor: 100 },
           { desc: 'Gasolina BP', valor: 50 },
           { desc: 'Supermercado Pingo Doce', valor: 80 }
@@ -216,7 +216,7 @@ describe('calculations', () => {
 
       expect(result.category).toBe('Alimentação');
       expect(result.amount).toBe(180);
-      expect(result.percentage).toBe('72.0');
+      expect(result.percentage).toBe('78.3');
     });
   });
 });

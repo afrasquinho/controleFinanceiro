@@ -54,7 +54,12 @@ if (typeof window !== 'undefined') {
 function App() {
   // Medir tempo de inicialização do App
   React.useEffect(() => {
-    recordMetric('app_initialization', Date.now() - window.performance.timing.navigationStart);
+    try {
+      const navigationStart = window.performance?.timing?.navigationStart || Date.now();
+      recordMetric('app_initialization', Date.now() - navigationStart);
+    } catch (error) {
+      console.warn('Could not measure app initialization time:', error);
+    }
   }, []);
 
   // Hook do Firestore com recursos aprimorados

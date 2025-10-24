@@ -25,7 +25,7 @@ class ErrorBoundary extends React.Component {
     // Log the error to an error reporting service
     this.setState({
       error: error,
-      errorInfo: errorInfo
+      errorInfo: errorInfo || null
     });
 
     // In a real application, you would send this to an error reporting service
@@ -105,7 +105,7 @@ class ErrorBoundary extends React.Component {
               }}>
                 {this.state.error && this.state.error.toString()}
                 <br />
-                {this.state.errorInfo.componentStack}
+                {this.state.errorInfo && this.state.errorInfo.componentStack}
               </pre>
             </details>
           )}

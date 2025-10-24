@@ -1,5 +1,4 @@
-import React from 'react';
-import DownloadSection from '../DownloadSection.js';
+import React, { useEffect, useState } from 'react';
 import { mesesInfo } from '../../data/monthsData.js';
 
 const SettingsSection = ({ 
@@ -7,6 +6,42 @@ const SettingsSection = ({
   clearError,
   reloadData 
 }) => {
+  // Preferências da aplicação
+  const [currency, setCurrency] = useState('EUR');
+  const [locale, setLocale] = useState('pt-PT');
+  const [theme, setTheme] = useState('system'); // light | dark | system
+  const [monthlyBudget, setMonthlyBudget] = useState('');
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+
+  useEffect(() => {
+    // Carregar preferências
+    const savedCurrency = localStorage.getItem('app_currency') || 'EUR';
+    const savedLocale = localStorage.getItem('app_locale') || 'pt-PT';
+    const savedTheme = localStorage.getItem('app_theme') || 'system';
+    const savedBudget = localStorage.getItem('app_monthly_budget') || '';
+    const savedNotif = localStorage.getItem('app_notifications_enabled');
+    setCurrency(savedCurrency);
+    setLocale(savedLocale);
+    setTheme(savedTheme);
+    setMonthlyBudget(savedBudget);
+    setNotificationsEnabled(savedNotif === null ? true : savedNotif === 'true');
+  }, []);
+
+  const savePreferences = () => {
+    localStorage.setItem('app_currency', currency);
+    localStorage.setItem('app_locale', locale);
+    localStorage.setItem('app_theme', theme);
+    localStorage.setItem('app_monthly_budget', monthlyBudget);
+    localStorage.setItem('app_notifications_enabled', String(notificationsEnabled));
+  };
+
+  const clearCache = () => {
+    try {
+      sessionStorage.clear();
+      // Opcionalmente não limpar tudo do localStorage para não perder settings
+    } catch (e) {}
+  };
+
   return (
     <div className="settings-section">
       <div className="section-header">
@@ -14,25 +49,59 @@ const SettingsSection = ({
         <p>Gerencie suas configurações e dados</p>
       </div>
 
-      {/* Backup e Restauração */}
+      {/* Preferências */}
       <div className="settings-card">
-        <h3>📦 Backup e Restauração</h3>
-        <DownloadSection
-          gastosData={gastosData}
-          onExportData={() => {
-            console.log('Função exportData será implementada em breve');
-            // Temporariamente desabilitado - será implementado no próximo passo
-          }}
-          onImportData={() => {
-            console.log('Função importData será implementada em breve');
-            // Temporariamente desabilitado - será implementado no próximo passo
-          }}
-          onClearAllData={() => {
-            console.log('Função clearAllData será implementada em breve');
-            // Temporariamente desabilitado - será implementado no próximo passo
-          }}
-          currentMonth="jan"
-        />
+        <h3>🧩 Preferências</h3>
+        <div className="connection-settings">
+          <div className="setting-item">
+            <label>Moeda</label>
+            <select value={currency} onChange={(e) => setCurrency(e.target.value)} className="category-select">
+              <option value="EUR">EUR (€)</option>
+              <option value="USD">USD ($)</option>
+              <option value="BRL">BRL (R$)</option>
+              <option value="GBP">GBP (£)</option>
+            </select>
+          </div>
+          <div className="setting-item">
+            <label>Idioma</label>
+            <select value={locale} onChange={(e) => setLocale(e.target.value)} className="category-select">
+              <option value="pt-PT">Português (Portugal)</option>
+              <option value="en-US">English (US)</option>
+              <option value="es-ES">Español</option>
+            </select>
+          </div>
+          <div className="setting-item">
+            <label>Tema</label>
+            <select value={theme} onChange={(e) => setTheme(e.target.value)} className="category-select">
+              <option value="system">Sistema</option>
+              <option value="light">Claro</option>
+              <option value="dark">Escuro</option>
+            </select>
+          </div>
+          <div className="setting-item">
+            <label>Orçamento Mensal</label>
+            <input
+              type="number"
+              value={monthlyBudget}
+              onChange={(e) => setMonthlyBudget(e.target.value)}
+              placeholder="Ex: 1500"
+            />
+          </div>
+          <div className="setting-item">
+            <label>Notificações</label>
+            <div className="setting-value">
+              <input
+                type="checkbox"
+                checked={notificationsEnabled}
+                onChange={(e) => setNotificationsEnabled(e.target.checked)}
+              />
+              <span style={{ marginLeft: 8 }}>{notificationsEnabled ? 'Ativadas' : 'Desativadas'}</span>
+            </div>
+          </div>
+          <div className="setting-actions">
+            <button onClick={savePreferences} className="btn btn-primary">💾 Guardar Preferências</button>
+          </div>
+        </div>
       </div>
 
       {/* Configurações de Conexão */}
@@ -60,6 +129,9 @@ const SettingsSection = ({
             </button>
             <button onClick={clearError} className="btn btn-secondary">
               🗑️ Limpar Erros
+            </button>
+            <button onClick={clearCache} className="btn btn-secondary">
+              🧹 Limpar Cache (Sessão)
             </button>
           </div>
         </div>

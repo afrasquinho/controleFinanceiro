@@ -4,6 +4,11 @@ import { formatCurrency } from '../../utils/calculations.js';
 const ExpensesComparisonSection = ({ gastosData, gastosFixos }) => {
   const [selectedMonths, setSelectedMonths] = useState(['01', '02']);
   const [selectedCategory, setSelectedCategory] = useState('todas');
+  
+  const safeSelectedMonths = useMemo(() => 
+    Array.isArray(selectedMonths) ? selectedMonths : [], 
+    [selectedMonths]
+  );
 
   // Categorias para análise
   const categorias = useMemo(() => ({
@@ -27,7 +32,8 @@ const ExpensesComparisonSection = ({ gastosData, gastosFixos }) => {
   const analiseMensal = useMemo(() => {
     const analise = {};
     
-    Object.entries(gastosData).forEach(([mesId, gastos]) => {
+    const fonte = (gastosData && typeof gastosData === 'object') ? gastosData : {};
+    Object.entries(fonte).forEach(([mesId, gastos]) => {
       if (!gastos || gastos.length === 0) return;
       
       const gastosPorCategoria = {};
@@ -63,9 +69,9 @@ const ExpensesComparisonSection = ({ gastosData, gastosFixos }) => {
 
   // Calcular comparação entre meses
   const comparacao = useMemo(() => {
-    if (selectedMonths.length < 2) return null;
+    if (safeSelectedMonths.length < 2) return null;
     
-    const [mes1, mes2] = selectedMonths;
+    const [mes1, mes2] = safeSelectedMonths;
     const dadosMes1 = analiseMensal[mes1];
     const dadosMes2 = analiseMensal[mes2];
     
@@ -99,7 +105,7 @@ const ExpensesComparisonSection = ({ gastosData, gastosFixos }) => {
       percentualVariacao,
       comparacaoCategorias
     };
-  }, [selectedMonths, analiseMensal, categorias]);
+  }, [safeSelectedMonths, analiseMensal, categorias]);
 
   // Filtrar dados por categoria selecionada
   const dadosFiltrados = useMemo(() => {
@@ -146,17 +152,19 @@ const ExpensesComparisonSection = ({ gastosData, gastosFixos }) => {
         <div className="filter-group">
           <label>Meses para Comparar:</label>
           <div className="month-selector">
-            {Object.entries(mesesNomes).map(([mesId, mesNome]) => (
+            {Object.entries(mesesNomes || {}).map(([mesId, mesNome]) => (
               <label key={mesId} className="month-checkbox">
                 <input
                   type="checkbox"
-                  checked={selectedMonths.includes(mesId)}
+                  checked={safeSelectedMonths.includes(mesId)}
                   onChange={(e) => {
-                    if (e.target.checked) {
-                      setSelectedMonths([...selectedMonths, mesId]);
-                    } else {
-                      setSelectedMonths(selectedMonths.filter(id => id !== mesId));
-                    }
+                    setSelectedMonths(prev => {
+                      const base = Array.isArray(prev) ? prev : [];
+                      if (e.target.checked) {
+                        return base.includes(mesId) ? base : [...base, mesId];
+                      }
+                      return base.filter(id => id !== mesId);
+                    });
                   }}
                 />
                 <span>{mesNome}</span>

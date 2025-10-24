@@ -10,7 +10,9 @@ const AIInsightsSection = ({ gastosData, rendimentosData }) => {
   const analisePadroes = useMemo(() => {
     if (!gastosData || typeof gastosData !== 'object') return null;
     
-    const todosGastos = Object.values(gastosData).flat().filter(gasto => 
+    const origem = Object.values(gastosData || {});
+    const flattened = Array.isArray(origem) ? origem.flat() : [];
+    const todosGastos = flattened.filter(gasto => 
       gasto && typeof gasto === 'object' && typeof gasto.valor === 'number'
     );
     
@@ -116,7 +118,8 @@ const AIInsightsSection = ({ gastosData, rendimentosData }) => {
       }
 
       // Insight 3: Análise de valores
-      const gastosAltos = analisePadroes.gastosPorValor.filter(valor => valor > analisePadroes.mediaGastos * 2);
+      const valores = Array.isArray(analisePadroes.gastosPorValor) ? analisePadroes.gastosPorValor : [];
+      const gastosAltos = valores.filter(valor => valor > analisePadroes.mediaGastos * 2);
       if (gastosAltos.length > 0) {
         novosInsights.push({
           id: 'gastos-altos',

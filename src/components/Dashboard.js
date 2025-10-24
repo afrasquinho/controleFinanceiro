@@ -17,7 +17,6 @@ import RecurringSection from './DashboardSections/RecurringSection.js';
 import AccessibilitySettings from './AccessibilitySettings.js';
 import SmartNotifications from './SmartNotifications.js';
 import QuickStats from './QuickStats.js';
-import ThemeToggle from './ThemeToggle.js';
 import { useUnifiedFirestore } from '../hooks/useUnifiedFirestore.js';
 
 const Dashboard = () => {

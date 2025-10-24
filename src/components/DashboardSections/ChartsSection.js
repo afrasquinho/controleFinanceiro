@@ -1,11 +1,19 @@
 import React, { useState, useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Area, AreaChart } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { formatCurrency } from '../../utils/calculations.js';
 
 const ChartsSection = ({ gastosData, gastosFixos }) => {
   const [selectedPeriod, setSelectedPeriod] = useState('6months');
   const [selectedChart, setSelectedChart] = useState('trends');
-  const [selectedCategory, setSelectedCategory] = useState('todas');
+
+  // Função auxiliar para nome do mês
+  const getMonthName = (monthNumber) => {
+    const months = [
+      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ];
+    return months[monthNumber - 1] || '';
+  };
 
   // Categorias para análise
   const categorias = useMemo(() => ({
@@ -67,15 +75,6 @@ const ChartsSection = ({ gastosData, gastosFixos }) => {
 
     return monthsToShow;
   }, [selectedPeriod]);
-
-  // Função auxiliar para nome do mês
-  const getMonthName = (monthNumber) => {
-    const months = [
-      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-    ];
-    return months[monthNumber - 1] || '';
-  };
 
   // Processar dados para gráficos
   const chartData = useMemo(() => {

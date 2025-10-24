@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
 import { useUnifiedFirestore } from './useUnifiedFirestore.js';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, doc, getDocs, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
