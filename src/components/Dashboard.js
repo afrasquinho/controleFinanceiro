@@ -10,6 +10,11 @@ import AnalyticsSection from './DashboardSections/AnalyticsSection.js';
 import SavingsSection from './DashboardSections/SavingsSection.js';
 import CurrencyResearchSection from './DashboardSections/CurrencyResearchSection.js';
 import SettingsSection from './DashboardSections/SettingsSection.js';
+import BudgetSection from './DashboardSections/BudgetSection.js';
+import ImportSection from './DashboardSections/ImportSection.js';
+import ChartsSection from './DashboardSections/ChartsSection.js';
+import RecurringSection from './DashboardSections/RecurringSection.js';
+import AccessibilitySettings from './AccessibilitySettings.js';
 import SmartNotifications from './SmartNotifications.js';
 import QuickStats from './QuickStats.js';
 import ThemeToggle from './ThemeToggle.js';
@@ -36,13 +41,18 @@ const Dashboard = () => {
   const menuItems = [
     { id: 'overview', label: 'Visão Geral', icon: '📊', component: OverviewSection },
     { id: 'expenses', label: 'Gastos', icon: '💰', component: ExpensesSection },
-    { id: 'expenses-comparison', label: 'Comparação de Gastos', icon: '📊', component: ExpensesComparisonSection },
+    { id: 'budget', label: 'Orçamentos', icon: '💳', component: BudgetSection },
+    { id: 'import', label: 'Importação', icon: '📥', component: ImportSection },
+    { id: 'charts', label: 'Gráficos', icon: '📊', component: ChartsSection },
+    { id: 'recurring', label: 'Recorrência', icon: '🔄', component: RecurringSection },
+    { id: 'expenses-comparison', label: 'Comparação', icon: '📊', component: ExpensesComparisonSection },
     { id: 'ai-insights', label: 'Insights de IA', icon: '🤖', component: AIInsightsSection },
-    { id: 'export', label: 'Exportação', icon: '📤', component: ExportSection },
-    { id: 'savings', label: 'Poupança & Investimentos', icon: '🏠', component: SavingsSection },
-    { id: 'currency', label: 'Pesquisa de Moedas', icon: '🔍', component: CurrencyResearchSection },
+    { id: 'savings', label: 'Poupança', icon: '🏠', component: SavingsSection },
+    { id: 'currency', label: 'Moedas', icon: '🔍', component: CurrencyResearchSection },
     { id: 'predictions', label: 'Previsões', icon: '🔮', component: PredictionsSection },
     { id: 'analytics', label: 'Análises', icon: '📈', component: AnalyticsSection },
+    { id: 'export', label: 'Exportação', icon: '📤', component: ExportSection },
+    { id: 'accessibility', label: 'Acessibilidade', icon: '♿', component: AccessibilitySettings },
     { id: 'settings', label: 'Configurações', icon: '⚙️', component: SettingsSection }
   ];
 
@@ -81,16 +91,6 @@ const Dashboard = () => {
         gastosData={gastosData}
         rendimentosData={rendimentosData}
       />
-      
-      <header className="app-header">
-        <h1 className="app-title">💰 Controle Financeiro 2025</h1>
-        <div className="app-subtitle">
-          <span>🤖 Powered by IA Avançada</span>
-          <span>📅 {Object.keys(gastosData).length} meses ativos</span>
-          <span>📝 {totalTransactions} transações</span>
-          <ThemeToggle size="small" />
-        </div>
-      </header>
       
       <div className="dashboard-container">
         {/* Sidebar Navigation */}
@@ -158,21 +158,26 @@ const Dashboard = () => {
             />
           </>
         )}
-        {ActiveComponent && activeSection !== 'overview' && (
-          <ActiveComponent
-            gastosData={gastosData}
-            gastosFixos={gastosFixos}
-            rendimentosData={rendimentosData}
-            loading={loading}
-            error={error}
-            connectionStatus={connectionStatus}
-            totalTransactions={totalTransactions}
-            clearError={clearError}
-            reloadData={reloadData}
-            addGasto={addGasto}
-            removeGasto={removeGasto}
-          />
-        )}
+            {ActiveComponent && activeSection !== 'overview' && (
+              <ActiveComponent
+                gastosData={gastosData}
+                gastosFixos={gastosFixos}
+                rendimentosData={rendimentosData}
+                loading={loading}
+                error={error}
+                connectionStatus={connectionStatus}
+                totalTransactions={totalTransactions}
+                clearError={clearError}
+                reloadData={reloadData}
+                addGasto={addGasto}
+                removeGasto={removeGasto}
+                onImportData={addGasto}
+                onUpdateGasto={(mesId, gastoId, updates) => {
+                  // Implementar atualização de gasto se necessário
+                  console.log('Update gasto:', mesId, gastoId, updates);
+                }}
+              />
+            )}
       </div>
       </div>
     </div>

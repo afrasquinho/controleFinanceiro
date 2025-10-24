@@ -10,6 +10,7 @@ import React, { useState } from 'react';
 import { useUnifiedFirestore } from './hooks/useUnifiedFirestore.js';
 import Dashboard from './components/Dashboard.js';
 import Login from './components/Login.js';
+import ThemeToggle from './components/ThemeToggle.js';
 import './App.css';
 import './styles/themes.css';
 import './styles/animations.css';
@@ -124,6 +125,18 @@ function App() {
         {connectionStatus === 'error' && 'Erro de Conexão'}
       </div>
 
+      {/* App Header */}
+      {userId && (
+        <header className="app-header">
+          <h1 className="app-title">💰 Controle Financeiro 2025</h1>
+          <div className="app-subtitle">
+            <span>🤖 Powered by IA Avançada</span>
+            <span>📅 {Object.keys(gastosData).length} meses ativos</span>
+            <span>📝 {totalTransactions} transações</span>
+            <ThemeToggle size="small" />
+          </div>
+        </header>
+      )}
 
       {/* Main Content */}
       <main id="main-content">
