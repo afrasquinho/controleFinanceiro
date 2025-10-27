@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useUnifiedFirestore } from '../hooks/useUnifiedFirestore.js';
 import { 
   signInWithPopup,
   signInWithRedirect, 
@@ -29,8 +28,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // O hook useUnifiedFirestore agora só expõe userId para verificação de autenticação
-  const { userId } = useUnifiedFirestore();
+  // O hook useUnifiedFirestore não é necessário aqui, pois o estado de autenticação é gerenciado pelo App.js
 
   // Lidar com resultado do redirect do Google
   useEffect(() => {
@@ -129,12 +127,13 @@ const Login = () => {
     setLoading(true);
     setError('');
 
+    // Criar o provider fora do try para garantir que esteja acessível no catch
+    const provider = new GoogleAuthProvider();
+    
     try {
       console.log('🔥 Tentando login com Google...');
       console.log('🔥 Auth object:', auth);
       console.log('🔥 Auth app:', auth.app);
-      
-      const provider = new GoogleAuthProvider();
       
       // Configurar o provider com scopes específicos
       provider.addScope('email');
