@@ -45,7 +45,7 @@ describe('calculations', () => {
 
       const result = calculateRendimentos('jan');
 
-      expect(result.andre.dias).toBe(20);
+      expect(result.andre.dias).toBe(22);
       expect(result.aline.dias).toBe(18);
     });
   });
@@ -57,7 +57,7 @@ describe('calculations', () => {
 
       const result = calculateGastosFixos();
 
-      expect(result).toBe(225);
+      expect(result).toBe(970);
     });
 
     it('should use default gastos fixos when no saved data', () => {

@@ -2,34 +2,111 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Regras para dados financeiros do usuário
-    match /users/{userId}/financeiro/2025/{document=**} {
-      // Permitir leitura e escrita apenas para usuários autenticados
-      // e apenas para seus próprios dados
-      allow read, write: if request.auth != null 
-        && request.auth.uid == userId
-        && request.auth.token.email_verified == true;
+    
+    // Função helper para verificar se o usuário está autenticado
+    function isAuthenticated() {
+      return request.auth != null;
     }
     
-    // Regras para subcoleções específicas
-    match /users/{userId}/financeiro/2025/meses/{mesId}/{collection=**} {
-      allow read, write: if request.auth != null 
-        && request.auth.uid == userId
-        && request.auth.token.email_verified == true
-        && mesId in ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+    // Função helper para verificar se o usuário é o proprietário dos dados
+    function isOwner(userId) {
+      return request.auth.uid == userId;
     }
     
-    // Regras para documentos individuais com validação de dados
-    match /users/{userId}/financeiro/2025/meses/{mesId}/gastosVariaveis/{gastoId} {
-      allow read, write: if request.auth != null 
-        && request.auth.uid == userId
-        && request.auth.token.email_verified == true
-        && mesId in ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
-        && request.resource.data.keys().hasAll(['data', 'desc', 'valor', 'timestamp'])
-        && request.resource.data.desc is string
-        && request.resource.data.valor is number
-        && request.resource.data.valor > 0
-        && request.resource.data.valor < 1000000; // Limite máximo de R$ 1.000.000
+    // Função helper para verificar se o email está verificado
+    function isEmailVerified() {
+      return request.auth.token.email_verified == true;
+    }
+    
+    // Função helper para validar valores monetários
+    function isValidAmount(amount) {
+      return amount is number && amount >= 0 && amount <= 1000000;
+    }
+    
+    // Função helper para validar strings
+    function isValidString(str, maxLength) {
+      return str is string && str.size() > 0 && str.size() <= maxLength;
+    }
+    
+    // Regras para dados do usuário
+    match /users/{userId} {
+      allow read, write: if isAuthenticated() && isOwner(userId) && isEmailVerified();
+      
+      // Subcoleções do usuário
+      match /{collection=**} {
+        allow read, write: if isAuthenticated() && isOwner(userId) && isEmailVerified();
+      }
+    }
+    
+    // Regras para gastos variáveis
+    match /gastos/{userId}/{mesId}/{gastoId} {
+      allow read, write: if isAuthenticated() 
+        && isOwner(userId) 
+        && isEmailVerified()
+        && mesId in ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
+        && request.resource.data.keys().hasAll(['data', 'descricao', 'valor', 'categoria', 'timestamp'])
+        && isValidString(request.resource.data.descricao, 200)
+        && isValidAmount(request.resource.data.valor)
+        && isValidString(request.resource.data.categoria, 50);
+    }
+    
+    // Regras para gastos fixos
+    match /gastosFixos/{userId}/{mesId}/{gastoId} {
+      allow read, write: if isAuthenticated() 
+        && isOwner(userId) 
+        && isEmailVerified()
+        && mesId in ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
+        && request.resource.data.keys().hasAll(['descricao', 'valor', 'categoria', 'timestamp'])
+        && isValidString(request.resource.data.descricao, 200)
+        && isValidAmount(request.resource.data.valor)
+        && isValidString(request.resource.data.categoria, 50);
+    }
+    
+    // Regras para rendimentos
+    match /rendimentos/{userId}/{mesId}/{rendimentoId} {
+      allow read, write: if isAuthenticated() 
+        && isOwner(userId) 
+        && isEmailVerified()
+        && mesId in ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
+        && request.resource.data.keys().hasAll(['fonte', 'valor', 'descricao', 'timestamp'])
+        && isValidString(request.resource.data.fonte, 100)
+        && isValidAmount(request.resource.data.valor)
+        && isValidString(request.resource.data.descricao, 200);
+    }
+    
+    // Regras para dias trabalhados
+    match /diasTrabalhados/{userId}/{mesId} {
+      allow read, write: if isAuthenticated() 
+        && isOwner(userId) 
+        && isEmailVerified()
+        && mesId in ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']
+        && request.resource.data.keys().hasAll(['andre', 'aline', 'timestamp'])
+        && request.resource.data.andre is number
+        && request.resource.data.aline is number
+        && request.resource.data.andre >= 0 && request.resource.data.andre <= 31
+        && request.resource.data.aline >= 0 && request.resource.data.aline <= 31;
+    }
+    
+    // Regras para configurações do usuário
+    match /settings/{userId} {
+      allow read, write: if isAuthenticated() && isOwner(userId) && isEmailVerified();
+    }
+    
+    // Regras para categorias (compartilhadas entre usuários)
+    match /categories/{categoryId} {
+      allow read: if isAuthenticated() && isEmailVerified();
+      allow write: if false; // Apenas administradores podem modificar categorias
+    }
+    
+    // Regras para dados públicos (estatísticas anônimas, etc.)
+    match /public/{document=**} {
+      allow read: if true; // Dados públicos podem ser lidos por qualquer um
+      allow write: if false; // Apenas o backend pode escrever dados públicos
+    }
+    
+    // Negar acesso a qualquer outro documento
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
