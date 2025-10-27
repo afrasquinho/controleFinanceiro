@@ -1,7 +1,7 @@
 // src/components/RendimentosSection.js
 import React, { useState, useEffect } from 'react';
 import { formatCurrency } from '../utils/calculations.js';
-import { valoresDefault } from '../data/monthsData.js';
+import { valoresDefault, mesesInfo } from '../data/monthsData.js';
 import { useUnifiedFirestore } from '../hooks/useUnifiedFirestore.js';
 
 const RendimentosSection = ({ mes }) => {
@@ -13,6 +13,18 @@ const RendimentosSection = ({ mes }) => {
     addRendimentoExtra,
     removeRendimentoExtra
   } = useUnifiedFirestore();
+
+  // Função para encontrar o mês anterior
+  const getMesAnterior = (mesAtualId) => {
+    const mesAtualIndex = mesesInfo.findIndex(m => m.id === mesAtualId);
+    if (mesAtualIndex === -1 || mesAtualIndex === 0) {
+      // Se é o primeiro mês, retorna o último (dezembro como ano anterior)
+      return mesesInfo[mesesInfo.length - 1];
+    }
+    return mesesInfo[mesAtualIndex - 1];
+  };
+
+  const mesAnterior = getMesAnterior(mes.id);
 
   const [rendimentosExtras, setRendimentosExtras] = useState([]);
   const [andreDias, setAndreDias] = useState(mes.dias);
@@ -48,24 +60,26 @@ const RendimentosSection = ({ mes }) => {
 
   // Carregar dados do Firestore
   useEffect(() => {
-    // Carregar dias trabalhados
-    if (firestoreDiasTrabalhados && firestoreDiasTrabalhados[mes.id]) {
-      const dias = firestoreDiasTrabalhados[mes.id];
-      setAndreDias(dias.andre !== undefined ? dias.andre : mes.dias);
-      setAlineDias(dias.aline !== undefined ? dias.aline : mes.dias);
+    // IMPORTANTE: Os dias trabalhados referem-se ao mês ANTERIOR
+    // (o dinheiro recebido no mês atual é referente ao mês anterior)
+    if (firestoreDiasTrabalhados && firestoreDiasTrabalhados[mesAnterior.id]) {
+      const dias = firestoreDiasTrabalhados[mesAnterior.id];
+      setAndreDias(dias.andre !== undefined ? dias.andre : mesAnterior.dias);
+      setAlineDias(dias.aline !== undefined ? dias.aline : mesAnterior.dias);
     } else {
       // Reset to default if no data in Firestore
-      setAndreDias(mes.dias);
-      setAlineDias(mes.dias);
+      setAndreDias(mesAnterior.dias);
+      setAlineDias(mesAnterior.dias);
     }
 
     // Carregar rendimentos extras
     if (firestoreRendimentosData && firestoreRendimentosData[mes.id]) {
       setRendimentosExtras(firestoreRendimentosData[mes.id]);
     }
-  }, [firestoreDiasTrabalhados, firestoreRendimentosData, mes.dias, mes.id]);
+  }, [firestoreDiasTrabalhados, firestoreRendimentosData, mes.dias, mes.id, mesAnterior.id, mesAnterior.dias]);
 
   // Salvar dias trabalhados no Firestore com validação
+  // IMPORTANTE: Os dias são salvos para o mês ANTERIOR (dinheiro recebido no mês atual)
   const salvarDias = async () => {
     const andreNum = parseInt(andreDias);
     const alineNum = parseInt(alineDias);
@@ -85,7 +99,8 @@ const RendimentosSection = ({ mes }) => {
         andre: andreNum,
         aline: alineNum
       };
-      await updateDiasTrabalhados(mes.id, dias);
+      // Salvar no mês anterior (o dinheiro recebido no mês atual é referente ao mês anterior)
+      await updateDiasTrabalhados(mesAnterior.id, dias);
       showNotification('✅ Dias trabalhados salvos com sucesso!', 'success');
       setEditandoDias(false);
     } catch (error) {
@@ -162,6 +177,17 @@ const RendimentosSection = ({ mes }) => {
     <div className="section">
       <div className="section-header">📈 RENDIMENTOS - {mes.nome.toUpperCase()}</div>
       <div className="section-content">
+        <div style={{ 
+          backgroundColor: '#e8f5e9', 
+          padding: '10px', 
+          borderRadius: '5px', 
+          marginBottom: '15px',
+          fontSize: '14px',
+          color: '#2e7d32'
+        }}>
+          💡 <strong>Nota:</strong> Os dias trabalhados mostrados referem-se ao mês de <strong>{mesAnterior.nome}</strong>. 
+          O dinheiro recebido no mês de {mes.nome} é referente ao trabalho do mês anterior.
+        </div>
         
         <div className="table-container">
           <table>
