@@ -70,9 +70,9 @@ const ExpensesSection = ({
             <h3>Top Categorias</h3>
             <div className="categories-list">
               {stats.topCategories.map(([category, amount], index) => (
-                <div key={category} className="category-item">
+                <div key={category || `category-${index}`} className="category-item">
                   <span className="category-rank">{index + 1}.</span>
-                  <span className="category-name">{category}</span>
+                  <span className="category-name">{category || 'Categoria não definida'}</span>
                   <span className="category-amount">{formatCurrency(amount)}</span>
                 </div>
               ))}

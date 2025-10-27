@@ -65,16 +65,16 @@
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: var(--space-3);
-  color: #1e293b;
+  color: white;
   letter-spacing: -0.025em;
   position: relative;
   z-index: 1;
-  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.3);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .app-subtitle {
   font-size: 1.1rem;
-  color: #334155;
+  color: rgba(255, 255, 255, 0.9);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -372,9 +372,133 @@ input:focus, textarea:focus, select:focus {
   background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
 }
 
+.dark-theme .app-title {
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.dark-theme .app-subtitle {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.dark-theme .category-info h3 {
+  color: var(--gray-200);
+}
+
+.dark-theme .budget-card {
+  background: var(--gray-100);
+  border-color: var(--gray-200);
+}
+
+.dark-theme .budget-card .stat-row .label {
+  color: var(--gray-400);
+}
+
+.dark-theme .budget-card .stat-row .value {
+  color: var(--gray-200);
+}
+
+/* Inputs de dias trabalhados - contraste adequado */
+.dark-theme input[type="number"] {
+  background-color: var(--gray-200) !important;
+  color: var(--gray-800) !important;
+  border-color: var(--gray-400) !important;
+}
+
+.dark-theme input[type="number"]:focus {
+  background-color: var(--gray-100) !important;
+  color: var(--gray-900) !important;
+  border-color: var(--primary) !important;
+}
+
+.dark-theme input[type="number"]:disabled {
+  background-color: var(--gray-300) !important;
+  color: var(--gray-600) !important;
+  border-color: var(--gray-400) !important;
+}
+
 .dark-theme .dashboard-sidebar {
   background: var(--gray-100);
   border-right-color: var(--gray-200);
+}
+
+/* Garantir contraste adequado em todos os elementos no tema escuro */
+.dark-theme .section, 
+.dark-theme .card {
+  background: var(--gray-100) !important;
+  color: var(--gray-200) !important;
+}
+
+.dark-theme input, 
+.dark-theme textarea, 
+.dark-theme select {
+  background: var(--gray-200) !important;
+  color: var(--gray-900) !important;
+  border-color: var(--gray-400) !important;
+}
+
+.dark-theme input::placeholder,
+.dark-theme textarea::placeholder {
+  color: var(--gray-600) !important;
+}
+
+.dark-theme .btn-secondary {
+  background: var(--gray-200) !important;
+  color: var(--gray-900) !important;
+}
+
+.dark-theme h1, 
+.dark-theme h2, 
+.dark-theme h3, 
+.dark-theme h4, 
+.dark-theme h5, 
+.dark-theme h6 {
+  color: var(--gray-200) !important;
+}
+
+.dark-theme p,
+.dark-theme span,
+.dark-theme div,
+.dark-theme td,
+.dark-theme th,
+.dark-theme label {
+  color: var(--gray-300);
+}
+
+.dark-theme .loading-content,
+.dark-theme .savings-calculator,
+.dark-theme .calculation-details,
+.dark-theme .tip-card {
+  background: var(--gray-100) !important;
+}
+
+/* Garantir que emojis e ícones sejam exibidos corretamente */
+.emoji, 
+[class*="icon"],
+.card-icon,
+.nav-item .icon,
+.btn .icon {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", sans-serif !important;
+  font-style: normal !important;
+  font-variant: normal !important;
+  text-rendering: auto !important;
+  -webkit-font-smoothing: antialiased !important;
+  -moz-osx-font-smoothing: grayscale !important;
+  display: inline-block !important;
+  line-height: 1 !important;
+}
+
+/* Garantir que ícones de navegação sejam visíveis */
+.nav-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.nav-item .icon {
+  font-size: 1.2em !important;
+  min-width: 20px !important;
+  text-align: center !important;
 }
 
 .dark-theme .section, .dark-theme .card {
@@ -2739,6 +2863,7 @@ input:focus, textarea:focus, select:focus {
 .category-info h3 {
   margin: 0;
   color: var(--gray-800);
+  font-weight: 600;
 }
 
 .budget-status .status-icon {
