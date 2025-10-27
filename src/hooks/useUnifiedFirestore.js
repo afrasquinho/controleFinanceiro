@@ -184,18 +184,20 @@ export const useUnifiedFirestore = () => {
       // User explicitly logged out or not authenticated
       setLoading(false);
       setConnectionStatus('error');
-      setError('Usuário não autenticado');
+      setError(null); // Não mostrar erro quando não há usuário autenticado
       return;
     }
 
     if (userId === undefined) {
-      // Still initializing auth state, don't show error yet
+      // Still initializing auth state
+      // Mantém o loading como true enquanto verifica
       return;
     }
 
     const loadAllData = async () => {
       try {
         setLoading(true);
+        setError(null); // Limpar erros anteriores
         setConnectionStatus('connecting');
       // Load data for each month (this will also load gastos fixos for each month)
       for (const mes of mesesInfo) {

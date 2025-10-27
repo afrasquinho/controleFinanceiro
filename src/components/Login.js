@@ -1,6 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUnifiedFirestore } from '../hooks/useUnifiedFirestore.js';
-import { signInWithRedirect, GoogleAuthProvider } from 'firebase/auth';
+import { 
+  signInWithPopup,
+  signInWithRedirect, 
+  GoogleAuthProvider, 
+  getRedirectResult,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile
+} from 'firebase/auth';
 import { auth } from '../firebase.js';
 import './Login.css';
 
@@ -21,10 +29,27 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { 
-    registerUser: register, 
-    loginUser: login 
-  } = useUnifiedFirestore();
+  // O hook useUnifiedFirestore agora só expõe userId para verificação de autenticação
+  const { userId } = useUnifiedFirestore();
+
+  // Lidar com resultado do redirect do Google
+  useEffect(() => {
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          console.log('✅ Login com Google bem-sucedido:', result);
+          console.log('✅ User:', result.user);
+          // O usuário será automaticamente atualizado pelo useUnifiedFirestore
+        }
+      } catch (error) {
+        console.error('❌ Erro ao processar redirect do Google:', error);
+        setError(error.message || 'Falha ao processar login com Google');
+      }
+    };
+
+    handleRedirectResult();
+  }, []);
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -69,11 +94,29 @@ const Login = () => {
 
     try {
       if (isRegister) {
-        await register(sanitizedEmail, sanitizedPassword, sanitizedName);
+        // Criar novo usuário
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          sanitizedEmail,
+          sanitizedPassword
+        );
+        
+        // Atualizar perfil com o nome
+        if (sanitizedName.trim()) {
+          await updateProfile(userCredential.user, {
+            displayName: sanitizedName
+          });
+        }
+        
         setError('');
         setIsRegister(false);
       } else {
-        await login(sanitizedEmail, sanitizedPassword);
+        // Fazer login com email e senha
+        await signInWithEmailAndPassword(
+          auth,
+          sanitizedEmail,
+          sanitizedPassword
+        );
       }
     } catch (err) {
       setError(err.message || 'Falha na autenticação');
@@ -87,12 +130,49 @@ const Login = () => {
     setError('');
 
     try {
+      console.log('🔥 Tentando login com Google...');
+      console.log('🔥 Auth object:', auth);
+      console.log('🔥 Auth app:', auth.app);
+      
       const provider = new GoogleAuthProvider();
-      await signInWithRedirect(auth, provider);
-    } catch (err) {
-      console.error('Erro ao fazer login com Google:', err);
-      setError(err.message || 'Falha ao autenticar com Google');
+      
+      // Configurar o provider com scopes específicos
+      provider.addScope('email');
+      provider.addScope('profile');
+      
+      // Configurar parâmetros personalizados
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
+      
+      console.log('🔥 Provider configurado:', provider);
+      
+      // Tentar primeiro com popup (mais confiável)
+      const result = await signInWithPopup(auth, provider);
+      console.log('✅ Login com Google bem-sucedido:', result);
+      console.log('✅ User:', result.user);
+      
       setLoading(false);
+    } catch (err) {
+      console.error('❌ Erro ao fazer login com Google:', err);
+      console.error('❌ Detalhes do erro:', {
+        code: err.code,
+        message: err.message
+      });
+      
+      // Se popup falhar, tentar com redirect
+      if (err.code === 'auth/popup-blocked' || err.code === 'auth/popup-closed-by-user') {
+        console.log('🔄 Tentando com redirect...');
+        try {
+          await signInWithRedirect(auth, provider);
+        } catch (redirectErr) {
+          setError(redirectErr.message || 'Falha ao autenticar com Google');
+          setLoading(false);
+        }
+      } else {
+        setError(err.message || 'Falha ao autenticar com Google');
+        setLoading(false);
+      }
     }
   };
 

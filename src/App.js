@@ -8,6 +8,8 @@
 // src/App.js
 import React, { useState } from 'react';
 import { useUnifiedFirestore } from './hooks/useUnifiedFirestore.js';
+import { signOut } from 'firebase/auth';
+import { auth } from './firebase.js';
 import Dashboard from './components/Dashboard.js';
 import Login from './components/Login.js';
 import ThemeToggle from './components/ThemeToggle.js';
@@ -64,11 +66,23 @@ function App() {
 
   // Hook do Firebase com recursos aprimorados
   const {
-    user,
+    userId,
     loading,
-    error,
-    logoutUser: logout
+    error
   } = useUnifiedFirestore();
+  
+  // Verificar se há usuário autenticado baseado no userId
+  const isAuthenticated = userId !== null && userId !== undefined;
+
+  // Função de logout
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      console.log('✅ Logout realizado com sucesso');
+    } catch (error) {
+      console.error('❌ Erro ao fazer logout:', error);
+    }
+  };
 
   // Estado para controlar o painel de debug
   const [debugVisible, setDebugVisible] = useState(false);
@@ -78,13 +92,13 @@ function App() {
       {/* Skip Link for Accessibility */}
       <a href="#main-content" className="skip-link">Pular para conteúdo principal</a>
 
-      {/* Loading Overlay */}
-      {loading && (
+      {/* Loading Overlay - Só mostra quando está verificando autenticação inicial OU carregando dados */}
+      {loading && userId !== undefined && (
         <div className="loading-overlay">
           <div className="loading-content">
             <div className="loading-spinner"></div>
-            <div className="loading-text">Conectando ao Firebase</div>
-            <div className="loading-subtext">Carregando seus dados financeiros...</div>
+            <div className="loading-text">{isAuthenticated ? 'Carregando dados...' : 'Verificando autenticação...'}</div>
+            <div className="loading-subtext">Aguarde um momento...</div>
           </div>
         </div>
       )}
@@ -101,21 +115,22 @@ function App() {
       )}
 
       {/* Connection Status Indicator */}
-      <div className={`connection-status ${user ? 'connected' : 'disconnected'}`}>
+      <div className={`connection-status ${isAuthenticated ? 'connected' : 'disconnected'}`}>
         <div className="status-dot"></div>
-        {user ? 'Firebase Conectado' : 'Desconectado'}
+        {isAuthenticated ? 'Firebase Conectado' : 'Desconectado'}
       </div>
 
       {/* App Header */}
-      {user && (
+      {isAuthenticated && (
         <header className="app-header">
           <h1 className="app-title">💰 Controle Financeiro 2025</h1>
           <div className="app-subtitle">
             <span>🔥 Powered by Firebase</span>
-            <span>👤 {user.name}</span>
-            <span>📧 {user.email}</span>
+            <span>👤 {userId ? 'Logado' : 'Usuário'}</span>
             <ThemeToggle size="small" />
-            <button onClick={logout} className="logout-btn">🚪 Sair</button>
+            <button onClick={handleLogout} className="logout-btn" aria-label="Sair">
+              🚪 Sair
+            </button>
           </div>
         </header>
       )}
@@ -123,8 +138,8 @@ function App() {
       {/* Main Content */}
       <main id="main-content">
         {/* Render Login or Dashboard based on authentication */}
-        {user ? (
-          <Dashboard user={user} />
+        {isAuthenticated ? (
+          <Dashboard user={{ id: userId }} />
         ) : (
           <Login />
         )}
@@ -141,7 +156,8 @@ function App() {
           </button>
           <div className={`debug-content ${debugVisible ? 'show' : ''}`}>
             <div>Debug: Firebase API</div>
-            <div>User: {user ? user.name : 'Not logged in'}</div>
+            <div>User ID: {userId || 'Not logged in'}</div>
+            <div>Authenticated: {isAuthenticated ? 'Yes' : 'No'}</div>
           </div>
         </div>
       )}
