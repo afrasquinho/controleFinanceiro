@@ -13,11 +13,11 @@ export const calculateRendimentos = (mesId) => {
   
   const rendimentoAndre = valoresDefault.valorAndre * dias.andre;
   const ivaAndre = rendimentoAndre * valoresDefault.iva;
-  const totalAndre = rendimentoAndre + ivaAndre;
+  const totalAndre = rendimentoAndre - ivaAndre;
   
   const rendimentoAline = valoresDefault.valorAline * dias.aline;
   const ivaAline = rendimentoAline * valoresDefault.iva;
-  const totalAline = rendimentoAline + ivaAline;
+  const totalAline = rendimentoAline - ivaAline;
   
   // Calcular rendimentos extras
   const rendimentosExtrasSalvos = localStorage.getItem(`rendimentosExtras_${mesId}`);

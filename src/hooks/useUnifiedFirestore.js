@@ -139,11 +139,14 @@ export const useUnifiedFirestore = () => {
       try {
         const diasSnapshot = await getDocs(collection(db, mesPath, 'diasTrabalhados'));
         if (!diasSnapshot.empty) {
-          const diasData = {};
-          diasSnapshot.forEach(doc => {
-            diasData[doc.id] = doc.data();
+          // Usar o primeiro documento como fonte dos valores (estrutura plana { andre, aline })
+          let plano = null;
+          diasSnapshot.forEach(docSnap => {
+            if (!plano) plano = docSnap.data();
           });
-          setDiasTrabalhados(prev => ({ ...prev, [mesId]: diasData }));
+          if (plano) {
+            setDiasTrabalhados(prev => ({ ...prev, [mesId]: plano }));
+          }
         }
       } catch (err) {
         // Log error silently in production
@@ -294,7 +297,8 @@ export const useUnifiedFirestore = () => {
       // Using collection and doc correctly to ensure even number of segments
       await setDoc(doc(db, `${mesesPath}/${mesId}/diasTrabalhados`, 'data'), novosDias);
 
-      setDiasTrabalhados(prev => ({ ...prev, [mesId]: novosDias }));
+      // Manter estado plano { andre, aline }
+      setDiasTrabalhados(prev => ({ ...prev, [mesId]: { ...novosDias } }));
 
     } catch (err) {
       console.error('❌ Erro ao atualizar dias trabalhados:', err);

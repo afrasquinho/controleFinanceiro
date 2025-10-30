@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import React, { useState, useMemo, useCallback } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Legend } from 'recharts';
 import { formatCurrency } from '../../utils/calculations.js';
 
 const ChartsSection = ({ gastosData, gastosFixos }) => {
   const [selectedPeriod, setSelectedPeriod] = useState('6months');
   const [selectedChart, setSelectedChart] = useState('trends');
+  const [hiddenCategories, setHiddenCategories] = useState({});
 
   // Função auxiliar para nome do mês
   const getMonthName = (monthNumber) => {
@@ -26,6 +27,10 @@ const ChartsSection = ({ gastosData, gastosFixos }) => {
     'vestuario': { nome: '👕 Vestuário', cor: '#54a0ff' },
     'outros': { nome: '📦 Outros', cor: '#5f27cd' }
   }), []);
+
+  const toggleCategory = useCallback((key) => {
+    setHiddenCategories(prev => ({ ...prev, [key]: !prev[key] }));
+  }, []);
 
   // Obter dados baseado no período selecionado
   const getDataForPeriod = useMemo(() => {
@@ -179,6 +184,9 @@ const ChartsSection = ({ gastosData, gastosFixos }) => {
     };
   }, [chartData]);
 
+  // Tooltips formatados
+  const currencyFormatter = (value) => formatCurrency(value);
+
   // Renderizar gráfico de tendências
   const renderTrendsChart = () => {
     const chartDataForRecharts = chartData.trends.map(month => ({
@@ -217,7 +225,7 @@ const ChartsSection = ({ gastosData, gastosFixos }) => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis tickFormatter={(value) => formatCurrency(value)} />
-              <Tooltip formatter={(value) => formatCurrency(value)} />
+              <Tooltip formatter={currencyFormatter} />
               <Bar dataKey="variaveis" stackId="a" fill="#ff6b6b" name="Gastos Variáveis" />
               <Bar dataKey="fixos" stackId="a" fill="#4ecdc4" name="Gastos Fixos" />
             </BarChart>
@@ -265,7 +273,7 @@ const ChartsSection = ({ gastosData, gastosFixos }) => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis tickFormatter={(value) => formatCurrency(value)} />
-              <Tooltip formatter={(value) => formatCurrency(value)} />
+              <Tooltip formatter={currencyFormatter} />
               <Line type="monotone" dataKey="total" stroke="#8884d8" strokeWidth={3} name="Total" />
               <Line type="monotone" dataKey="variaveis" stroke="#ff6b6b" strokeWidth={2} name="Gastos Variáveis" />
               <Line type="monotone" dataKey="fixos" stroke="#4ecdc4" strokeWidth={2} name="Gastos Fixos" />
@@ -282,8 +290,10 @@ const ChartsSection = ({ gastosData, gastosFixos }) => {
     
     chartData.trends.forEach(month => {
       Object.entries(month.categorias).forEach(([categoria, valor]) => {
-        if (!categoryTotals[categoria]) categoryTotals[categoria] = 0;
-        categoryTotals[categoria] += valor;
+        if (!hiddenCategories[categoria]) {
+          if (!categoryTotals[categoria]) categoryTotals[categoria] = 0;
+          categoryTotals[categoria] += valor;
+        }
       });
     });
 
@@ -309,7 +319,21 @@ const ChartsSection = ({ gastosData, gastosFixos }) => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" angle={-45} textAnchor="end" height={100} />
               <YAxis tickFormatter={(value) => formatCurrency(value)} />
-              <Tooltip formatter={(value) => formatCurrency(value)} />
+              <Tooltip formatter={currencyFormatter} />
+              <Legend
+                verticalAlign="top"
+                formatter={(value) => value}
+                onClick={(e) => {
+                  const key = Object.keys(categorias).find(k => categorias[k].nome === e.value) || e.value;
+                  toggleCategory(key);
+                }}
+                payload={Object.entries(categorias).map(([key, cfg]) => ({
+                  id: key,
+                  value: cfg.nome,
+                  type: 'square',
+                  color: hiddenCategories[key] ? '#e5e7eb' : (cfg.cor || '#6b7280')
+                }))}
+              />
               <Bar dataKey="value" fill="#8884d8">
                 {chartDataForRecharts.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
@@ -414,7 +438,7 @@ const ChartsSection = ({ gastosData, gastosFixos }) => {
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip formatter={(value) => formatCurrency(value)} />
+              <Tooltip formatter={currencyFormatter} />
             </PieChart>
           </ResponsiveContainer>
         </div>

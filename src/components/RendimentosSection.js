@@ -171,7 +171,11 @@ const RendimentosSection = ({ mes }) => {
   const totalAline = rendimentoBaseAline + ivaAline;
 
   const totalRendimentosExtras = rendimentosExtras.reduce((total, r) => total + r.valor, 0);
-  const totalGeral = totalAndre + totalAline + totalRendimentosExtras;
+  const subtotalBrutoTrabalho = totalAndre + totalAline;
+  const ivaTotalTrabalho = ivaAndre + ivaAline;
+  const subtotalLiquidoTrabalho = subtotalBrutoTrabalho - ivaTotalTrabalho;
+  // Total rendimentos deve refletir o líquido do trabalho + extras
+  const totalGeral = subtotalLiquidoTrabalho + totalRendimentosExtras;
 
   return (
     <div className="section">
@@ -376,11 +380,20 @@ const RendimentosSection = ({ mes }) => {
               )}
 
               <tr className="total">
-                <td><strong>SUBTOTAL TRABALHO</strong></td>
+                <td><strong>SUBTOTAL TRABALHO (Bruto)</strong></td>
                 <td></td>
                 <td></td>
                 <td></td>
-                <td className="valor"><strong>{formatCurrency(totalAndre + totalAline)}</strong></td>
+                <td className="valor"><strong>{formatCurrency(subtotalBrutoTrabalho)}</strong></td>
+                <td></td>
+              </tr>
+
+              <tr className="total" style={{backgroundColor: '#fff7ed'}}>
+                <td><strong>SUBTOTAL - IVA</strong></td>
+                <td></td>
+                <td></td>
+                <td className="valor" style={{color: '#e67e22'}}>- {formatCurrency(ivaTotalTrabalho)}</td>
+                <td className="valor"><strong>{formatCurrency(subtotalLiquidoTrabalho)}</strong></td>
                 <td></td>
               </tr>
               
@@ -396,7 +409,7 @@ const RendimentosSection = ({ mes }) => {
               )}
 
               <tr className="total" style={{backgroundColor: '#3498db', color: 'white'}}>
-                <td><strong>TOTAL RENDIMENTOS</strong></td>
+                <td><strong>TOTAL RENDIMENTOS (Líquido)</strong></td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -430,3 +443,4 @@ const RendimentosSection = ({ mes }) => {
 };
 
 export default RendimentosSection;
+

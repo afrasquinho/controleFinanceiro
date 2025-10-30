@@ -72,6 +72,7 @@ const Dashboard = ({ user }) => {
         return (
           <ExpensesSection
             gastosData={gastosData}
+            gastosFixos={gastosFixos}
             addGasto={addGasto}
             removeGasto={removeGasto}
           />
@@ -94,50 +95,66 @@ const Dashboard = ({ user }) => {
   };
 
   return (
-    <div className="dashboard-container">
-      <div style={{ 
-        backgroundColor: '#fff', 
-        padding: '20px', 
-        marginBottom: '20px',
-        borderRadius: '8px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-      }}>
-        <h2>Bem-vindo, {user.displayName || user.email || 'Usuário'}! 👋</h2>
-        <p style={{ color: '#666', margin: '5px 0' }}>
-          Gerencie suas finanças de forma inteligente
-        </p>
-      </div>
+    <div className="dashboard-container" style={{ display: 'flex', gap: 20 }}>
+      {/* Sidebar */}
+      <aside className="dashboard-sidebar" style={{ width: 220, minWidth: 200 }}>
+        <div className="sidebar-header" style={{
+          backgroundColor: '#fff',
+          padding: '16px 18px',
+          borderRadius: 8,
+          boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
+          marginBottom: 12
+        }}>
+          <h2 style={{ margin: 0, fontSize: 18 }}>📊 Dashboard</h2>
+          <p style={{ margin: '6px 0 0', color: '#667085', fontSize: 13 }}>
+            {user.displayName || user.email || 'Usuário'}
+          </p>
+        </div>
 
-      {/* Navigation Tabs */}
-      <div style={{ 
-        display: 'flex', 
-        gap: '10px', 
-        marginBottom: '20px',
-        flexWrap: 'wrap'
-      }}>
-        {menuItems.map(item => (
-          <button
-            key={item.id}
-            onClick={() => setActiveTab(item.id)}
-            style={{
-              padding: '12px 24px',
-              border: 'none',
-              borderRadius: '8px',
-              backgroundColor: activeTab === item.id ? '#3498db' : '#f8f9fa',
-              color: activeTab === item.id ? '#fff' : '#333',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: activeTab === item.id ? 'bold' : 'normal',
-              transition: 'all 0.3s'
-            }}
-          >
-            {item.icon} {item.label}
-          </button>
-        ))}
-      </div>
+        <nav className="sidebar-nav" role="navigation" aria-label="Navegação do dashboard" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
+              onClick={() => setActiveTab(item.id)}
+              aria-current={activeTab === item.id ? 'page' : undefined}
+              aria-label={`Ir para ${item.label.replace(/^[^\s]+\s/, '')}`}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                width: '100%',
+                textAlign: 'left',
+                padding: '10px 12px',
+                borderRadius: 8,
+                border: '1px solid #e5e7eb',
+                background: activeTab === item.id ? '#eff6ff' : '#ffffff',
+                color: '#111827',
+                cursor: 'pointer'
+              }}
+            >
+              <span className="nav-icon" style={{ minWidth: 20, textAlign: 'center' }}>{item.icon}</span>
+              <span className="nav-label" style={{ fontSize: 14 }}>{item.label.replace(/^[^\s]+\s/, '')}</span>
+            </button>
+          ))}
+        </nav>
+      </aside>
 
-      {/* Content */}
-      {renderContent()}
+      {/* Main Content */}
+      <main className="dashboard-main" style={{ flex: 1 }}>
+        <div style={{
+          backgroundColor: '#fff',
+          padding: 20,
+          marginBottom: 20,
+          borderRadius: 8,
+          boxShadow: '0 2px 4px rgba(0,0,0,0.08)'
+        }}>
+          <h2 style={{ margin: 0 }}>Bem-vindo, {user.displayName || user.email || 'Usuário'}! 👋</h2>
+          <p style={{ color: '#666', margin: '6px 0 0' }}>Gerencie suas finanças de forma inteligente</p>
+        </div>
+
+        {renderContent()}
+      </main>
     </div>
   );
 };

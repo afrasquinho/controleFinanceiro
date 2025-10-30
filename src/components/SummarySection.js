@@ -1,9 +1,53 @@
 // src/components/SummarySection.js
-import React from 'react';
-import { calculateSaldo, formatCurrency } from '../utils/calculations.js';
+import React, { useMemo } from 'react';
+import { formatCurrency } from '../utils/calculations.js';
+import { useUnifiedFirestore } from '../hooks/useUnifiedFirestore.js';
+import { mesesInfo, valoresDefault } from '../data/monthsData.js';
 
 const SummarySection = ({ mes, gastos }) => {
-  const saldoInfo = calculateSaldo(mes.id, gastos);
+  const { gastosFixos, rendimentosData, diasTrabalhados } = useUnifiedFirestore();
+
+  const getMesAnterior = (mesAtualId) => {
+    const idx = mesesInfo.findIndex(m => m.id === mesAtualId);
+    if (idx === -1) return mesesInfo[0];
+    return idx === 0 ? mesesInfo[mesesInfo.length - 1] : mesesInfo[idx - 1];
+  };
+
+  const mesAnterior = getMesAnterior(mes.id);
+
+  const saldoInfo = useMemo(() => {
+    // Gastos variáveis do mês (já recebidos)
+    const gastosVariaveis = Array.isArray(gastos) ? gastos.reduce((s, g) => s + (g.valor || 0), 0) : 0;
+
+    // Gastos fixos do mês via Firestore
+    const fixosMes = gastosFixos[mes.id] || {};
+    const gastosFixosTotal = Object.values(fixosMes).reduce((s, v) => s + (v || 0), 0);
+
+    // Rendimentos: base (mês anterior) + extras (mês atual)
+    const dias = diasTrabalhados[mesAnterior.id] || { andre: mesAnterior.dias, aline: mesAnterior.dias };
+    const baseAndre = valoresDefault.valorAndre * (dias.andre ?? mesAnterior.dias);
+    const baseAline = valoresDefault.valorAline * (dias.aline ?? mesAnterior.dias);
+    const ivaAndre = baseAndre * valoresDefault.iva;
+    const ivaAline = baseAline * valoresDefault.iva;
+    const afterTaxAndre = baseAndre - ivaAndre;
+    const afterTaxAline = baseAline - ivaAline;
+    const extrasMes = (rendimentosData[mes.id] || []).reduce((s, r) => s + (r.valor || 0), 0);
+    const rendimentos = afterTaxAndre + afterTaxAline + extrasMes;
+
+    // IVA conta como despesa do mês
+    const ivaTotal = ivaAndre + ivaAline;
+    const gastosTotal = gastosVariaveis + gastosFixosTotal + ivaTotal;
+    const saldo = rendimentos - gastosTotal;
+
+    return {
+      rendimentos,
+      gastosFixos: gastosFixosTotal,
+      gastosVariaveis,
+      gastosTotal,
+      ivaTotal,
+      saldo
+    };
+  }, [gastos, gastosFixos, rendimentosData, diasTrabalhados, mes.id, mesAnterior.id, mesAnterior.dias]);
   
   const getSaldoClass = (saldo) => {
     return saldo >= 0 ? 'saldo-positivo' : 'saldo-negativo';
@@ -45,6 +89,9 @@ const SummarySection = ({ mes, gastos }) => {
             {formatCurrency(saldoInfo.gastosTotal)}
           </div>
           <div className="summary-label">💸 Gastos Totais</div>
+          <div className="summary-subtext" style={{ fontSize: '12px', opacity: 0.75 }}>
+            + IVA: {formatCurrency(saldoInfo.ivaTotal)}
+          </div>
         </div>
         
         <div className="summary-card">
