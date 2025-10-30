@@ -4,7 +4,7 @@ const DaysWorked = require('../models/DaysWorked');
 // GET /api/days-worked?mes=jan&ano=2025
 const getDaysWorked = asyncHandler(async (req, res) => {
   const { mes: mesId, ano } = req.query;
-  const filter = { user: req.user._id };
+  const filter = {};
   if (mesId) filter.mesId = mesId;
   if (ano) filter.ano = parseInt(ano);
   const docs = await DaysWorked.find(filter);
@@ -20,7 +20,7 @@ const upsertDaysWorked = asyncHandler(async (req, res) => {
   }
   const update = { andre, aline };
   const doc = await DaysWorked.findOneAndUpdate(
-    { user: req.user._id, mesId, ano },
+    { mesId, ano },
     update,
     { new: true, upsert: true, setDefaultsOnInsert: true }
   );

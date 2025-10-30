@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const daysWorkedSchema = mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
     mesId: { type: String, required: true },
     ano: { type: Number, required: true },
     andre: { type: Number, required: true, min: 0, max: 31 },

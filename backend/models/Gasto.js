@@ -4,7 +4,7 @@ const gastoSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: [true, 'Usuário é obrigatório']
+    required: false
   },
   descricao: {
     type: String,
@@ -30,6 +30,7 @@ const gastoSchema = new mongoose.Schema({
         'lazer',
         'casa',
         'vestuario',
+        'viagens',
         'outros'
       ],
       message: 'Categoria inválida'
@@ -125,11 +126,11 @@ const gastoSchema = new mongoose.Schema({
 });
 
 // Índices compostos para performance
-gastoSchema.index({ user: 1, mes: 1, ano: 1 });
-gastoSchema.index({ user: 1, categoria: 1, data: -1 });
-gastoSchema.index({ user: 1, data: -1 });
-gastoSchema.index({ user: 1, tipo: 1 });
-gastoSchema.index({ user: 1, isDeleted: 1 });
+gastoSchema.index({ mes: 1, ano: 1 });
+gastoSchema.index({ categoria: 1, data: -1 });
+gastoSchema.index({ data: -1 });
+gastoSchema.index({ tipo: 1 });
+gastoSchema.index({ isDeleted: 1 });
 
 // Índice de texto para busca
 gastoSchema.index({ 
@@ -162,9 +163,8 @@ gastoSchema.pre('save', function(next) {
 });
 
 // Método estático para buscar gastos por período
-gastoSchema.statics.findByPeriod = function(userId, mes, ano) {
+gastoSchema.statics.findByPeriod = function(mes, ano) {
   return this.find({
-    user: userId,
     mes: mes,
     ano: ano,
     isDeleted: false
@@ -172,20 +172,18 @@ gastoSchema.statics.findByPeriod = function(userId, mes, ano) {
 };
 
 // Método estático para buscar gastos por categoria
-gastoSchema.statics.findByCategory = function(userId, categoria, limit = 50) {
+gastoSchema.statics.findByCategory = function(categoria, limit = 50) {
   return this.find({
-    user: userId,
     categoria: categoria,
     isDeleted: false
   }).sort({ data: -1 }).limit(limit);
 };
 
 // Método estático para estatísticas
-gastoSchema.statics.getStats = function(userId, mes, ano) {
+gastoSchema.statics.getStats = function(mes, ano) {
   return this.aggregate([
     {
       $match: {
-        user: mongoose.Types.ObjectId(userId),
         mes: mes,
         ano: ano,
         isDeleted: false

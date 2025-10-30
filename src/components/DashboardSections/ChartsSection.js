@@ -25,6 +25,7 @@ const ChartsSection = ({ gastosData, gastosFixos }) => {
     'lazer': { nome: '🎬 Lazer', cor: '#feca57' },
     'casa': { nome: '🏠 Casa', cor: '#ff9ff3' },
     'vestuario': { nome: '👕 Vestuário', cor: '#54a0ff' },
+    'viagens': { nome: '✈️ Viagens', cor: '#7c3aed' },
     'outros': { nome: '📦 Outros', cor: '#5f27cd' }
   }), []);
 

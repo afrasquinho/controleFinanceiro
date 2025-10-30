@@ -68,7 +68,8 @@ function App() {
   const {
     userId,
     loading,
-    error
+    error,
+    migrateToMongo
   } = useUnifiedFirestore();
   
   // Verificar se há usuário autenticado baseado no userId
@@ -155,9 +156,12 @@ function App() {
             Debug
           </button>
           <div className={`debug-content ${debugVisible ? 'show' : ''}`}>
-            <div>Debug: Firebase API</div>
+            <div>Debug: Data Layer (Mongo)</div>
             <div>User ID: {userId || 'Not logged in'}</div>
             <div>Authenticated: {isAuthenticated ? 'Yes' : 'No'}</div>
+            <button onClick={async () => { try { await migrateToMongo(); alert('Migração concluída'); } catch(e){ alert('Erro na migração: ' + e.message);} }}>
+              Migrar dados carregados para MongoDB
+            </button>
           </div>
         </div>
       )}

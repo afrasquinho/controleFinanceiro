@@ -21,9 +21,10 @@ const GastosVariaveisEnhanced = ({ mes, gastos, onAddGasto, onRemoveGasto }) => 
     'transporte': { nome: '🚗 Transporte', cor: '#4ecdc4', keywords: ['gasolina', 'uber', 'taxi', 'metro', 'ônibus', 'combustível', 'estacionamento', 'bilhete'] },
     'saude': { nome: '🏥 Saúde', cor: '#45b7d1', keywords: ['farmacia', 'médico', 'hospital', 'medicamento', 'consulta', 'exame', 'dentista'] },
     'educacao': { nome: '📚 Educação', cor: '#96ceb4', keywords: ['curso', 'livro', 'escola', 'universidade', 'material', 'aula', 'treinamento'] },
-    'lazer': { nome: '🎬 Lazer', cor: '#feca57', keywords: ['cinema', 'teatro', 'show', 'festa', 'viagem', 'hotel', 'entretenimento', 'jogo'] },
+    'lazer': { nome: '🎬 Lazer', cor: '#feca57', keywords: ['cinema', 'teatro', 'show', 'festa', 'entretenimento', 'jogo'] },
     'casa': { nome: '🏠 Casa', cor: '#ff9ff3', keywords: ['luz', 'água', 'gás', 'internet', 'telefone', 'condomínio', 'reforma', 'decoração'] },
     'vestuario': { nome: '👕 Vestuário', cor: '#54a0ff', keywords: ['roupa', 'sapato', 'acessório', 'moda', 'loja', 'shopping'] },
+    'viagens': { nome: '✈️ Viagens', cor: '#7c3aed', keywords: ['viagem', 'hotel', 'passagem', 'voo', 'bilhete', 'reserva'] },
     'outros': { nome: '📦 Outros', cor: '#5f27cd', keywords: [] }
   };
 

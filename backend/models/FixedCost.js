@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const fixedCostSchema = mongoose.Schema(
   {
-    user: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
     mesId: { type: String, required: true },
     ano: { type: Number, required: true },
     categoria: { type: String, required: true, trim: true },

@@ -72,48 +72,46 @@ export const useUnifiedFirestore = () => {
 
   // Load gastos fixos for a specific month
   const loadGastosFixos = useCallback(async (mesId) => {
-    if (!mesesPath) return;
+    if (dataSource !== 'mongodb' && !mesesPath) return;
     try {
       if (dataSource === 'mongodb') {
-        const resp = await apiClient.getFixedCosts({ mes: mesId, ano: 2025 });
-        const data = {};
-        (resp.costs || []).forEach(item => {
-          data[item.categoria] = item.valor;
-        });
-        setGastosFixos(prev => ({ ...prev, [mesId]: data }));
-      } else {
-        const gastosFixosRef = collection(db, `${mesesPath}/${mesId}/gastosFixos`);
-        const gastosFixosSnapshot = await getDocs(gastosFixosRef);
-
-        if (gastosFixosSnapshot.empty) {
-          setGastosFixos(prev => ({ ...prev, [mesId]: {} }));
+        const resp = await apiClient.getFixedCosts({ mesId: mesId, ano: 2025 });
+        const mongoCosts = resp && resp.costs ? resp.costs : [];
+        if (mongoCosts.length > 0) {
+          const data = {};
+          mongoCosts.forEach(item => { data[item.categoria] = item.valor; });
+          setGastosFixos(prev => ({ ...prev, [mesId]: data }));
           return;
         }
-
+      }
+      // Fallback Firestore (dados ainda não migrados)
+      if (mesesPath) {
+        const gastosFixosRef = collection(db, `${mesesPath}/${mesId}/gastosFixos`);
+        const gastosFixosSnapshot = await getDocs(gastosFixosRef);
         const data = {};
-        gastosFixosSnapshot.forEach(doc => {
-          data[doc.id] = doc.data().valor;
-        });
+        gastosFixosSnapshot.forEach(doc => { data[doc.id] = doc.data().valor; });
         setGastosFixos(prev => ({ ...prev, [mesId]: data }));
+      } else {
+        setGastosFixos(prev => ({ ...prev, [mesId]: {} }));
       }
     } catch (err) {
-      // Log error silently in production
       if (process.env.NODE_ENV === 'development') {
         console.warn(`⚠️ Erro ao carregar gastos fixos para ${mesId}:`, err);
       }
     }
-  }, [mesesPath]);
+  }, [mesesPath, dataSource]);
 
   // Load data for a specific month
   const loadMonthData = useCallback(async (mesId) => {
-    if (!mesesPath) return;
+    if (dataSource !== 'mongodb' && !mesesPath) return;
     try {
       const mesPath = `${mesesPath}/${mesId}`;
       
       // Load gastos variáveis
-      if (process.env.REACT_APP_DATA_SOURCE === 'mongodb') {
-        const resp = await apiClient.getGastos({ mes: mesId, ano: 2025 });
-        const gastosArray = (resp.gastos || []).map(g => ({
+      if (dataSource === 'mongodb') {
+        const resp = await apiClient.getGastos({ mes: mesId, ano: 2025, page: 1, limit: 1000 });
+        const apiGastos = (resp?.data?.gastos) || (resp?.gastos) || [];
+        const gastosArray = apiGastos.map(g => ({
           id: g._id,
           data: g.data || new Date().toISOString().slice(0,10),
           desc: g.descricao,
@@ -137,9 +135,10 @@ export const useUnifiedFirestore = () => {
       }
 
       // Load rendimentos extras
-      if (process.env.REACT_APP_DATA_SOURCE === 'mongodb') {
-        const respR = await apiClient.getRendimentos({ mes: mesId, ano: 2025 });
-        const rendimentosArray = (respR.rendimentos || []).map(r => ({
+      if (dataSource === 'mongodb') {
+        const respR = await apiClient.getRendimentos({ mes: mesId, ano: 2025, page: 1, limit: 1000 });
+        const apiRend = (respR?.data?.rendimentos) || (respR?.rendimentos) || [];
+        const rendimentosArray = apiRend.map(r => ({
           id: r._id,
           fonte: r.fonte,
           valor: r.valor,
@@ -207,7 +206,7 @@ export const useUnifiedFirestore = () => {
         console.warn(`⚠️ Erro ao carregar dados de ${mesId}:`, err);
       }
     }
-  }, [mesesPath, loadGastosFixos]);
+  }, [mesesPath, loadGastosFixos, dataSource]);
 
   // Load all data when userId changes
   useEffect(() => {
@@ -251,7 +250,7 @@ export const useUnifiedFirestore = () => {
 
   // Add gasto variável
   const addGasto = useCallback(async (mesId, data, desc, valor) => {
-    if (!mesesPath) return;
+    if (dataSource !== 'mongodb' && !mesesPath) return;
     try {
       if (dataSource === 'mongodb') {
         const payload = { descricao: desc.trim(), valor: parseFloat(valor), data, categoria: 'outros', mesId, ano: 2025 };
@@ -275,11 +274,11 @@ export const useUnifiedFirestore = () => {
       }
       setError('Erro ao salvar gasto: ' + err.message);
     }
-  }, [mesesPath]);
+  }, [mesesPath, dataSource]);
 
   // Remove gasto variável
   const removeGasto = useCallback(async (mesId, gastoId) => {
-    if (!mesesPath) return;
+    if (dataSource !== 'mongodb' && !mesesPath) return;
     try {
       if (dataSource === 'mongodb') {
         await apiClient.deleteGasto(gastoId);
@@ -293,11 +292,11 @@ export const useUnifiedFirestore = () => {
       console.error('❌ Erro ao remover gasto:', err);
       setError('Erro ao remover gasto: ' + err.message);
     }
-  }, [mesesPath]);
+  }, [mesesPath, dataSource]);
 
   // Update gastos fixos for a specific month
   const updateGastosFixos = useCallback(async (mesId, novosGastosFixos) => {
-    if (!mesesPath) return;
+    if (dataSource !== 'mongodb' && !mesesPath) return;
     try {
       // Save each gasto fixo as individual document under the specific month
       const gastosFixosCol = collection(db, `${mesesPath}/${mesId}/gastosFixos`);
@@ -312,16 +311,22 @@ export const useUnifiedFirestore = () => {
       console.error('❌ Erro ao atualizar gastos fixos:', err);
       setError('Erro ao salvar gastos fixos: ' + err.message);
     }
-  }, [mesesPath]);
+  }, [mesesPath, dataSource]);
 
   // Update dias trabalhados
   const updateDiasTrabalhados = useCallback(async (mesId, novosDias) => {
-    if (!mesesPath) return;
+    if (dataSource !== 'mongodb' && !mesesPath) return;
     try {
-      if (dataSource === 'mongodb') {
-        await apiClient.upsertDaysWorked({ mesId, ano: 2025, ...novosDias });
-        setDiasTrabalhados(prev => ({ ...prev, [mesId]: { ...novosDias } }));
-      } else {
+        if (dataSource === 'mongodb') {
+        try {
+          await apiClient.upsertDaysWorked({ mesId, ano: 2025, ...novosDias });
+          setDiasTrabalhados(prev => ({ ...prev, [mesId]: { ...novosDias } }));
+          return;
+        } catch (e) {
+          if (process.env.NODE_ENV === 'development') console.warn('⚠️ MongoDB upsertDaysWorked falhou, usando Firestore:', e.message);
+        }
+      }
+      {
         await setDoc(doc(db, `${mesesPath}/${mesId}/diasTrabalhados`, 'data'), novosDias);
         setDiasTrabalhados(prev => ({ ...prev, [mesId]: { ...novosDias } }));
       }
@@ -331,11 +336,11 @@ export const useUnifiedFirestore = () => {
       setError('Erro ao salvar dias trabalhados: ' + err.message);
       throw err; // Re-throw the error so the calling component can handle it
     }
-  }, [mesesPath]);
+  }, [mesesPath, dataSource]);
 
   // Add rendimento extra
   const addRendimentoExtra = useCallback(async (mesId, rendimento) => {
-    if (!mesesPath) return;
+    if (dataSource !== 'mongodb' && !mesesPath) return;
     try {
       if (process.env.REACT_APP_DATA_SOURCE === 'mongodb') {
         const payload = { ...rendimento, mesId, ano: 2025 };
@@ -356,7 +361,7 @@ export const useUnifiedFirestore = () => {
 
   // Remove rendimento extra
   const removeRendimentoExtra = useCallback(async (mesId, rendimentoId) => {
-    if (!mesesPath) return;
+    if (dataSource !== 'mongodb' && !mesesPath) return;
     try {
       if (process.env.REACT_APP_DATA_SOURCE === 'mongodb') {
         await apiClient.deleteRendimento(rendimentoId);
@@ -459,6 +464,59 @@ export const useUnifiedFirestore = () => {
     total + (Array.isArray(gastos) ? gastos.length : 0), 0
   );
 
+  // MIGRAÇÃO: enviar dados carregados para MongoDB
+  const migrateToMongo = useCallback(async () => {
+    try {
+      // Migrar dias trabalhados e gastos fixos
+      for (const mes of mesesInfo) {
+        const mesId = mes.id;
+
+        // Dias trabalhados
+        const dias = diasTrabalhados[mesId];
+        if (dias && (dias.andre != null || dias.aline != null)) {
+          await apiClient.upsertDaysWorked({ mesId, ano: 2025, ...dias });
+        }
+
+        // Gastos fixos
+        const fixosMes = gastosFixos[mesId] || {};
+        for (const [categoria, valor] of Object.entries(fixosMes)) {
+          if (typeof valor === 'number') {
+            await apiClient.upsertFixedCost({ mesId, ano: 2025, categoria, valor });
+          }
+        }
+
+        // Gastos variáveis
+        const variaveis = gastosData[mesId] || [];
+        for (const g of variaveis) {
+          const dataStr = g.data || `2025-01-01`;
+          await apiClient.createGasto({
+            descricao: g.desc || 'Gasto',
+            valor: Number(g.valor) || 0,
+            categoria: g.categoria || 'outros',
+            data: dataStr,
+            tipo: 'variavel'
+          });
+        }
+      }
+      if (process.env.NODE_ENV === 'development') console.log('✅ Migração concluída');
+    } catch (e) {
+      console.error('❌ Erro na migração:', e);
+      throw e;
+    }
+  }, [gastosData, gastosFixos, diasTrabalhados]);
+
+  // Auto-migração: executa uma única vez após o primeiro carregamento
+  const [autoMigrated, setAutoMigrated] = useState(false);
+  useEffect(() => {
+    if (dataSource === 'mongodb' && !autoMigrated && !loading) {
+      migrateToMongo()
+        .catch((e) => {
+          if (process.env.NODE_ENV === 'development') console.warn('Migração automática falhou:', e.message);
+        })
+        .finally(() => setAutoMigrated(true));
+    }
+  }, [dataSource, autoMigrated, loading, migrateToMongo]);
+
   return {
     // Data
     gastosData,
@@ -487,6 +545,7 @@ export const useUnifiedFirestore = () => {
     
     // Utilities
     clearError,
-    reloadData
+    reloadData,
+    migrateToMongo
   };
 };

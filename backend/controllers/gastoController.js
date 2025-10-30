@@ -17,14 +17,14 @@ const getGastos = async (req, res) => {
     } = req.query;
 
     // Construir filtros
-    const filters = {
-      user: req.user._id,
-      isDeleted: false
-    };
+    const filters = { isDeleted: false };
 
     if (categoria) filters.categoria = categoria;
     if (tipo) filters.tipo = tipo;
-    if (mes) filters.mes = mes;
+    if (mes) {
+      // Aceitar formatos com e sem ponto (ex.: 'nov' e 'nov.')
+      filters.mes = { $in: [mes, `${mes}.`] };
+    }
     if (ano) filters.ano = parseInt(ano);
 
     // Calcular paginação
@@ -67,11 +67,7 @@ const getGastos = async (req, res) => {
 // @access  Private
 const getGastoById = async (req, res) => {
   try {
-    const gasto = await Gasto.findOne({
-      _id: req.params.id,
-      user: req.user._id,
-      isDeleted: false
-    }).populate('user', 'name email');
+    const gasto = await Gasto.findOne({ _id: req.params.id, isDeleted: false }).populate('user', 'name email');
 
     if (!gasto) {
       return res.status(404).json({
@@ -110,10 +106,7 @@ const createGasto = async (req, res) => {
     }
 
     // Adicionar usuário aos dados
-    const gastoData = {
-      ...req.body,
-      user: req.user._id
-    };
+    const gastoData = { ...req.body };
 
     const gasto = await Gasto.create(gastoData);
 
@@ -147,11 +140,7 @@ const updateGasto = async (req, res) => {
     }
 
     const gasto = await Gasto.findOneAndUpdate(
-      {
-        _id: req.params.id,
-        user: req.user._id,
-        isDeleted: false
-      },
+      { _id: req.params.id, isDeleted: false },
       req.body,
       {
         new: true,
@@ -186,11 +175,7 @@ const updateGasto = async (req, res) => {
 const deleteGasto = async (req, res) => {
   try {
     const gasto = await Gasto.findOneAndUpdate(
-      {
-        _id: req.params.id,
-        user: req.user._id,
-        isDeleted: false
-      },
+      { _id: req.params.id, isDeleted: false },
       { isDeleted: true },
       { new: true }
     );
@@ -223,7 +208,7 @@ const getGastosByPeriod = async (req, res) => {
   try {
     const { mes, ano } = req.params;
 
-    const gastos = await Gasto.findByPeriod(req.user._id, mes, parseInt(ano));
+    const gastos = await Gasto.findByPeriod(mes, parseInt(ano));
 
     res.status(200).json({
       status: 'success',
@@ -247,7 +232,7 @@ const getGastosByCategory = async (req, res) => {
     const { categoria } = req.params;
     const { limit = 50 } = req.query;
 
-    const gastos = await Gasto.findByCategory(req.user._id, categoria, parseInt(limit));
+    const gastos = await Gasto.findByCategory(categoria, parseInt(limit));
 
     res.status(200).json({
       status: 'success',
@@ -269,12 +254,8 @@ const getGastosByCategory = async (req, res) => {
 const getGastosStats = async (req, res) => {
   try {
     const { mes, ano } = req.query;
-    const userId = req.user._id;
 
-    let matchFilter = {
-      user: userId,
-      isDeleted: false
-    };
+    let matchFilter = { isDeleted: false };
 
     if (mes) matchFilter.mes = mes;
     if (ano) matchFilter.ano = parseInt(ano);

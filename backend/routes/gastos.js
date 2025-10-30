@@ -11,12 +11,10 @@ const {
   getGastosStats,
   searchGastos
 } = require('../controllers/gastoController');
-const { protect } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Aplicar middleware de autenticação em todas as rotas
-router.use(protect);
+// Middleware de autenticação desativado temporariamente para migração Mongo
 
 // Validações
 const createGastoValidation = [
@@ -28,7 +26,7 @@ const createGastoValidation = [
     .isFloat({ min: 0, max: 1000000 })
     .withMessage('Valor deve ser um número entre 0 e 1.000.000'),
   body('categoria')
-    .isIn(['alimentacao', 'transporte', 'saude', 'educacao', 'lazer', 'casa', 'vestuario', 'outros'])
+    .isIn(['alimentacao', 'transporte', 'saude', 'educacao', 'lazer', 'casa', 'vestuario', 'viagens', 'outros'])
     .withMessage('Categoria inválida'),
   body('data')
     .optional()
@@ -53,7 +51,7 @@ const updateGastoValidation = [
     .withMessage('Valor deve ser um número entre 0 e 1.000.000'),
   body('categoria')
     .optional()
-    .isIn(['alimentacao', 'transporte', 'saude', 'educacao', 'lazer', 'casa', 'vestuario', 'outros'])
+    .isIn(['alimentacao', 'transporte', 'saude', 'educacao', 'lazer', 'casa', 'vestuario', 'viagens', 'outros'])
     .withMessage('Categoria inválida')
 ];
 
@@ -63,7 +61,7 @@ router.route('/')
     [
       query('page').optional().isInt({ min: 1 }).withMessage('Página deve ser um número positivo'),
       query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limite deve ser entre 1 e 100'),
-      query('categoria').optional().isIn(['alimentacao', 'transporte', 'saude', 'educacao', 'lazer', 'casa', 'vestuario', 'outros']),
+      query('categoria').optional().isIn(['alimentacao', 'transporte', 'saude', 'educacao', 'lazer', 'casa', 'vestuario', 'viagens', 'outros']),
       query('tipo').optional().isIn(['variavel', 'fixo']),
       query('mes').optional().isIn(['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez']),
       query('ano').optional().isInt({ min: 2020, max: 2030 })
@@ -103,7 +101,7 @@ router.route('/period/:mes/:ano')
 router.route('/category/:categoria')
   .get(
     [
-      param('categoria').isIn(['alimentacao', 'transporte', 'saude', 'educacao', 'lazer', 'casa', 'vestuario', 'outros']),
+      param('categoria').isIn(['alimentacao', 'transporte', 'saude', 'educacao', 'lazer', 'casa', 'vestuario', 'viagens', 'outros']),
       query('limit').optional().isInt({ min: 1, max: 100 })
     ],
     getGastosByCategory
