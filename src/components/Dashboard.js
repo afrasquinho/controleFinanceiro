@@ -1,21 +1,31 @@
 import React, { useState } from 'react';
 import { useUnifiedFirestore } from '../hooks/useUnifiedFirestore.js';
 import AnalyticsSection from './DashboardSections/AnalyticsSection.js';
+import OverviewSection from './DashboardSections/OverviewSection.js';
+import ChartsSection from './DashboardSections/ChartsSection.js';
+import ExpensesSection from './DashboardSections/ExpensesSection.js';
 
 const Dashboard = ({ user }) => {
-  const [activeTab, setActiveTab] = useState('analytics');
+  const [activeTab, setActiveTab] = useState('overview');
   
   // Usar o hook do Firestore para obter os dados
   const { 
     gastosData, 
+    gastosFixos,
     rendimentosData,
     loading,
-    error
+    error,
+    connectionStatus,
+    totalTransactions,
+    addGasto,
+    removeGasto,
+    clearError,
+    reloadData
   } = useUnifiedFirestore();
 
   const menuItems = [
-    { id: 'analytics', label: '📈 Analytics', icon: '📈' },
     { id: 'overview', label: '📊 Visão Geral', icon: '📊' },
+    { id: 'analytics', label: '📈 Analytics', icon: '📈' },
     { id: 'charts', label: '📊 Gráficos', icon: '📊' },
     { id: 'expenses', label: '💰 Gastos', icon: '💰' },
   ];
@@ -40,31 +50,46 @@ const Dashboard = ({ user }) => {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'analytics':
-        return <AnalyticsSection gastosData={gastosData} rendimentosData={rendimentosData} />;
       case 'overview':
         return (
-          <div style={{ padding: '20px' }}>
-            <h2>📊 Visão Geral</h2>
-            <p>Implementação em desenvolvimento...</p>
-          </div>
+          <OverviewSection
+            gastosFixos={gastosFixos}
+            gastosData={gastosData}
+            rendimentosData={rendimentosData}
+            loading={loading}
+            error={error}
+            connectionStatus={connectionStatus}
+            totalTransactions={totalTransactions}
+            clearError={clearError}
+            reloadData={reloadData}
+          />
         );
+      case 'analytics':
+        return <AnalyticsSection gastosData={gastosData} rendimentosData={rendimentosData} />;
       case 'charts':
-        return (
-          <div style={{ padding: '20px' }}>
-            <h2>📊 Gráficos</h2>
-            <p>Implementação em desenvolvimento...</p>
-          </div>
-        );
+        return <ChartsSection gastosData={gastosData} gastosFixos={gastosFixos} />;
       case 'expenses':
         return (
-          <div style={{ padding: '20px' }}>
-            <h2>💰 Gastos</h2>
-            <p>Implementação em desenvolvimento...</p>
-          </div>
+          <ExpensesSection
+            gastosData={gastosData}
+            addGasto={addGasto}
+            removeGasto={removeGasto}
+          />
         );
       default:
-        return <AnalyticsSection gastosData={gastosData} rendimentosData={rendimentosData} />;
+        return (
+          <OverviewSection
+            gastosFixos={gastosFixos}
+            gastosData={gastosData}
+            rendimentosData={rendimentosData}
+            loading={loading}
+            error={error}
+            connectionStatus={connectionStatus}
+            totalTransactions={totalTransactions}
+            clearError={clearError}
+            reloadData={reloadData}
+          />
+        );
     }
   };
 
