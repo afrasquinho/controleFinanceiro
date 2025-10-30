@@ -232,6 +232,22 @@ class ApiClient {
   async getCategories(params = {}) {
     return this.get(API_ENDPOINTS.ANALYTICS.CATEGORIES, params);
   }
+
+  // Dias trabalhados (Mongo)
+  async getDaysWorked(params = {}) {
+    return this.get('/api/days-worked', params);
+  }
+  async upsertDaysWorked(data) {
+    return this.put('/api/days-worked', data);
+  }
+
+  // Gastos fixos (Mongo)
+  async getFixedCosts(params = {}) {
+    return this.get('/api/fixed-costs', params);
+  }
+  async upsertFixedCost(data) {
+    return this.put('/api/fixed-costs', data);
+  }
 }
 
 // Instância singleton

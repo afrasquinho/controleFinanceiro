@@ -17,6 +17,8 @@ const userRoutes = require('./routes/users');
 const gastoRoutes = require('./routes/gastos');
 const rendimentoRoutes = require('./routes/rendimentos');
 const analyticsRoutes = require('./routes/analytics');
+const daysWorkedRoutes = require('./routes/daysWorked');
+const fixedCostsRoutes = require('./routes/fixedCosts');
 
 // Conectar ao MongoDB
 connectDB();
@@ -95,6 +97,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/gastos', gastoRoutes);
 app.use('/api/rendimentos', rendimentoRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/days-worked', daysWorkedRoutes);
+app.use('/api/fixed-costs', fixedCostsRoutes);
 
 // 404 handler
 app.all('*', (req, res) => {

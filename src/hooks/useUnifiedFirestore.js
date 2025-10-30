@@ -10,6 +10,7 @@ import {
 import { db, auth } from '../firebase.js';
 import { onAuthStateChanged } from 'firebase/auth';
 import { mesesInfo } from '../data/monthsData.js';
+import apiClient from '../config/api.js';
 
 /**
  * Custom hook for managing financial data with Firestore
@@ -41,6 +42,7 @@ import { mesesInfo } from '../data/monthsData.js';
  * @property {Function} reloadData - Reload all data
  */
 export const useUnifiedFirestore = () => {
+  const dataSource = process.env.REACT_APP_DATA_SOURCE || 'mongodb';
   // undefined represents "initializing auth"; null represents "logged out"; string is the authenticated user id
   const [userId, setUserId] = useState(undefined);
   const [gastosData, setGastosData] = useState({});
@@ -72,22 +74,28 @@ export const useUnifiedFirestore = () => {
   const loadGastosFixos = useCallback(async (mesId) => {
     if (!mesesPath) return;
     try {
-      const gastosFixosRef = collection(db, `${mesesPath}/${mesId}/gastosFixos`);
-      const gastosFixosSnapshot = await getDocs(gastosFixosRef);
+      if (dataSource === 'mongodb') {
+        const resp = await apiClient.getFixedCosts({ mes: mesId, ano: 2025 });
+        const data = {};
+        (resp.costs || []).forEach(item => {
+          data[item.categoria] = item.valor;
+        });
+        setGastosFixos(prev => ({ ...prev, [mesId]: data }));
+      } else {
+        const gastosFixosRef = collection(db, `${mesesPath}/${mesId}/gastosFixos`);
+        const gastosFixosSnapshot = await getDocs(gastosFixosRef);
 
-      if (gastosFixosSnapshot.empty) {
-        // Initialize with empty object for this month
-        setGastosFixos(prev => ({ ...prev, [mesId]: {} }));
-        return;
+        if (gastosFixosSnapshot.empty) {
+          setGastosFixos(prev => ({ ...prev, [mesId]: {} }));
+          return;
+        }
+
+        const data = {};
+        gastosFixosSnapshot.forEach(doc => {
+          data[doc.id] = doc.data().valor;
+        });
+        setGastosFixos(prev => ({ ...prev, [mesId]: data }));
       }
-
-      const data = {};
-      gastosFixosSnapshot.forEach(doc => {
-        data[doc.id] = doc.data().valor; // Extract the valor field
-      });
-      
-      // Update gastosFixos state with data for this specific month
-      setGastosFixos(prev => ({ ...prev, [mesId]: data }));
     } catch (err) {
       // Log error silently in production
       if (process.env.NODE_ENV === 'development') {
@@ -103,49 +111,69 @@ export const useUnifiedFirestore = () => {
       const mesPath = `${mesesPath}/${mesId}`;
       
       // Load gastos variáveis
-      const gastosRef = collection(db, mesPath, 'gastosVariaveis');
-      const gastosSnapshot = await getDocs(gastosRef);
-      
-      const gastosArray = [];
-      gastosSnapshot.forEach(doc => {
-        gastosArray.push({
-          id: doc.id,
-          ...doc.data()
-        });
-      });
-
-      if (gastosArray.length > 0) {
+      if (process.env.REACT_APP_DATA_SOURCE === 'mongodb') {
+        const resp = await apiClient.getGastos({ mes: mesId, ano: 2025 });
+        const gastosArray = (resp.gastos || []).map(g => ({
+          id: g._id,
+          data: g.data || new Date().toISOString().slice(0,10),
+          desc: g.descricao,
+          valor: g.valor,
+          categoria: g.categoria,
+          tag: (g.tags && g.tags[0]) || ''
+        }));
         gastosArray.sort((a, b) => new Date(a.data) - new Date(b.data));
         setGastosData(prev => ({ ...prev, [mesId]: gastosArray }));
+      } else {
+        const gastosRef = collection(db, mesPath, 'gastosVariaveis');
+        const gastosSnapshot = await getDocs(gastosRef);
+        const gastosArray = [];
+        gastosSnapshot.forEach(doc => {
+          gastosArray.push({ id: doc.id, ...doc.data() });
+        });
+        if (gastosArray.length > 0) {
+          gastosArray.sort((a, b) => new Date(a.data) - new Date(b.data));
+          setGastosData(prev => ({ ...prev, [mesId]: gastosArray }));
+        }
       }
 
       // Load rendimentos extras
-      const rendimentosRef = collection(db, mesPath, 'rendimentosExtras');
-      const rendimentosSnapshot = await getDocs(rendimentosRef);
-      
-      const rendimentosArray = [];
-      rendimentosSnapshot.forEach(doc => {
-        rendimentosArray.push({
-          id: doc.id,
-          ...doc.data()
-        });
-      });
-
-      if (rendimentosArray.length > 0) {
+      if (process.env.REACT_APP_DATA_SOURCE === 'mongodb') {
+        const respR = await apiClient.getRendimentos({ mes: mesId, ano: 2025 });
+        const rendimentosArray = (respR.rendimentos || []).map(r => ({
+          id: r._id,
+          fonte: r.fonte,
+          valor: r.valor,
+          descricao: r.descricao || ''
+        }));
         setRendimentosData(prev => ({ ...prev, [mesId]: rendimentosArray }));
+      } else {
+        const rendimentosRef = collection(db, mesPath, 'rendimentosExtras');
+        const rendimentosSnapshot = await getDocs(rendimentosRef);
+        const rendimentosArray = [];
+        rendimentosSnapshot.forEach(doc => {
+          rendimentosArray.push({ id: doc.id, ...doc.data() });
+        });
+        if (rendimentosArray.length > 0) {
+          setRendimentosData(prev => ({ ...prev, [mesId]: rendimentosArray }));
+        }
       }
 
       // Load dias trabalhados
       try {
-        const diasSnapshot = await getDocs(collection(db, mesPath, 'diasTrabalhados'));
-        if (!diasSnapshot.empty) {
-          // Usar o primeiro documento como fonte dos valores (estrutura plana { andre, aline })
-          let plano = null;
-          diasSnapshot.forEach(docSnap => {
-            if (!plano) plano = docSnap.data();
-          });
-          if (plano) {
-            setDiasTrabalhados(prev => ({ ...prev, [mesId]: plano }));
+        if (dataSource === 'mongodb') {
+          const resp = await apiClient.getDaysWorked({ mes: mesId, ano: 2025 });
+          const first = (resp.days && resp.days[0]) || null;
+          if (first) setDiasTrabalhados(prev => ({ ...prev, [mesId]: { andre: first.andre, aline: first.aline } }));
+        } else {
+          const diasSnapshot = await getDocs(collection(db, mesPath, 'diasTrabalhados'));
+          if (!diasSnapshot.empty) {
+            let plano = null;
+            diasSnapshot.forEach(docSnap => {
+              if (!plano) plano = docSnap.data();
+            });
+            if (plano) {
+              setDiasTrabalhados(prev => ({ ...prev, [mesId]: plano }));
+            }
           }
         }
       } catch (err) {
@@ -225,22 +253,20 @@ export const useUnifiedFirestore = () => {
   const addGasto = useCallback(async (mesId, data, desc, valor) => {
     if (!mesesPath) return;
     try {
-      const novoGasto = {
-        data,
-        desc: desc.trim(),
-        valor: parseFloat(valor),
-        timestamp: new Date().toISOString()
-      };
-
-      const gastoId = `gasto_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
-      // Fix the path construction to ensure even number of segments
-      await setDoc(doc(db, `${mesesPath}/${mesId}/gastosVariaveis`, gastoId), novoGasto);
-
-      // Update local state
-      setGastosData(prev => ({
-        ...prev,
-        [mesId]: [...(prev[mesId] || []), { id: gastoId, ...novoGasto }]
-      }));
+      if (dataSource === 'mongodb') {
+        const payload = { descricao: desc.trim(), valor: parseFloat(valor), data, categoria: 'outros', mesId, ano: 2025 };
+        const resp = await apiClient.createGasto(payload);
+        const created = resp.gasto || resp.data?.gasto || {};
+        setGastosData(prev => ({
+          ...prev,
+          [mesId]: [...(prev[mesId] || []), { id: created._id, data: created.data, desc: created.descricao, valor: created.valor, categoria: created.categoria }]
+        }));
+      } else {
+        const novoGasto = { data, desc: desc.trim(), valor: parseFloat(valor), timestamp: new Date().toISOString() };
+        const gastoId = `gasto_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+        await setDoc(doc(db, `${mesesPath}/${mesId}/gastosVariaveis`, gastoId), novoGasto);
+        setGastosData(prev => ({ ...prev, [mesId]: [...(prev[mesId] || []), { id: gastoId, ...novoGasto }] }));
+      }
 
     } catch (err) {
       // Log error silently in production
@@ -255,14 +281,13 @@ export const useUnifiedFirestore = () => {
   const removeGasto = useCallback(async (mesId, gastoId) => {
     if (!mesesPath) return;
     try {
-      // Fix the path construction to ensure even number of segments
-      await deleteDoc(doc(db, `${mesesPath}/${mesId}/gastosVariaveis`, gastoId));
-
-      // Update local state
-      setGastosData(prev => ({
-        ...prev,
-        [mesId]: (prev[mesId] || []).filter(gasto => gasto.id !== gastoId)
-      }));
+      if (dataSource === 'mongodb') {
+        await apiClient.deleteGasto(gastoId);
+        setGastosData(prev => ({ ...prev, [mesId]: (prev[mesId] || []).filter(gasto => gasto.id !== gastoId) }));
+      } else {
+        await deleteDoc(doc(db, `${mesesPath}/${mesId}/gastosVariaveis`, gastoId));
+        setGastosData(prev => ({ ...prev, [mesId]: (prev[mesId] || []).filter(gasto => gasto.id !== gastoId) }));
+      }
 
     } catch (err) {
       console.error('❌ Erro ao remover gasto:', err);
@@ -293,12 +318,13 @@ export const useUnifiedFirestore = () => {
   const updateDiasTrabalhados = useCallback(async (mesId, novosDias) => {
     if (!mesesPath) return;
     try {
-      // Create a document for diasTrabalhados within the month's collection
-      // Using collection and doc correctly to ensure even number of segments
-      await setDoc(doc(db, `${mesesPath}/${mesId}/diasTrabalhados`, 'data'), novosDias);
-
-      // Manter estado plano { andre, aline }
-      setDiasTrabalhados(prev => ({ ...prev, [mesId]: { ...novosDias } }));
+      if (dataSource === 'mongodb') {
+        await apiClient.upsertDaysWorked({ mesId, ano: 2025, ...novosDias });
+        setDiasTrabalhados(prev => ({ ...prev, [mesId]: { ...novosDias } }));
+      } else {
+        await setDoc(doc(db, `${mesesPath}/${mesId}/diasTrabalhados`, 'data'), novosDias);
+        setDiasTrabalhados(prev => ({ ...prev, [mesId]: { ...novosDias } }));
+      }
 
     } catch (err) {
       console.error('❌ Erro ao atualizar dias trabalhados:', err);
@@ -311,18 +337,16 @@ export const useUnifiedFirestore = () => {
   const addRendimentoExtra = useCallback(async (mesId, rendimento) => {
     if (!mesesPath) return;
     try {
-      const rendimentoId = `rendimento_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
-      // Fix the path construction to ensure even number of segments
-      await setDoc(doc(db, `${mesesPath}/${mesId}/rendimentosExtras`, rendimentoId), {
-        ...rendimento,
-        timestamp: new Date().toISOString()
-      });
-
-      // Update local state
-      setRendimentosData(prev => ({
-        ...prev,
-        [mesId]: [...(prev[mesId] || []), { id: rendimentoId, ...rendimento }]
-      }));
+      if (process.env.REACT_APP_DATA_SOURCE === 'mongodb') {
+        const payload = { ...rendimento, mesId, ano: 2025 };
+        const resp = await apiClient.createRendimento(payload);
+        const created = resp.rendimento || resp.data?.rendimento || {};
+        setRendimentosData(prev => ({ ...prev, [mesId]: [...(prev[mesId] || []), { id: created._id, fonte: created.fonte, valor: created.valor, descricao: created.descricao }] }));
+      } else {
+        const rendimentoId = `rendimento_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+        await setDoc(doc(db, `${mesesPath}/${mesId}/rendimentosExtras`, rendimentoId), { ...rendimento, timestamp: new Date().toISOString() });
+        setRendimentosData(prev => ({ ...prev, [mesId]: [...(prev[mesId] || []), { id: rendimentoId, ...rendimento }] }));
+      }
 
     } catch (err) {
       console.error('❌ Erro ao adicionar rendimento extra:', err);
@@ -334,14 +358,13 @@ export const useUnifiedFirestore = () => {
   const removeRendimentoExtra = useCallback(async (mesId, rendimentoId) => {
     if (!mesesPath) return;
     try {
-      // Fix the path construction to ensure even number of segments
-      await deleteDoc(doc(db, `${mesesPath}/${mesId}/rendimentosExtras`, rendimentoId));
-
-      // Update local state
-      setRendimentosData(prev => ({
-        ...prev,
-        [mesId]: (prev[mesId] || []).filter(rendimento => rendimento.id !== rendimentoId)
-      }));
+      if (process.env.REACT_APP_DATA_SOURCE === 'mongodb') {
+        await apiClient.deleteRendimento(rendimentoId);
+        setRendimentosData(prev => ({ ...prev, [mesId]: (prev[mesId] || []).filter(rendimento => rendimento.id !== rendimentoId) }));
+      } else {
+        await deleteDoc(doc(db, `${mesesPath}/${mesId}/rendimentosExtras`, rendimentoId));
+        setRendimentosData(prev => ({ ...prev, [mesId]: (prev[mesId] || []).filter(rendimento => rendimento.id !== rendimentoId) }));
+      }
 
     } catch (err) {
       console.error('❌ Erro ao remover rendimento extra:', err);
