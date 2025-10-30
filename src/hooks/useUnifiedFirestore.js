@@ -326,10 +326,8 @@ export const useUnifiedFirestore = () => {
           if (process.env.NODE_ENV === 'development') console.warn('⚠️ MongoDB upsertDaysWorked falhou, usando Firestore:', e.message);
         }
       }
-      {
-        await setDoc(doc(db, `${mesesPath}/${mesId}/diasTrabalhados`, 'data'), novosDias);
-        setDiasTrabalhados(prev => ({ ...prev, [mesId]: { ...novosDias } }));
-      }
+      await setDoc(doc(db, `${mesesPath}/${mesId}/diasTrabalhados`, 'data'), novosDias);
+      setDiasTrabalhados(prev => ({ ...prev, [mesId]: { ...novosDias } }));
 
     } catch (err) {
       console.error('❌ Erro ao atualizar dias trabalhados:', err);
@@ -357,7 +355,7 @@ export const useUnifiedFirestore = () => {
       console.error('❌ Erro ao adicionar rendimento extra:', err);
       setError('Erro ao salvar rendimento extra: ' + err.message);
     }
-  }, [mesesPath]);
+  }, [mesesPath, dataSource]);
 
   // Remove rendimento extra
   const removeRendimentoExtra = useCallback(async (mesId, rendimentoId) => {
@@ -375,7 +373,7 @@ export const useUnifiedFirestore = () => {
       console.error('❌ Erro ao remover rendimento extra:', err);
       setError('Erro ao remover rendimento extra: ' + err.message);
     }
-  }, [mesesPath]);
+  }, [mesesPath, dataSource]);
 
   // Add dívida
   const addDivida = useCallback(async (mesId, divida) => {
