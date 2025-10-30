@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const fixedCostSchema = mongoose.Schema(
   {
@@ -14,6 +14,6 @@ const fixedCostSchema = mongoose.Schema(
 fixedCostSchema.index({ user: 1, mesId: 1, ano: 1, categoria: 1 }, { unique: true });
 
 const FixedCost = mongoose.model('FixedCost', fixedCostSchema);
-export default FixedCost;
+module.exports = FixedCost;
 
 

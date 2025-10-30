@@ -1,6 +1,6 @@
-import express from 'express';
-import { protect } from '../middleware/auth.js';
-import { getFixedCosts, upsertFixedCost } from '../controllers/fixedCostController.js';
+const express = require('express');
+const { protect } = require('../middleware/auth');
+const { getFixedCosts, upsertFixedCost } = require('../controllers/fixedCostController');
 
 const router = express.Router();
 
@@ -8,6 +8,6 @@ router.use(protect);
 router.get('/', getFixedCosts);
 router.put('/', upsertFixedCost);
 
-export default router;
+module.exports = router;
 
 

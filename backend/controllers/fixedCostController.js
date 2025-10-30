@@ -1,8 +1,8 @@
-import asyncHandler from 'express-async-handler';
-import FixedCost from '../models/FixedCost.js';
+const asyncHandler = require('express-async-handler');
+const FixedCost = require('../models/FixedCost');
 
 // GET /api/fixed-costs?mes=jan&ano=2025
-export const getFixedCosts = asyncHandler(async (req, res) => {
+const getFixedCosts = asyncHandler(async (req, res) => {
   const { mes: mesId, ano } = req.query;
   const filter = { user: req.user._id };
   if (mesId) filter.mesId = mesId;
@@ -12,7 +12,7 @@ export const getFixedCosts = asyncHandler(async (req, res) => {
 });
 
 // PUT /api/fixed-costs (upsert por categoria)
-export const upsertFixedCost = asyncHandler(async (req, res) => {
+const upsertFixedCost = asyncHandler(async (req, res) => {
   const { mesId, ano, categoria, valor } = req.body;
   if (!mesId || !ano || !categoria) {
     res.status(400);
@@ -25,5 +25,7 @@ export const upsertFixedCost = asyncHandler(async (req, res) => {
   );
   res.json({ status: 'success', cost: doc });
 });
+
+module.exports = { getFixedCosts, upsertFixedCost };
 
 

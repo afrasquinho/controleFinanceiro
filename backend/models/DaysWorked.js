@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const daysWorkedSchema = mongoose.Schema(
   {
@@ -14,6 +14,6 @@ const daysWorkedSchema = mongoose.Schema(
 daysWorkedSchema.index({ user: 1, mesId: 1, ano: 1 }, { unique: true });
 
 const DaysWorked = mongoose.model('DaysWorked', daysWorkedSchema);
-export default DaysWorked;
+module.exports = DaysWorked;
 
 

@@ -1,8 +1,8 @@
-import asyncHandler from 'express-async-handler';
-import DaysWorked from '../models/DaysWorked.js';
+const asyncHandler = require('express-async-handler');
+const DaysWorked = require('../models/DaysWorked');
 
 // GET /api/days-worked?mes=jan&ano=2025
-export const getDaysWorked = asyncHandler(async (req, res) => {
+const getDaysWorked = asyncHandler(async (req, res) => {
   const { mes: mesId, ano } = req.query;
   const filter = { user: req.user._id };
   if (mesId) filter.mesId = mesId;
@@ -12,7 +12,7 @@ export const getDaysWorked = asyncHandler(async (req, res) => {
 });
 
 // PUT /api/days-worked
-export const upsertDaysWorked = asyncHandler(async (req, res) => {
+const upsertDaysWorked = asyncHandler(async (req, res) => {
   const { mesId, ano, andre, aline } = req.body;
   if (!mesId || !ano) {
     res.status(400);
@@ -26,5 +26,7 @@ export const upsertDaysWorked = asyncHandler(async (req, res) => {
   );
   res.json({ status: 'success', day: doc });
 });
+
+module.exports = { getDaysWorked, upsertDaysWorked };
 
 
