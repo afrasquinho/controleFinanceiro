@@ -111,16 +111,29 @@ export const useUnifiedFirestore = () => {
       if (dataSource === 'mongodb') {
         const resp = await apiClient.getGastos({ mes: mesId, ano: 2025, page: 1, limit: 1000 });
         const apiGastos = (resp?.data?.gastos) || (resp?.gastos) || [];
-        const gastosArray = apiGastos.map(g => ({
-          id: g._id,
-          data: g.data || new Date().toISOString().slice(0,10),
-          desc: g.descricao,
-          valor: g.valor,
-          categoria: g.categoria,
-          tag: (g.tags && g.tags[0]) || ''
-        }));
-        gastosArray.sort((a, b) => new Date(a.data) - new Date(b.data));
-        setGastosData(prev => ({ ...prev, [mesId]: gastosArray }));
+        if (apiGastos.length > 0) {
+          const gastosArray = apiGastos.map(g => ({
+            id: g._id,
+            data: g.data || new Date().toISOString().slice(0,10),
+            desc: g.descricao,
+            valor: g.valor,
+            categoria: g.categoria,
+            tag: (g.tags && g.tags[0]) || ''
+          }));
+          gastosArray.sort((a, b) => new Date(a.data) - new Date(b.data));
+          setGastosData(prev => ({ ...prev, [mesId]: gastosArray }));
+        } else if (mesesPath) {
+          const gastosRef = collection(db, `${mesesPath}/${mesId}/gastosVariaveis`);
+          const gastosSnapshot = await getDocs(gastosRef);
+          const gastosArray = [];
+          gastosSnapshot.forEach(doc => {
+            gastosArray.push({ id: doc.id, ...doc.data() });
+          });
+          if (gastosArray.length > 0) {
+            gastosArray.sort((a, b) => new Date(a.data) - new Date(b.data));
+            setGastosData(prev => ({ ...prev, [mesId]: gastosArray }));
+          }
+        }
       } else {
         const gastosRef = collection(db, mesPath, 'gastosVariaveis');
         const gastosSnapshot = await getDocs(gastosRef);
@@ -138,13 +151,25 @@ export const useUnifiedFirestore = () => {
       if (dataSource === 'mongodb') {
         const respR = await apiClient.getRendimentos({ mes: mesId, ano: 2025, page: 1, limit: 1000 });
         const apiRend = (respR?.data?.rendimentos) || (respR?.rendimentos) || [];
-        const rendimentosArray = apiRend.map(r => ({
-          id: r._id,
-          fonte: r.fonte,
-          valor: r.valor,
-          descricao: r.descricao || ''
-        }));
-        setRendimentosData(prev => ({ ...prev, [mesId]: rendimentosArray }));
+        if (apiRend.length > 0) {
+          const rendimentosArray = apiRend.map(r => ({
+            id: r._id,
+            fonte: r.fonte,
+            valor: r.valor,
+            descricao: r.descricao || ''
+          }));
+          setRendimentosData(prev => ({ ...prev, [mesId]: rendimentosArray }));
+        } else if (mesesPath) {
+          const rendimentosRef = collection(db, `${mesesPath}/${mesId}/rendimentosExtras`);
+          const rendimentosSnapshot = await getDocs(rendimentosRef);
+          const rendimentosArray = [];
+          rendimentosSnapshot.forEach(doc => {
+            rendimentosArray.push({ id: doc.id, ...doc.data() });
+          });
+          if (rendimentosArray.length > 0) {
+            setRendimentosData(prev => ({ ...prev, [mesId]: rendimentosArray }));
+          }
+        }
       } else {
         const rendimentosRef = collection(db, mesPath, 'rendimentosExtras');
         const rendimentosSnapshot = await getDocs(rendimentosRef);
