@@ -1,59 +1,81 @@
 // src/components/SummarySection.js
 import React, { useMemo } from 'react';
 import { formatCurrency } from '../utils/calculations.js';
+import { valoresDefault, mesesInfo } from '../data/monthsData.js';
 import { useUnifiedFirestore } from '../hooks/useUnifiedFirestore.js';
-import { mesesInfo, valoresDefault } from '../data/monthsData.js';
 
 const SummarySection = ({ mes, gastos }) => {
-  const { gastosFixos, rendimentosData, diasTrabalhados } = useUnifiedFirestore();
+  const {
+    gastosFixos: firestoreGastosFixos,
+    diasTrabalhados: firestoreDiasTrabalhados,
+    rendimentosData: firestoreRendimentosData
+  } = useUnifiedFirestore();
 
   const getMesAnterior = (mesAtualId) => {
-    const idx = mesesInfo.findIndex(m => m.id === mesAtualId);
-    if (idx === -1) return mesesInfo[0];
-    return idx === 0 ? mesesInfo[mesesInfo.length - 1] : mesesInfo[idx - 1];
+    const mesAtualIndex = mesesInfo.findIndex(m => m.id === mesAtualId);
+    if (mesAtualIndex === -1 || mesAtualIndex === 0) {
+      return mesesInfo[mesesInfo.length - 1];
+    }
+    return mesesInfo[mesAtualIndex - 1];
   };
 
   const mesAnterior = getMesAnterior(mes.id);
 
   const saldoInfo = useMemo(() => {
-    // Gastos variáveis do mês (já recebidos)
-    const gastosVariaveis = Array.isArray(gastos) ? gastos.reduce((s, g) => s + (g.valor || 0), 0) : 0;
+    // Gastos fixos do mês atual
+    const gastosFixosMes = firestoreGastosFixos[mes.id] || {};
+    const totalGastosFixos = Object.values(gastosFixosMes).reduce((total, valor) => total + valor, 0);
 
-    // Gastos fixos do mês via Firestore
-    const fixosMes = gastosFixos[mes.id] || {};
-    const gastosFixosTotal = Object.values(fixosMes).reduce((s, v) => s + (v || 0), 0);
+    // Dias trabalhados do mês anterior (para calcular rendimentos líquidos do mês atual)
+    const diasDoMesAnterior = firestoreDiasTrabalhados[mesAnterior.id] || {};
+    const andreDias = diasDoMesAnterior.andre !== undefined ? diasDoMesAnterior.andre : mesAnterior.dias;
+    const alineDias = diasDoMesAnterior.aline !== undefined ? diasDoMesAnterior.aline : mesAnterior.dias;
 
-    // Rendimentos: base (mês anterior) + extras (mês atual)
-    const dias = diasTrabalhados[mesAnterior.id] || { andre: mesAnterior.dias, aline: mesAnterior.dias };
-    const baseAndre = valoresDefault.valorAndre * (dias.andre ?? mesAnterior.dias);
-    const baseAline = valoresDefault.valorAline * (dias.aline ?? mesAnterior.dias);
-    const ivaAndre = baseAndre * valoresDefault.iva;
-    const ivaAline = baseAline * valoresDefault.iva;
-    const afterTaxAndre = baseAndre - ivaAndre;
-    const afterTaxAline = baseAline - ivaAline;
-    const extrasMes = (rendimentosData[mes.id] || []).reduce((s, r) => s + (r.valor || 0), 0);
-    const rendimentos = afterTaxAndre + afterTaxAline + extrasMes;
+    const rendimentoBaseAndre = valoresDefault.valorAndre * andreDias;
+    const ivaAndre = rendimentoBaseAndre * valoresDefault.iva;
+    const totalAndreLiquido = rendimentoBaseAndre - ivaAndre;
 
-    // IVA conta como despesa do mês
+    const rendimentoBaseAline = valoresDefault.valorAline * alineDias;
+    const ivaAline = rendimentoBaseAline * valoresDefault.iva;
+    const totalAlineLiquido = rendimentoBaseAline - ivaAline;
+
     const ivaTotal = ivaAndre + ivaAline;
-    const gastosTotal = gastosVariaveis + gastosFixosTotal + ivaTotal;
-    const saldo = rendimentos - gastosTotal;
+
+    // Rendimentos extras do mês atual
+    const rendimentosExtrasMes = firestoreRendimentosData[mes.id] || [];
+    const totalRendimentosExtras = rendimentosExtrasMes.reduce((total, r) => total + (r.valor || 0), 0);
+
+    const rendimentosTotal = totalAndreLiquido + totalAlineLiquido + totalRendimentosExtras;
+
+    // Gastos variáveis do mês atual (dados recebidos do componente pai)
+    const gastosVariaveis = (Array.isArray(gastos) ? gastos : []).reduce((total, gasto) => total + (gasto.valor || 0), 0);
+
+    // Gastos totais incluem fixos, variáveis e IVA retido (tratado como despesa)
+    const gastosTotal = totalGastosFixos + gastosVariaveis + ivaTotal;
+
+    const saldo = rendimentosTotal - gastosTotal;
 
     return {
-      rendimentos,
-      gastosFixos: gastosFixosTotal,
+      rendimentos: rendimentosTotal,
+      gastosFixos: totalGastosFixos,
       gastosVariaveis,
       gastosTotal,
-      ivaTotal,
       saldo
     };
-  }, [gastos, gastosFixos, rendimentosData, diasTrabalhados, mes.id, mesAnterior.id, mesAnterior.dias]);
-  
-  const getSaldoClass = (saldo) => {
-    return saldo >= 0 ? 'saldo-positivo' : 'saldo-negativo';
-  };
+  }, [
+    gastos,
+    firestoreGastosFixos,
+    firestoreDiasTrabalhados,
+    firestoreRendimentosData,
+    mes.id,
+    mesAnterior.id,
+    mesAnterior.dias
+  ]);
+
+  const getSaldoClass = (saldo) => (saldo >= 0 ? 'saldo-positivo' : 'saldo-negativo');
 
   const getTaxaPoupanca = () => {
+    if (!saldoInfo.rendimentos) return '0.0';
     return ((saldoInfo.saldo / saldoInfo.rendimentos) * 100).toFixed(1);
   };
 
@@ -89,9 +111,6 @@ const SummarySection = ({ mes, gastos }) => {
             {formatCurrency(saldoInfo.gastosTotal)}
           </div>
           <div className="summary-label">💸 Gastos Totais</div>
-          <div className="summary-subtext" style={{ fontSize: '12px', opacity: 0.75 }}>
-            + IVA: {formatCurrency(saldoInfo.ivaTotal)}
-          </div>
         </div>
         
         <div className="summary-card">
@@ -119,7 +138,9 @@ const SummarySection = ({ mes, gastos }) => {
         }}>
           <span style={{ fontSize: '14px', fontWeight: 'bold' }}>Gastos vs Rendimentos</span>
           <span style={{ fontSize: '14px', fontWeight: 'bold' }}>
-            {((saldoInfo.gastosTotal / saldoInfo.rendimentos) * 100).toFixed(1)}%
+            {saldoInfo.rendimentos > 0
+              ? ((saldoInfo.gastosTotal / saldoInfo.rendimentos) * 100).toFixed(1)
+              : '0.0'}%
           </span>
         </div>
         <div style={{ 
@@ -130,7 +151,9 @@ const SummarySection = ({ mes, gastos }) => {
           overflow: 'hidden'
         }}>
           <div style={{ 
-            width: `${Math.min((saldoInfo.gastosTotal / saldoInfo.rendimentos) * 100, 100)}%`, 
+            width: `${saldoInfo.rendimentos > 0
+              ? Math.min((saldoInfo.gastosTotal / saldoInfo.rendimentos) * 100, 100)
+              : 0}%`,
             height: '100%', 
             backgroundColor: saldoInfo.gastosTotal > saldoInfo.rendimentos ? '#e74c3c' : '#3498db',
             transition: 'width 0.3s ease'

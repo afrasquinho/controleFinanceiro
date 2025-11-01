@@ -25,7 +25,6 @@ const OverviewSection = ({
 
     // Dados detalhados por mês
     const detalhesPorMes = {};
-    const rendimentosPorMes = {};
 
     // Calculate variable expenses
     Object.entries(gastosData).forEach(([mesId, gastos]) => {
@@ -77,18 +76,14 @@ const OverviewSection = ({
       const ivaAline = rendimentoAline * RENDIMENTOS_CONFIG.IVA_RATE;
       const totalAline = rendimentoAline - ivaAline;
 
-      const baseMes = totalAndre + totalAline;
       // Add to total rendimentos
-      totalRendimentos += baseMes;
+      totalRendimentos += totalAndre + totalAline;
 
       // Add extra rendimentos from rendimentosData if available
       if (rendimentosData && rendimentosData[mesId]) {
         const extraRendimentosMes = rendimentosData[mesId];
         const totalExtrasMes = extraRendimentosMes.reduce((sum, r) => sum + (r.valor || 0), 0);
         totalRendimentos += totalExtrasMes;
-        rendimentosPorMes[mesId] = baseMes + totalExtrasMes;
-      } else {
-        rendimentosPorMes[mesId] = baseMes;
       }
     });
 
@@ -105,8 +100,7 @@ const OverviewSection = ({
       mesesComDados,
       mediaMensalGastos: mesesComDados > 0 ? totalGastos / mesesComDados : 0,
       mediaMensalRendimentos: mesesComDados > 0 ? totalRendimentos / mesesComDados : 0,
-      detalhesPorMes,
-      rendimentosPorMes
+      detalhesPorMes
     };
   }, [gastosData, gastosFixos, rendimentosData]);
 
@@ -124,21 +118,6 @@ const OverviewSection = ({
       </div>
     );
   }
-
-  // Helpers de variação mês a mês
-  const getTwoLastMonthsIds = () => {
-    const ids = mesesInfo.map(m => m.id);
-    return ids.slice(-2);
-  };
-
-  const [prevId, currId] = getTwoLastMonthsIds();
-  const gastosPrev = stats.detalhesPorMes?.[prevId]?.totalGastos || 0;
-  const gastosCurr = stats.detalhesPorMes?.[currId]?.totalGastos || 0;
-  const gastosDelta = gastosPrev > 0 ? ((gastosCurr - gastosPrev) / gastosPrev) * 100 : 0;
-
-  const rendPrev = stats.rendimentosPorMes?.[prevId] || 0;
-  const rendCurr = stats.rendimentosPorMes?.[currId] || 0;
-  const rendDelta = rendPrev > 0 ? ((rendCurr - rendPrev) / rendPrev) * 100 : 0;
 
   return (
     <div className="overview-section" role="region" aria-labelledby="overview-title">
@@ -161,9 +140,6 @@ const OverviewSection = ({
             <div className="card-subtext">
               {stats.mesesComDados} meses • Média: {formatCurrency(stats.mediaMensalRendimentos)}
             </div>
-            <div className="card-subtext" style={{ marginTop: 6, fontWeight: 600, color: rendDelta >= 0 ? '#16a34a' : '#dc2626' }}>
-              {rendDelta >= 0 ? '▲' : '▼'} {Math.abs(rendDelta).toFixed(1)}% vs mês anterior
-            </div>
 
           </div>
         </div>
@@ -175,9 +151,6 @@ const OverviewSection = ({
             <div className="card-value">{formatCurrency(stats.totalGastos)}</div>
             <div className="card-subtext">
               {stats.mesesComDados} meses • Média: {formatCurrency(stats.mediaMensalGastos)}
-            </div>
-            <div className="card-subtext" style={{ marginTop: 6, fontWeight: 600, color: gastosDelta <= 0 ? '#16a34a' : '#dc2626' }}>
-              {gastosDelta <= 0 ? '▼' : '▲'} {Math.abs(gastosDelta).toFixed(1)}% vs mês anterior
             </div>
             <div className="card-details">
               <div className="detail-item">

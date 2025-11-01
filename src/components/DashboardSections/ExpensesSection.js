@@ -1,33 +1,26 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import MonthContent from '../MonthContent.js';
 import { mesesInfo } from '../../data/monthsData.js';
 import { formatCurrency } from '../../utils/calculations.js';
 
 const ExpensesSection = ({ 
-  gastosData,
-  gastosFixos,
+  gastosData, 
   addGasto, 
   removeGasto 
 }) => {
   const [currentMonth, setCurrentMonth] = useState('jan');
 
-  // Lista do mês atual
-  const monthList = useMemo(() => Array.isArray(gastosData[currentMonth]) ? gastosData[currentMonth] : [], [gastosData, currentMonth]);
-
-  // Calcular estatísticas do mês (fixos + variáveis do mês selecionado)
+  // Calcular estatísticas de gastos
   const calculateExpenseStats = () => {
-    const allExpenses = monthList;
-    const totalVariaveis = allExpenses.reduce((sum, gasto) => sum + (gasto.valor || 0), 0);
-    const fixosMes = (gastosFixos && gastosFixos[currentMonth]) ? gastosFixos[currentMonth] : {};
-    const totalFixos = Object.values(fixosMes).reduce((s, v) => s + (v || 0), 0);
-    const totalExpenses = totalVariaveis + totalFixos;
+    const allExpenses = Object.values(gastosData).flat();
+    const totalExpenses = allExpenses.reduce((sum, gasto) => sum + gasto.valor, 0);
     
     const byCategory = {};
     allExpenses.forEach(gasto => {
       if (!byCategory[gasto.categoria]) {
         byCategory[gasto.categoria] = 0;
       }
-      byCategory[gasto.categoria] += (gasto.valor || 0);
+      byCategory[gasto.categoria] += gasto.valor;
     });
 
     const topCategories = Object.entries(byCategory)
@@ -36,11 +29,9 @@ const ExpensesSection = ({
 
     return {
       totalExpenses,
-      totalVariaveis,
-      totalFixos,
       totalTransactions: allExpenses.length,
       topCategories,
-      averageExpense: allExpenses.length > 0 ? totalVariaveis / allExpenses.length : 0
+      averageExpense: allExpenses.length > 0 ? totalExpenses / allExpenses.length : 0
     };
   };
 
@@ -61,7 +52,6 @@ const ExpensesSection = ({
             <h3>Total Gasto</h3>
             <div className="card-value">{formatCurrency(stats.totalExpenses)}</div>
             <div className="card-subtext">{stats.totalTransactions} transações</div>
-            <div className="card-subtext" style={{ fontSize: '12px', opacity: 0.75 }}>+ Fixos: {formatCurrency(stats.totalFixos)}</div>
           </div>
         </div>
 
